@@ -136,7 +136,7 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
         <Icon name="arrow-left" />
       </button>
       <figure class="viewer-figure" data-figure>
-        <img data-img alt="" decoding="async" />
+        <img data-img alt="" decoding="async" hidden />
         <div class="pending viewer-pending" data-pending hidden><span>Portfolio photograph pending import</span></div>
       </figure>
       <button type="button" class="viewer-nav next" data-next aria-label="Next photograph">
@@ -214,6 +214,7 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
 
   .filter {
     position: relative;
+    min-width: 44px;
     min-height: 44px;
     padding: 0;
     border: 0;

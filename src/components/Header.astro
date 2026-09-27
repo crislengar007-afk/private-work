@@ -70,30 +70,30 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     position: sticky;
     top: 0;
     z-index: var(--z-header);
-    padding: 0.75rem var(--gutter) 0;
+    /* The bar keeps constant inner padding; the header offsets it so the
+       wordmark still aligns with the page gutter. Only colour animates. */
+    padding: 0.75rem calc(var(--gutter) - 1.25rem) 0;
     pointer-events: none;
   }
 
   .bar {
     pointer-events: auto;
-    max-width: calc(var(--max) - 2 * var(--gutter));
+    max-width: calc(var(--max) - 2 * var(--gutter) + 2.5rem);
     margin-inline: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
     min-height: 3.75rem;
-    padding: 0.5rem 0;
+    padding: 0.5rem 1.25rem;
     border: 1px solid transparent;
     transition:
       background-color var(--dur-2) var(--ease-out),
-      border-color var(--dur-2) var(--ease-out),
-      padding var(--dur-2) var(--ease-out);
+      border-color var(--dur-2) var(--ease-out);
   }
 
   /* Once the page scrolls, the bar settles into a quiet floating strip. */
   .site-header.is-floating .bar {
-    padding-inline: 1.25rem;
     background: color-mix(in srgb, var(--paper) 86%, transparent);
     border-color: var(--rule);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
