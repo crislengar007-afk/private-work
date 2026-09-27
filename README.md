@@ -19,15 +19,16 @@ npm install
 npm run dev        # http://localhost:4321 with hot reload
 npm run build      # type-check, then build the static site into dist/
 npm run preview    # serve dist/ at http://127.0.0.1:4321
-npm test           # Playwright: 41 checks on desktop and mobile Chromium
+npm test           # Playwright: 64 checks on desktop and mobile Chromium (2 skipped by design)
 ```
 
 ## Pages and routes
 
 | Route | Page |
 | --- | --- |
-| `/` | Home: hero, service entry points, portfolio preview, story, inquiry |
-| `/our-services/` | The five service groups, each with an inquiry path (same slug as the live site) |
+| `/` | Home: full-screen film, portfolio preview, the occasions reel, story, inquiry |
+| `/our-services/` | The five services as film cards (same slug as the live site) |
+| `/our-services/<id>/` | One page per service: `arrangements`, `weddings`, `corporate`, `house-guests`, `hotels` |
 | `/gallery/` | The genuine portfolio, with colour filters and a full-screen viewer |
 | `/contact/` | Contact details, directions and the inquiry form |
 | `/services/` | Redirects to `/our-services/` |
@@ -120,6 +121,14 @@ These points need the owner (SPEC §10):
 | Source | Where it appears | Label |
 | --- | --- | --- |
 | The studio's own photographs (`real_portfolio`) | Gallery, Home portfolio and story, House guests service | "From the studio's portfolio" |
-| Higgsfield concepts (`concept`) | Hero, and the Arrangements, Weddings, Corporate and Hotels sections | "Concept image, generated for this design" |
+| Higgsfield concepts (`concept`) | Home and service heroes (full-screen films), service cards | "Concept film, generated for this design" or "Concept image, …"; the card grids carry one shared note |
+| The studio's photographs with motion added (img011, img008, img015) | Gallery, Home, service pages | "Motion added digitally", with a switch to the still in the viewer |
 
-Concept images never enter the gallery.
+Concept images and films never enter the gallery.
+
+## Motion
+
+- **Sources:** every film comes from Higgsfield and is listed in ASSET_MANIFEST.md.
+- **Loading:** a film loads only after the page has loaded, and never under reduced motion or Save-Data. The still poster is always there.
+- **Pause control:** one "Pause motion" control, in each full-screen hero, stops every clip and is remembered for the visit.
+- **Code:** the behaviour lives in `src/scripts/motion.ts`. The components are `MotionHero.astro` (full-screen hero), `ServiceCard.astro` (film cards) and `MotionPhoto.astro` (portfolio photograph with optional labelled motion).

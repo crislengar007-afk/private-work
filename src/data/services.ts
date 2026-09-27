@@ -24,6 +24,8 @@ export interface Service {
   questions?: 'wedding' | 'hospitality';
   /** Key into the campaign imagery (generated concepts, not portfolio). */
   campaign?: string;
+  /** Where the arrangement sits in the wide film, for the crop on portrait screens. */
+  focus: string;
 }
 
 export const services: Service[] = [
@@ -38,6 +40,7 @@ export const services: Service[] = [
     occasion: 'Arrangement',
     isEvent: false,
     campaign: 'arrangements',
+    focus: '26% 50%',
   },
   {
     id: 'weddings',
@@ -51,6 +54,7 @@ export const services: Service[] = [
     isEvent: true,
     questions: 'wedding',
     campaign: 'weddings',
+    focus: '50% 50%',
   },
   {
     id: 'corporate',
@@ -63,6 +67,7 @@ export const services: Service[] = [
     isEvent: true,
     questions: 'hospitality',
     campaign: 'corporate',
+    focus: '74% 50%',
   },
   {
     id: 'house-guests',
@@ -74,6 +79,7 @@ export const services: Service[] = [
     occasion: 'House guests',
     isEvent: false,
     campaign: 'house-guests',
+    focus: '74% 50%',
   },
   {
     id: 'hotels',
@@ -87,6 +93,7 @@ export const services: Service[] = [
     isEvent: true,
     questions: 'hospitality',
     campaign: 'hotels',
+    focus: '27% 50%',
   },
 ];
 

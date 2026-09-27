@@ -29,7 +29,8 @@
       "provenance": "real_portfolio",
       "credit": "The Flower Studio TCI",
       "status": "published",
-      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img011.jpg"
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img011.jpg",
+      "motion": "rm-img011"
     },
     {
       "id": "img008",
@@ -40,7 +41,8 @@
       "provenance": "real_portfolio",
       "credit": "The Flower Studio TCI",
       "status": "published",
-      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img008.jpg"
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img008.jpg",
+      "motion": "rm-img008"
     },
     {
       "id": "img002",
@@ -62,7 +64,8 @@
       "provenance": "real_portfolio",
       "credit": "The Flower Studio TCI",
       "status": "published",
-      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img015.jpg"
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img015.jpg",
+      "motion": "rm-img015"
     },
     {
       "id": "img006",

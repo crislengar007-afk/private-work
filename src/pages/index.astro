@@ -1,6 +1,9 @@
 ---
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
+import MotionHero from '../components/MotionHero.astro';
+import MotionPhoto from '../components/MotionPhoto.astro';
+import ServiceCard from '../components/ServiceCard.astro';
 import Media from '../components/Media.astro';
 import Icon from '../components/Icon.astro';
 import InquiryBand from '../components/InquiryBand.astro';
@@ -8,22 +11,11 @@ import { services } from '../data/services';
 import { galleryItems, selectedWork } from '../data/gallery';
 import { decor, decorVideo } from '../data/decor';
 
-// Hero: H1 (landscape, desktop) and H2 (portrait, recomposed for mobile).
-const h1 = decor('h1-desktop') ?? decor('hero-petals');
-const h2 = decor('h2-mobile') ?? h1;
-const loop = decorVideo('v1-loop');
-
-// AVIF first (smallest), WebP as the fallback; a few width steps each.
-const variants = (img: NonNullable<typeof h1>, widths: number[], format: 'avif' | 'webp', quality?: number) =>
-  Promise.all(widths.map((w) => getImage({ src: img.image, width: w, format, quality })));
-const desk = h1 && (await getImage({ src: h1.image, width: 1600, format: 'webp' }));
-const deskSet = h1 && (await variants(h1, [900, 1300, 1800], 'webp'));
-const deskAvif = h1 && (await variants(h1, [900, 1300, 1800], 'avif', 60));
-const mob = h2 && (await variants(h2, [480, 720, 900], 'webp', 70));
-const mobAvif = h2 && (await variants(h2, [480, 720, 900], 'avif', 55));
-const og = h1 && (await getImage({ src: h1.image, width: 1200, height: 630, fit: 'cover', format: 'jpg' }));
-const srcset = (list?: { src: string; attributes: Record<string, unknown> }[]) =>
-  list?.map((v) => `${v.src} ${v.attributes.width}w`).join(', ');
+// Full-screen hero: H1 with its loop V1 on wide screens; on phones, H2
+// recomposed as a tall frame with its own loop V2.
+const h1 = decor('h1-desktop')!;
+const h2 = decor('h2-tall') ?? decor('h2-mobile');
+const og = await getImage({ src: h1.image, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 
 const work = selectedWork(5);
 const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[galleryItems.length - 1];
@@ -32,88 +24,54 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
 <Base
   title="The Flower Studio TCI"
   description="Floral arrangements, wedding decoration, and corporate, house guest and luxury hotel flowers from The Flower Studio at Ports of Call, Grace Bay, Turks and Caicos."
-  image={og?.src}
+  image={og.src}
   business
+  overlay
 >
-  {/* Preload only the hero composition each screen will actually use. */}
-  {desk && <link slot="head" rel="preload" as="image" type="image/avif" media="(min-width: 861px)" imagesrcset={srcset(deskAvif)} imagesizes="46vw" fetchpriority="high" />}
-  {mob && <link slot="head" rel="preload" as="image" type="image/avif" media="(max-width: 860px)" imagesrcset={srcset(mobAvif)} imagesizes="100vw" fetchpriority="high" />}
-
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="hero-copy">
-      <h1 id="hero-title">
-        <span class="line"><span>Bringing flower elegance</span></span>
-        <span class="line"><span>to your <em>island</em> experience</span></span>
-      </h1>
-      <p class="lede">
-        Arrangements, wedding decoration and hospitality florals from our studio at Ports of Call, Grace Bay.
-      </p>
-      <div class="hero-actions" data-dock-hide>
-        <a class="button" href="/gallery/">Explore the Gallery <Icon name="arrow-right" class="arrow" /></a>
-        <a class="button button--ghost" href="/contact/">Request Flowers</a>
-      </div>
+  <MotionHero
+    wide={h1.image}
+    narrow={h2?.image}
+    alt={h1.alt}
+    wideVideo={decorVideo('v1-loop')}
+    narrowVideo={decorVideo('m-home-tall')}
+    labelledby="hero-title"
+    next="#work"
+    narrowAlign="top"
+  >
+    <h1 id="hero-title">
+      <span class="line"><span>Bringing flower elegance</span></span>
+      <span class="line"><span>to your <em>island</em> experience</span></span>
+    </h1>
+    <p class="lede">
+      Arrangements, wedding decoration and hospitality florals from our studio at Ports of Call, Grace Bay.
+    </p>
+    <div class="hero-actions" data-dock-hide>
+      <a class="button" href="/gallery/">Explore the Gallery <Icon name="arrow-right" class="arrow" /></a>
+      <a class="button button--on-media" href="/contact/">Request Flowers</a>
     </div>
+  </MotionHero>
 
-    <figure class="hero-media">
-      <div class="frame frame--arch arch" data-hero-media>
-        {
-          desk ? (
-            <picture>
-              {mob && <source media="(max-width: 860px)" type="image/avif" srcset={srcset(mobAvif)} sizes="100vw" />}
-              {mob && <source media="(max-width: 860px)" type="image/webp" srcset={srcset(mob)} sizes="100vw" />}
-              <source type="image/avif" srcset={srcset(deskAvif)} sizes="(min-width: 861px) 46vw, 100vw" />
-              <img
-                src={desk.src}
-                srcset={srcset(deskSet)}
-                sizes="(min-width: 861px) 46vw, 100vw"
-                alt={h1!.alt}
-                width={desk.attributes.width as number}
-                height={desk.attributes.height as number}
-                fetchpriority="high"
-                decoding="async"
-              />
-            </picture>
-          ) : (
-            <div class="pending" role="img" aria-label="Hero image pending">
-              <span>Hero image pending</span>
-            </div>
-          )
-        }
-        {
-          loop.length > 0 && (
-            <video class="hero-video" data-hero-video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1">
-              {loop.map((s) => (
-                <source data-src={s.src} type={s.type} />
-              ))}
-            </video>
-          )
-        }
-      </div>
-      <figcaption>
-        <span class="concept-tag">Concept image, generated for this design</span>
-        {
-          loop.length > 0 && (
-            <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false" hidden>
-              Pause motion
-            </button>
-          )
-        }
-      </figcaption>
-    </figure>
-  </section>
-
-  <section class="section work" aria-labelledby="work-title">
+  <section class="section work" id="work" aria-labelledby="work-title">
     <div class="wrap">
       <div class="work-head" data-reveal>
         <h2 id="work-title">From the studio</h2>
-        <p class="lede">Arrangements composed at Ports of Call, photographed in the studio.</p>
+        <p class="lede">
+          Arrangements composed at Ports of Call, photographed in the studio. Where a photograph moves, the motion was
+          added digitally and is labelled.
+        </p>
       </div>
       <ul class="strip">
         {
           work.map((p, i) => (
             <li data-reveal style={`--reveal-delay: ${i * 80}`}>
               <a href={`/gallery/?view=${p.id}`} class="strip-link">
-                <Media image={p.image} alt={p.alt} ratio={i === 0 ? 4 / 5 : 3 / 4} arch zoom sizes="(min-width: 1024px) 24vw, (min-width: 640px) 45vw, 75vw" />
+                <MotionPhoto
+                  item={p}
+                  ratio={i === 0 ? 4 / 5 : 3 / 4}
+                  arch
+                  native={false}
+                  sizes="(min-width: 1024px) 24vw, (min-width: 640px) 45vw, 75vw"
+                />
                 <span class="caption">{p.caption}</span>
               </a>
             </li>
@@ -124,20 +82,19 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
     </div>
   </section>
 
-  <section class="section entries" aria-labelledby="entries-title">
+  <section class="section occasions" aria-labelledby="occasions-title">
     <div class="wrap">
-      <h2 id="entries-title" data-reveal>For every occasion on the island</h2>
-      <ul class="entry-list">
+      <div class="occasions-head" data-reveal>
+        <h2 id="occasions-title">For every occasion on the island</h2>
+        <p class="caption">
+          Hover or focus a service to open it. These films are concepts generated for this design.
+        </p>
+      </div>
+      <ul class="reel" data-reel>
         {
           services.map((s, i) => (
-            <li data-reveal style={`--reveal-delay: ${i * 70}`}>
-              <a href={`/our-services/#${s.id}`}>
-                <span class="entry-title">{s.title}</span>
-                <span class="entry-summary">{s.summary}</span>
-                <span class="entry-go">
-                  Discover <Icon name="arrow-right" class="arrow" />
-                </span>
-              </a>
+            <li class:list={{ 'is-open': i === 0 }}>
+              <ServiceCard service={s} index={i} sizes="(min-width: 1024px) 50vw, 80vw" class="reel-card" motion="open" />
             </li>
           ))
         }
@@ -172,36 +129,6 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
 </Base>
 
 <style>
-  /* Hero ------------------------------------------------------------------ */
-  .hero {
-    display: grid;
-    gap: 2rem;
-    padding: clamp(1.5rem, 4vw, 2.5rem) 0 0;
-  }
-
-  .hero-copy {
-    padding-inline: var(--gutter);
-    display: grid;
-    gap: 1.5rem;
-    align-content: center;
-    justify-items: start;
-  }
-
-  .hero h1 {
-    font-size: clamp(2.35rem, 1.3rem + 3.8vw, 4.6rem);
-    line-height: 1.04;
-  }
-
-  .hero h1 .line {
-    display: block;
-    overflow: hidden;
-    padding-bottom: 0.06em;
-  }
-
-  .hero h1 .line > span {
-    display: inline-block;
-  }
-
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
@@ -209,195 +136,109 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
     margin-top: 0.5rem;
   }
 
-  .hero-media {
-    padding-inline: var(--gutter);
-    display: grid;
-    gap: 0.6rem;
-  }
-
-  .arch {
-    aspect-ratio: 3 / 4;
-  }
-
-  .arch > picture,
-  .arch > picture > img,
-  .arch > video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 64% 50%;
-  }
-
-  .hero-video {
-    opacity: 0;
-    transition: opacity 1.6s var(--ease-out);
-  }
-
-  .hero-video.is-playing {
-    opacity: 1;
-  }
-
-  .hero-media figcaption {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    min-height: 44px;
-  }
-
-  .motion-toggle {
-    min-height: 44px;
-    padding: 0 1rem;
-    border: 1px solid var(--rule-strong);
-    border-radius: var(--pill);
-    background: transparent;
-    font-size: 0.8125rem;
-  }
-
-  @media (min-width: 861px) {
-    .hero {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-      gap: clamp(2rem, 4vw, 4.5rem);
-      align-items: end;
-      min-height: calc(100svh - 5rem);
-      padding: 1rem 0 0;
-    }
-
-    .hero-copy {
-      align-self: center;
-      padding-inline: max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter))) 0;
-      padding-block: 2rem;
-    }
-
-    .hero-media {
-      padding-inline: 0 max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter)));
-    }
-
-    .arch {
-      aspect-ratio: auto;
-      height: min(78svh, 58rem);
-      min-height: 30rem;
-    }
-  }
-
-  /* Focal moment: the arch opens upward while the headline rises. */
-  @media (prefers-reduced-motion: no-preference) {
-    .hero h1 .line > span {
-      animation: rise 1.1s var(--ease-out) both;
-    }
-    .hero h1 .line + .line > span {
-      animation-delay: 0.12s;
-    }
-    .hero .lede,
-    .hero-actions {
-      animation: fade 0.9s var(--ease-out) 0.45s both;
-    }
-    .arch {
-      animation: unveil 1.2s var(--ease-arch) 0.05s both;
-    }
-    .arch > picture {
-      animation: settle 2.6s var(--ease-out) 0.05s both;
-    }
-  }
-
-  @keyframes rise {
-    from {
-      transform: translateY(105%);
-    }
-  }
-  @keyframes fade {
-    from {
-      opacity: 0;
-    }
-  }
-  @keyframes unveil {
-    from {
-      clip-path: inset(100% 0 0 0 round 999px 999px 0 0);
-    }
-    to {
-      clip-path: inset(0 0 0 0 round 999px 999px 0 0);
-    }
-  }
-  @keyframes settle {
-    from {
-      transform: scale(1.08);
-    }
-  }
-
-  /* Service entry points -------------------------------------------------- */
-  .entries {
+  /* Occasions: an expanding reel. The focused card opens to show its film. */
+  .occasions {
     background: var(--sand);
   }
 
-  .entries h2 {
-    font-size: var(--step-4);
-    max-width: 16ch;
+  .occasions-head {
+    display: grid;
+    gap: 1rem;
     margin-bottom: clamp(2rem, 4vw, 3.5rem);
   }
 
-  .entry-list {
+  .occasions-head h2 {
+    font-size: var(--step-5);
+    max-width: 16ch;
+  }
+
+  .reel {
     list-style: none;
-    padding: 0;
+    padding: 0 var(--gutter) 0.75rem;
+    margin-inline: calc(-1 * var(--gutter));
     display: grid;
-    border-top: 1px solid var(--rule);
+    grid-auto-flow: column;
+    grid-auto-columns: min(80vw, 24rem);
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    overscroll-behavior-x: contain;
   }
 
-  .entry-list a {
+  .reel > li {
+    scroll-snap-align: start;
     display: grid;
-    gap: 0.5rem;
-    padding: 1.4rem 0.25rem;
-    border-bottom: 1px solid var(--rule);
-    text-decoration: none;
-    height: 100%;
   }
 
-  .entry-title {
-    font-family: var(--font-display);
-    font-size: var(--step-3);
-    line-height: 1.1;
-    transition: color var(--dur-1) var(--ease-out);
-  }
-
-  .entry-summary {
-    color: var(--ink-soft);
-    font-size: 0.9688rem;
-    max-width: 30rem;
-  }
-
-  .entry-go {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    color: var(--lagoon);
-    font-weight: 500;
-    font-size: 0.9375rem;
-  }
-
-  .entry-list a:hover .entry-title,
-  .entry-list a:focus-visible .entry-title {
-    color: var(--lagoon);
-    font-style: italic;
-  }
-
-  .entry-list a:hover :global(.arrow) {
-    transform: translateX(0.25em);
+  .reel :global(.reel-card) {
+    aspect-ratio: 3 / 4;
   }
 
   @media (min-width: 1024px) {
-    .entry-list {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      border-top: 0;
+    .occasions-head {
+      grid-template-columns: 1fr auto;
+      align-items: end;
     }
-    .entry-list li + li a {
-      border-left: 1px solid var(--rule);
+
+    .reel {
+      display: flex;
+      height: min(74svh, 44rem);
+      min-height: 30rem;
+      margin-inline: 0;
+      padding: 0;
+      overflow: visible;
     }
-    .entry-list a {
-      grid-template-rows: auto 1fr auto;
-      padding: 1.5rem 1.25rem 1.25rem;
-      border-bottom: 0;
-      min-height: 15rem;
+
+    .reel > li {
+      flex: 1 1 0;
+      min-width: 0;
+      transition: flex-grow 900ms var(--ease-out);
+    }
+
+    .reel > li.is-open {
+      flex-grow: 3.4;
+    }
+
+    .reel :global(.reel-card) {
+      aspect-ratio: auto;
+    }
+
+    /* Collapsed cards set their title upright along the edge; the open card
+       reads normally and shows its summary. */
+    .reel > li:not(.is-open) :global(.scard-body) {
+      align-self: stretch;
+      align-content: end;
+    }
+
+    .reel > li:not(.is-open) :global(.scard-title) {
+      writing-mode: vertical-rl;
+      rotate: 180deg;
+      justify-self: start;
+      font-size: var(--step-2);
+      white-space: nowrap;
+    }
+
+    .reel :global(.scard-summary),
+    .reel :global(.scard-go) {
+      transition:
+        opacity var(--dur-2) var(--ease-out) 200ms,
+        transform var(--dur-2) var(--ease-out) 200ms;
+    }
+
+    .reel > li:not(.is-open) :global(.scard-summary),
+    .reel > li:not(.is-open) :global(.scard-go) {
+      display: none;
+    }
+
+    .reel > li.is-open :global(.scard-summary) {
+      min-width: 20rem;
+    }
+  }
+
+  @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+    .reel > li {
+      transition: none;
     }
   }
 
@@ -500,48 +341,43 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
 </style>
 
 <script>
-  // Desktop hero loop: plays only on wide screens, with motion welcome and data unconstrained.
-  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
-  const toggle = document.querySelector<HTMLButtonElement>('[data-motion-toggle]');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  const wide = matchMedia('(min-width: 861px)');
-  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+  import { wantVideo } from '../scripts/motion';
 
-  function start() {
-    if (!video || reduce.matches || !wide.matches || saveData || video.dataset.loaded) return;
-    video.dataset.loaded = '1';
-    video.querySelectorAll('source').forEach((s) => (s.src = s.dataset.src!));
-    video.load();
-    video.addEventListener('playing', () => video.classList.add('is-playing'), { once: true });
-    video.play().then(
-      () => {
-        if (toggle) toggle.hidden = false;
-      },
-      () => {
-        /* Autoplay refused: the still image remains. */
-      },
-    );
-  }
-
-  // Start after the page has painted so the still stays the LCP element.
-  if (document.readyState === 'complete') setTimeout(start, 400);
-  else addEventListener('load', () => setTimeout(start, 400), { once: true });
-  wide.addEventListener('change', start);
-
-  toggle?.addEventListener('click', () => {
-    if (!video) return;
-    const pause = !video.paused;
-    if (pause) video.pause();
-    else void video.play();
-    toggle.setAttribute('aria-pressed', String(pause));
-    toggle.textContent = pause ? 'Play motion' : 'Pause motion';
-  });
-
-  reduce.addEventListener('change', (e) => {
-    if (e.matches && video) {
-      video.pause();
-      video.classList.remove('is-playing');
-      if (toggle) toggle.hidden = true;
+  // The occasions reel: hovering or focusing a card opens it, and on wide
+  // screens the open card plays its film while the reel is in view.
+  const reel = document.querySelector<HTMLElement>('[data-reel]');
+  if (reel) {
+    const items = Array.from(reel.children) as HTMLElement[];
+    const wide = matchMedia('(min-width: 1024px)');
+    let open = items.find((li) => li.classList.contains('is-open')) ?? items[0];
+    let visible = false;
+    const sync = () => {
+      if (!wide.matches) return;
+      for (const li of items) {
+        const v = li.querySelector<HTMLVideoElement>('video');
+        if (v) wantVideo(v, visible && li === open);
+      }
+    };
+    const openItem = (li: HTMLElement) => {
+      if (li === open) return;
+      open.classList.remove('is-open');
+      li.classList.add('is-open');
+      open = li;
+      sync();
+    };
+    for (const li of items) {
+      li.addEventListener('pointerenter', () => openItem(li));
+      li.addEventListener('focusin', () => openItem(li));
     }
-  });
+    const start = () =>
+      new IntersectionObserver(
+        ([e]) => {
+          visible = e.isIntersecting;
+          sync();
+        },
+        { threshold: 0.35 },
+      ).observe(reel);
+    if (document.readyState === 'complete') start();
+    else addEventListener('load', start, { once: true });
+  }
 </script>

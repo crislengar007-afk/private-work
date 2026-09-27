@@ -1,0 +1,378 @@
+---
+/**
+ * Full-screen hero: a still poster (always present, and the LCP element)
+ * with a muted Higgsfield loop fading in over it once the page has loaded.
+ * Text sits on a scrim so it keeps its contrast over any frame.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { VideoSource } from '../data/decor';
+
+interface Props {
+  /** Landscape poster, also the first frame of the wide clip. */
+  wide: ImageMetadata;
+  /** Portrait poster for small screens; the wide one is cropped otherwise. */
+  narrow?: ImageMetadata;
+  alt: string;
+  wideVideo: VideoSource[];
+  narrowVideo?: VideoSource[];
+  /** Crop focus on portrait screens when only the wide media exists. */
+  focus?: string;
+  label?: string;
+  labelledby: string;
+  /** Where the scroll cue points. */
+  next?: string;
+  /** On phones, set the text at the top when the subject fills the lower frame. */
+  narrowAlign?: 'top' | 'bottom';
+}
+
+const {
+  wide,
+  narrow,
+  alt,
+  wideVideo,
+  narrowVideo,
+  focus = '50% 50%',
+  label = 'Concept film, generated for this design',
+  labelledby,
+  next,
+  narrowAlign = 'bottom',
+} = Astro.props;
+
+const set = async (img: ImageMetadata, widths: number[], format: 'avif' | 'webp', quality: number) =>
+  (await Promise.all(widths.filter((w) => w <= img.width).map((w) => getImage({ src: img, width: w, format, quality }))))
+    .map((v) => `${v.src} ${v.attributes.width}w`)
+    .join(', ');
+
+const wideWidths = [960, 1440, 1920, 2560];
+const narrowWidths = [480, 720, 960];
+const fallback = await getImage({ src: wide, width: Math.min(1600, wide.width), format: 'webp', quality: 72 });
+const wideAvif = await set(wide, wideWidths, 'avif', 58);
+const wideWebp = await set(wide, wideWidths, 'webp', 72);
+const narrowImg = narrow ?? wide;
+const narrowAvif = await set(narrowImg, narrow ? narrowWidths : [720, 960, 1440], 'avif', 55);
+const narrowWebp = await set(narrowImg, narrow ? narrowWidths : [720, 960, 1440], 'webp', 70);
+const narrowSizes = narrow ? '100vw' : '(max-aspect-ratio: 1/1) 200vh, 100vw';
+---
+
+<section
+  class="mhero"
+  aria-labelledby={labelledby}
+  data-motion-root
+  data-narrow-align={narrowAlign}
+  style={`--focus: ${focus}`}
+>
+  <div class="mhero-media">
+    <picture>
+      <source media="(max-width: 860px)" type="image/avif" srcset={narrowAvif} sizes={narrowSizes} />
+      <source media="(max-width: 860px)" type="image/webp" srcset={narrowWebp} sizes={narrowSizes} />
+      <source type="image/avif" srcset={wideAvif} sizes="100vw" />
+      <img
+        src={fallback.src}
+        srcset={wideWebp}
+        sizes="100vw"
+        alt={alt}
+        width={fallback.attributes.width as number}
+        height={fallback.attributes.height as number}
+        fetchpriority="high"
+        decoding="async"
+        class:list={{ 'is-narrow-own': !!narrow }}
+      />
+    </picture>
+    {
+      wideVideo.length > 0 && (
+        <video
+          data-motion="hero"
+          data-wide={JSON.stringify(wideVideo)}
+          data-narrow={narrowVideo?.length ? JSON.stringify(narrowVideo) : undefined}
+          class:list={{ 'is-narrow-own': !!narrowVideo?.length }}
+          muted
+          loop
+          playsinline
+          preload="none"
+          aria-hidden="true"
+          tabindex="-1"
+        />
+      )
+    }
+  </div>
+  <div class="mhero-scrim" aria-hidden="true"></div>
+
+  <div class="mhero-content">
+    <slot />
+  </div>
+
+  <div class="mhero-foot">
+    <span class="mhero-tag">{label}</span>
+    {
+      wideVideo.length > 0 && (
+        <button class="mhero-toggle" type="button" data-motion-toggle aria-pressed="false" hidden>
+          <span class="dot" aria-hidden="true" />
+          <span data-motion-label>Pause motion</span>
+        </button>
+      )
+    }
+    {
+      next && (
+        <a class="mhero-cue" href={next}>
+          <span class="visually-hidden">Scroll to content</span>
+          <span class="cue-line" aria-hidden="true" />
+        </a>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .mhero {
+    --on-media: #f6f3ee;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: 100svh;
+    margin-top: calc(-1 * var(--header-h));
+    padding: calc(var(--header-h) + 2rem) var(--gutter) 0;
+    color: var(--on-media);
+    background: #1b2322;
+    overflow: hidden;
+  }
+
+  .mhero-media,
+  .mhero-media > picture,
+  .mhero-media img,
+  .mhero-media video,
+  .mhero-scrim {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mhero-media {
+    z-index: -2;
+  }
+
+  .mhero-media img,
+  .mhero-media video {
+    object-fit: cover;
+    object-position: var(--focus);
+  }
+
+  .mhero-media img.is-narrow-own,
+  .mhero-media video.is-narrow-own {
+    object-position: 50% 50%;
+  }
+
+  @media (min-width: 861px) {
+    .mhero-media img,
+    .mhero-media video {
+      object-position: 50% 50%;
+    }
+  }
+
+  .mhero-media video {
+    opacity: 0;
+    transition: opacity 1.4s var(--ease-out);
+  }
+
+  .mhero:global(.is-moving) .mhero-media video {
+    opacity: 1;
+  }
+
+  :global(.motion-paused) .mhero-media video {
+    transition-duration: 0s;
+  }
+
+  .mhero-scrim {
+    z-index: -1;
+    background:
+      linear-gradient(to top, rgb(12 18 17 / 0.78) 0%, rgb(12 18 17 / 0.42) 38%, rgb(12 18 17 / 0) 68%),
+      linear-gradient(to bottom, rgb(12 18 17 / 0.4) 0%, rgb(12 18 17 / 0) 22%);
+  }
+
+  @media (max-width: 860px) {
+    .mhero[data-narrow-align='top'] .mhero-content {
+      align-self: start;
+      padding-top: 0.5rem;
+    }
+    .mhero[data-narrow-align='top'] .mhero-scrim {
+      background:
+        linear-gradient(to bottom, rgb(12 18 17 / 0.72) 0%, rgb(12 18 17 / 0.4) 34%, rgb(12 18 17 / 0) 58%),
+        linear-gradient(to top, rgb(12 18 17 / 0.55) 0%, rgb(12 18 17 / 0) 18%);
+    }
+  }
+
+  .mhero-content {
+    align-self: end;
+    width: 100%;
+    max-width: calc(var(--max) - 2 * var(--gutter));
+    margin-inline: auto;
+    display: grid;
+    gap: 1.25rem;
+    justify-items: start;
+    padding-bottom: clamp(1.5rem, 4vw, 3rem);
+    text-shadow: 0 1px 24px rgb(0 0 0 / 0.25);
+  }
+
+  .mhero-content :global(h1) {
+    color: var(--on-media);
+    font-size: clamp(2.6rem, 1.4rem + 5vw, 6.4rem);
+    line-height: 1;
+    max-width: 14ch;
+  }
+
+  .mhero-content :global(h1 em) {
+    color: #bfe6e4;
+  }
+
+  .mhero-content :global(.lede) {
+    color: rgb(246 243 238 / 0.9);
+    max-width: 34rem;
+  }
+
+  .mhero-foot {
+    width: 100%;
+    max-width: calc(var(--max) - 2 * var(--gutter));
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 3.75rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    border-top: 1px solid rgb(246 243 238 / 0.22);
+    font-size: 0.8125rem;
+  }
+
+  .mhero-tag {
+    margin-right: auto;
+    line-height: 1.35;
+    color: rgb(246 243 238 / 0.86);
+    letter-spacing: 0.02em;
+  }
+
+  .mhero-toggle {
+    flex-shrink: 0;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0 1rem;
+    border: 1px solid rgb(246 243 238 / 0.45);
+    border-radius: var(--pill);
+    background: rgb(12 18 17 / 0.25);
+    color: var(--on-media);
+    font: inherit;
+    cursor: pointer;
+    transition: background-color var(--dur-1) var(--ease-out);
+  }
+
+  .mhero-toggle:hover {
+    background: rgb(12 18 17 / 0.5);
+  }
+
+  .mhero-toggle:focus-visible,
+  .mhero-cue:focus-visible {
+    outline: 2px solid var(--on-media);
+    outline-offset: 3px;
+  }
+
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #7fd6d3;
+    box-shadow: 0 0 0 0 rgb(127 214 211 / 0.6);
+  }
+
+  :global(.motion-paused) .dot {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px currentColor;
+  }
+
+  .mhero-cue {
+    display: none;
+  }
+
+  @media (min-width: 861px) {
+    .mhero-cue {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+    }
+    .cue-line {
+      width: 1px;
+      height: 28px;
+      background: linear-gradient(to bottom, var(--on-media) 50%, rgb(246 243 238 / 0.25) 50%);
+      background-size: 100% 200%;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .dot {
+      animation: pulse 2.4s var(--ease-out) infinite;
+    }
+    :global(.motion-paused) .dot {
+      animation: none;
+    }
+    .cue-line {
+      animation: cue 2.2s var(--ease-arch) infinite;
+    }
+    .mhero-media > picture {
+      animation: settle 2.8s var(--ease-out) both;
+    }
+    .mhero-content :global(h1 .line > span) {
+      animation: rise 1.1s var(--ease-out) 0.1s both;
+    }
+    .mhero-content :global(h1 .line + .line > span) {
+      animation-delay: 0.22s;
+    }
+    .mhero-content > :global(:not(h1)) {
+      animation: fade 1s var(--ease-out) 0.55s both;
+    }
+  }
+
+  .mhero-content :global(h1 .line) {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.06em;
+  }
+
+  .mhero-content :global(h1 .line > span) {
+    display: inline-block;
+  }
+
+  @keyframes pulse {
+    70% {
+      box-shadow: 0 0 0 0.45rem rgb(127 214 211 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(127 214 211 / 0);
+    }
+  }
+  @keyframes cue {
+    from {
+      background-position: 0 100%;
+    }
+    to {
+      background-position: 0 -100%;
+    }
+  }
+  @keyframes settle {
+    from {
+      transform: scale(1.06);
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(105%);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+</style>

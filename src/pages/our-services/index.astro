@@ -1,0 +1,111 @@
+---
+import Base from '../../layouts/Base.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import InquiryBand from '../../components/InquiryBand.astro';
+import { services } from '../../data/services';
+---
+
+<Base
+  title="Our services"
+  description="Arrangements, wedding decoration, corporate flowers, house guest flowers and luxury hotel flowers from The Flower Studio TCI at Ports of Call, Grace Bay."
+>
+  <section class="intro wrap" aria-labelledby="services-title">
+    <h1 id="services-title">Our services</h1>
+    <div class="intro-copy">
+      <p class="lede">
+        From a single arrangement to the flowers for a wedding or a hotel, every design is composed around you and your
+        occasion. Choose a service to see it in full.
+      </p>
+      <p class="caption">The films on this page are concepts generated for this design. The studio’s own work is in the gallery.</p>
+    </div>
+  </section>
+
+  <section class="wrap listing" aria-label="Services">
+    <ul class="cards">
+      {
+        services.map((s, i) => (
+          <li class:list={{ 'is-lead': i === 0 }} data-reveal style={`--reveal-delay: ${(i % 2) * 90}`}>
+            <ServiceCard
+              service={s}
+              index={i}
+              heading="h2"
+              eager={i === 0}
+              sizes={i === 0 ? '(min-width: 1440px) 1340px, 94vw' : '(min-width: 900px) 46vw, 94vw'}
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <InquiryBand />
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 1.75rem;
+    padding-block: clamp(2.5rem, 7vw, 6rem) clamp(2.5rem, 5vw, 4.5rem);
+  }
+
+  .intro h1 {
+    font-size: var(--step-6);
+  }
+
+  .intro-copy {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .intro {
+      grid-template-columns: 6fr 5fr;
+      align-items: end;
+      gap: 4rem;
+    }
+  }
+
+  .listing {
+    padding-bottom: var(--section);
+  }
+
+  .cards {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  }
+
+  .cards > li {
+    display: grid;
+  }
+
+  .cards :global(.scard) {
+    aspect-ratio: 4 / 5;
+    scroll-margin-top: 6rem;
+  }
+
+  @media (min-width: 640px) {
+    .cards :global(.scard) {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .cards > li.is-lead {
+      grid-column: 1 / -1;
+    }
+    .cards > li.is-lead :global(.scard) {
+      aspect-ratio: 21 / 9;
+    }
+    .cards > li.is-lead :global(.scard-title) {
+      font-size: var(--step-5);
+    }
+    .cards :global(.scard) {
+      aspect-ratio: 5 / 4;
+    }
+  }
+</style>

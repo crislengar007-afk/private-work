@@ -189,3 +189,9 @@ These notes record how the preview interprets the spec. None of them changes the
 - **Spam protection.** The client side has a honeypot field and a minimum fill time. Server-side validation and spam filtering belong to whichever endpoint is chosen.
 - **Privacy.** The live site's "Privacy Policy" and "Terms of Use" are text without link destinations, so they are omitted. A real privacy notice is required before the form collects data through a backend.
 - **Images from the live site.** The 2020 uploads, which appear to be theme demo content, and the stock-looking slider images are not used. See CONTENT_MAP.md.
+- **Motion round (owner request).** The owner asked for moving flowers, full-screen video, interactive pages and a page per service category, and chose service categories.
+  - **New pages:** each service now has its own page (`/our-services/<id>/`) with a full-screen concept film, the studio's wording, the questions the form will ask, real portfolio photographs and the other services.
+  - **Home:** opens on a full-screen film, with a separately composed tall film for phones.
+  - **Portfolio honesty:** event pages say plainly that the published portfolio shows arrangements, not event work.
+  - **Real photographs with motion:** with the owner's approval, three real photographs have gentle motion added. Each is labelled "Motion added digitally", with a switch in the viewer to show the still.
+  - **Credits:** 126.75 of the 130 approved. Details are in ASSET_MANIFEST.md.

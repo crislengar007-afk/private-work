@@ -6,6 +6,11 @@ const pages = [
   { path: '/gallery/', title: /^Gallery \| The Flower Studio TCI$/ },
   { path: '/our-services/', title: /^Our services \| The Flower Studio TCI$/ },
   { path: '/contact/', title: /^Contact \| The Flower Studio TCI$/ },
+  { path: '/our-services/arrangements/', title: /^Arrangements \| The Flower Studio TCI$/ },
+  { path: '/our-services/weddings/', title: /^Wedding decoration \| The Flower Studio TCI$/ },
+  { path: '/our-services/corporate/', title: /^Corporate flowers \| The Flower Studio TCI$/ },
+  { path: '/our-services/house-guests/', title: /^House guest flowers \| The Flower Studio TCI$/ },
+  { path: '/our-services/hotels/', title: /^Luxury hotel flowers \| The Flower Studio TCI$/ },
 ];
 
 function collectErrors(page: Page) {
@@ -218,8 +223,8 @@ test.describe('enquiry', () => {
   });
 
   test('a service link pre-selects the service, and event services show event questions', async ({ page }) => {
-    await page.goto('/our-services/');
-    await page.getByRole('link', { name: /Enquire about wedding decoration/ }).click();
+    await page.goto('/our-services/weddings/');
+    await page.getByRole('link', { name: /Enquire about wedding decoration/ }).first().click();
     await expect(page).toHaveURL(/\/contact\/\?service=weddings$/);
     await expect(page.getByLabel('Service', { exact: true })).toHaveValue('weddings');
     await expect(page.getByLabel('Venue or location')).toBeVisible();
@@ -243,6 +248,18 @@ test.describe('enquiry', () => {
     await expect(page.locator('[data-selection]')).toBeVisible();
     await page.goto('/contact/?service=weddings');
     await expect(page.locator('[data-selection]')).toBeHidden();
+  });
+
+  test('each service has its own page, reached from the services index', async ({ page }) => {
+    await page.goto('/our-services/');
+    await page.getByRole('link', { name: /House guest flowers/ }).click();
+    await expect(page).toHaveURL(/\/our-services\/house-guests\/$/);
+    await expect(page.locator('h1')).toContainText('House');
+    await expect(page.getByText('Concept film, generated for this design')).toBeVisible();
+    // The other four services are offered from the page.
+    await expect(page.locator('.more-list .scard')).toHaveCount(4);
+    await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Our services' }).click();
+    await expect(page).toHaveURL(/\/our-services\/$/);
   });
 
   test('the old /services/ route redirects to /our-services/', async ({ page }) => {
@@ -320,6 +337,79 @@ test.describe('enquiry', () => {
   });
 });
 
+test.describe('motion', () => {
+  const playing = (page: Page, selector: string) =>
+    page.waitForFunction((sel) => {
+      const v = document.querySelector<HTMLVideoElement>(sel);
+      return !!v && !v.paused && v.readyState >= 2;
+    }, selector);
+
+  test('the full-screen film plays after load, and one control pauses motion across pages', async ({ page }) => {
+    await page.goto('/');
+    await playing(page, '.mhero video');
+    const hero = page.locator('.mhero');
+    const box = await hero.boundingBox();
+    const viewport = page.viewportSize()!;
+    expect(box!.height).toBeGreaterThanOrEqual(viewport.height - 1);
+    await expect(hero).toHaveClass(/is-moving/);
+
+    const toggle = page.getByRole('button', { name: 'Pause motion' });
+    await toggle.click();
+    await expect(page.getByRole('button', { name: 'Play motion' })).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.$eval('.mhero video', (v: HTMLVideoElement) => v.paused)).toBe(true);
+
+    // The choice holds on the next page.
+    await page.goto('/our-services/weddings/');
+    await expect(page.getByRole('button', { name: 'Play motion' })).toBeVisible();
+    await page.waitForTimeout(800);
+    expect(await page.$$eval('video', (vs) => vs.filter((v) => !v.paused).length)).toBe(0);
+    await page.getByRole('button', { name: 'Play motion' }).click();
+    await playing(page, '.mhero video');
+  });
+
+  test('the occasions reel opens the hovered service and plays its film', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'hover is a desktop interaction; touch plays the centred card');
+    await page.goto('/');
+    const items = page.locator('.reel > li');
+    await items.first().scrollIntoViewIfNeeded();
+    await expect(items.first()).toHaveClass(/is-open/);
+    await playing(page, '.reel li:nth-child(1) video');
+    await items.nth(2).hover();
+    await expect(items.nth(2)).toHaveClass(/is-open/);
+    await expect(items.first()).not.toHaveClass(/is-open/);
+    await playing(page, '.reel li:nth-child(3) video');
+    await page.waitForFunction(() => document.querySelector<HTMLVideoElement>('.reel li:nth-child(1) video')!.paused);
+    // Service pages play a card while it is hovered.
+    await page.goto('/our-services/weddings/');
+    const card = page.locator('.more-list .scard').first();
+    await card.scrollIntoViewIfNeeded();
+    await card.hover();
+    await playing(page, '.more-list li:nth-child(1) video');
+  });
+
+  test('photographs with added motion are labelled, and the viewer can show the still', async ({ page, isMobile }) => {
+    await page.goto('/gallery/');
+    const moving = page.locator('.grid .item[data-id="img011"]');
+    await expect(moving.getByText('Motion added digitally')).toBeVisible();
+    await moving.locator('[data-open]').click();
+    const viewer = page.getByRole('dialog', { name: 'Photograph viewer' });
+    await expect(viewer.getByText('Motion added digitally to the studio’s photograph.')).toBeVisible();
+    await playing(page, '[data-viewer-video]');
+    await viewer.getByRole('button', { name: 'Show the still photograph' }).click();
+    await expect(page.locator('[data-viewer-video]')).toBeHidden();
+    await expect(viewer.locator('[data-img]')).toBeVisible();
+    await viewer.getByRole('button', { name: 'Show with motion' }).click();
+    await playing(page, '[data-viewer-video]');
+    // A photograph without a motion version carries no motion note.
+    // img008 (second) also moves; img002 (third) does not.
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expect(viewer.locator('[data-count]')).toHaveText(/^3 of/);
+    await expect(viewer.locator('[data-motion-note]')).toBeHidden();
+    if (!isMobile) await expect(viewer.getByRole('button', { name: 'Full screen' })).toBeVisible();
+  });
+});
+
 test.describe('reduced motion', () => {
   test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
@@ -330,8 +420,12 @@ test.describe('reduced motion', () => {
       els.filter((e) => getComputedStyle(e).opacity !== '1').length,
     );
     expect(hidden).toBe(0);
+    await page.waitForTimeout(800);
     const playing = await page.$$eval('video', (vs) => vs.filter((v) => !v.paused).length);
     expect(playing).toBe(0);
+    // No film is even downloaded.
+    expect(await page.locator('video source').count()).toBe(0);
+    await expect(page.getByRole('button', { name: 'Pause motion' })).toBeHidden();
 
     await page.goto('/gallery/');
     const filters = page.getByRole('group', { name: 'Filter by colour' });

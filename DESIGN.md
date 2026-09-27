@@ -70,7 +70,17 @@ Dark mode stays at 7.6:1 or above throughout.
 ## 5. Motion
 
 - **One authored moment:** on the Home hero, the arch opens upward (a clip-path rise over 1.6 s) while the headline lines rise from a mask. This is CSS only, so the content never depends on script.
-- **The loop (V1):** starts only after page load, on desktop, with motion allowed and Save-Data off. A "Pause motion" control is provided.
+- **Full-screen films:** Home and each service page open on a full-screen concept film (100svh) under a scrim, with the header light over it until the page scrolls.
+  - **Home:** V1 is the film on wider screens and V2, a tall recomposition, on phones.
+  - **Loading:** films start after page load, only with motion allowed and Save-Data off.
+  - **Pause control:** one "Pause motion" control, a pill with a live dot, pauses all motion across the visit.
+- **Occasions reel (Home):**
+  - **Layout:** on wide screens, five cards sit in a row. The open card grows to about three times the width of the others and plays its film; collapsed cards set their titles upright along the edge.
+  - **Opening:** hovering or focusing a card opens it.
+  - **Phones:** the reel becomes a swipe strip, and the centred card plays.
+- **Service cards elsewhere:** they play their film while hovered or focused, with a slow 1.04 zoom.
+- **Portfolio motion:** three real photographs have motion added. The clip fades in over the still while it is on screen, carries a "Motion added digitally" tag, and has a still/motion switch in the viewer.
+- **Full screen:** the gallery viewer has a full-screen button wherever the browser supports one.
 - **Supporting motion:**
   - Content fades up 16 px once as it enters the viewport.
   - Arched photographs settle into their frames.

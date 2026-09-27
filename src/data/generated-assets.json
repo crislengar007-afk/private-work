@@ -46,10 +46,10 @@
       "jobId": "6ab44b29-e8f7-4fe8-9d0a-b036a6597511",
       "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060319_6ab44b29-e8f7-4fe8-9d0a-b036a6597511.mp4",
       "size": [
-        1600,
-        904
+        1920,
+        1080
       ],
-      "placement": "Home hero loop, desktop only; still image under reduced motion, small screens and Save-Data",
+      "placement": "Home full-screen film (desktop and tablets); re-encoded at 1920 px with a cross-faded loop point",
       "alt": "",
       "status": "accepted"
     },
@@ -180,6 +180,286 @@
         "public/media/hero-loop.webm",
         "public/media/hero-loop.mp4"
       ]
+    },
+    {
+      "key": "s-arrangements-wide",
+      "id": "S1W",
+      "file": "src/assets/generated/s-arrangements-wide.jpg",
+      "kind": "image",
+      "tool": "Higgsfield outpaint_image to 16:9 from S1 (2 credits)",
+      "jobId": "5ad1f54d-0d98-490f-a8f2-f04b790e18b6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081120_5ad1f54d-0d98-490f-a8f2-f04b790e18b6.png",
+      "size": [
+        2752,
+        1536
+      ],
+      "placement": "Arrangements page hero poster; service card poster",
+      "alt": "A concept image of pink roses, white lilies and purple calla lilies in a clear glass vase on a limestone ledge, with shutter shadows on the wall.",
+      "status": "accepted"
+    },
+    {
+      "key": "s-weddings-wide",
+      "id": "S2W",
+      "file": "src/assets/generated/s-weddings-wide.jpg",
+      "kind": "image",
+      "tool": "Higgsfield outpaint_image to 16:9 from S2 (2 credits)",
+      "jobId": "921681d8-5751-4499-8be1-14e4bc9b6719",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_080632_921681d8-5751-4499-8be1-14e4bc9b6719.png",
+      "size": [
+        2752,
+        1536
+      ],
+      "placement": "Wedding decoration page hero poster; service card poster",
+      "alt": "A concept image of an open-air loggia set for a wedding: long linen tables with white floral centrepieces, candles and palms.",
+      "status": "accepted"
+    },
+    {
+      "key": "s-corporate-wide",
+      "id": "S3W",
+      "file": "src/assets/generated/s-corporate-wide.jpg",
+      "kind": "image",
+      "tool": "Higgsfield outpaint_image to 16:9 from S3 (2 credits)",
+      "jobId": "f1853e95-1dd3-4edc-bba0-0e7486349893",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081121_f1853e95-1dd3-4edc-bba0-0e7486349893.png",
+      "size": [
+        2752,
+        1536
+      ],
+      "placement": "Corporate flowers page hero poster; service card poster",
+      "alt": "A concept image of a tall arrangement of calla lilies, bird of paradise and monstera leaves on a limestone reception console.",
+      "status": "accepted"
+    },
+    {
+      "key": "s-hotels-wide",
+      "id": "S4W",
+      "file": "src/assets/generated/s-hotels-wide.jpg",
+      "kind": "image",
+      "tool": "Higgsfield outpaint_image to 16:9 from S4 (2 credits)",
+      "jobId": "a951a871-0234-40e2-8cad-d0df5baef16c",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081123_a951a871-0234-40e2-8cad-d0df5baef16c.png",
+      "size": [
+        2752,
+        1536
+      ],
+      "placement": "Luxury hotel flowers page hero poster; service card poster",
+      "alt": "A concept image of a hotel suite with a low arrangement of white roses, lilies and hydrangea on a limestone side table.",
+      "status": "accepted"
+    },
+    {
+      "key": "s-house-guests-wide",
+      "id": "S5",
+      "file": "src/assets/generated/s-house-guests-wide.jpg",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high), 16:9 (6.5 credits)",
+      "jobId": "51182449-e4c5-463d-9642-31b0f0abc391",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081119_51182449-e4c5-463d-9642-31b0f0abc391.png",
+      "size": [
+        2688,
+        1520
+      ],
+      "placement": "House guest flowers page hero poster; service card poster",
+      "alt": "A concept image of a villa entry with a welcome arrangement of blush roses and white lilies on a limestone console, the sea beyond open shutters.",
+      "status": "accepted",
+      "prompt": "Editorial interior photograph, wide 16:9. The entry of a light-filled Caribbean island villa prepared for arriving house guests: a generous welcome arrangement of white and blush garden roses, white lilies, pale pink snapdragons and soft green foliage in a low hand-thrown stone bowl on a pale limestone console table, centred in frame. Behind it, open white louvred doors reveal a soft turquoise sea and palm fronds, gently out of focus. Linen curtains, travertine floor, warm late-morning light with soft palm-leaf shadows across the wall. Calm, airy, refined, natural colour, no people, no text, no logos. Shot on medium format, 45mm, f/4, subtle film grain."
+    },
+    {
+      "key": "h2-tall",
+      "id": "H2T",
+      "file": "src/assets/generated/h2-tall.jpg",
+      "kind": "image",
+      "tool": "Higgsfield outpaint_image to 9:16 from H2 (2 credits)",
+      "jobId": "ad2f5e7d-4eb0-4e07-a238-b25ebf25ae66",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081125_ad2f5e7d-4eb0-4e07-a238-b25ebf25ae66.png",
+      "size": [
+        1536,
+        2752
+      ],
+      "placement": "Home full-screen hero poster on phones",
+      "alt": "A generous arrangement of white roses, lilies, hydrangea and snapdragons in a stone bowl on a limestone console, shutter shadows on the wall.",
+      "status": "accepted"
+    },
+    {
+      "key": "m-weddings",
+      "id": "F2",
+      "file": "public/media/m-weddings.mp4",
+      "sources": [
+        "public/media/m-weddings.webm",
+        "public/media/m-weddings.mp4"
+      ],
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = S2W; tail cross-faded into head for a seamless loop (14 credits)",
+      "jobId": "f9420a72-6a6e-4209-94e1-1407f7d51ede",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_080734_f9420a72-6a6e-4209-94e1-1407f7d51ede.mp4",
+      "size": [
+        1920,
+        1072
+      ],
+      "placement": "Wedding decoration page full-screen film; service card (test clip, approved before the batch)",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "m-arrangements",
+      "id": "F1",
+      "file": "public/media/m-arrangements.mp4",
+      "sources": [
+        "public/media/m-arrangements.webm",
+        "public/media/m-arrangements.mp4"
+      ],
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = S1W; tail cross-faded into head for a seamless loop (14 credits)",
+      "jobId": "328c1c00-d030-4301-8e81-21d521aa5752",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081404_328c1c00-d030-4301-8e81-21d521aa5752.mp4",
+      "size": [
+        1920,
+        1072
+      ],
+      "placement": "Arrangements page full-screen film; service card",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "m-corporate",
+      "id": "F3",
+      "file": "public/media/m-corporate.mp4",
+      "sources": [
+        "public/media/m-corporate.webm",
+        "public/media/m-corporate.mp4"
+      ],
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = S3W; tail cross-faded into head for a seamless loop (14 credits)",
+      "jobId": "1c74e1c4-2b51-4efd-8a11-69ad219446ac",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081404_1c74e1c4-2b51-4efd-8a11-69ad219446ac.mp4",
+      "size": [
+        1920,
+        1072
+      ],
+      "placement": "Corporate flowers page full-screen film; service card",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "m-hotels",
+      "id": "F4",
+      "file": "public/media/m-hotels.mp4",
+      "sources": [
+        "public/media/m-hotels.webm",
+        "public/media/m-hotels.mp4"
+      ],
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = S4W; tail cross-faded into head for a seamless loop (14 credits)",
+      "jobId": "31b85dbc-5699-4817-9b4a-bf0314416a5b",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081404_31b85dbc-5699-4817-9b4a-bf0314416a5b.mp4",
+      "size": [
+        1920,
+        1072
+      ],
+      "placement": "Luxury hotel flowers page full-screen film; service card",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "m-house-guests",
+      "id": "F5",
+      "file": "public/media/m-house-guests.mp4",
+      "sources": [
+        "public/media/m-house-guests.webm",
+        "public/media/m-house-guests.mp4"
+      ],
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = S5; tail cross-faded into head for a seamless loop (14 credits)",
+      "jobId": "2615eb17-5198-4e01-84cb-7f73993691bc",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081411_2615eb17-5198-4e01-84cb-7f73993691bc.mp4",
+      "size": [
+        1920,
+        1084
+      ],
+      "placement": "House guest flowers page full-screen film; service card",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "m-home-tall",
+      "id": "V2",
+      "file": "public/media/m-home-tall.mp4",
+      "sources": [
+        "public/media/m-home-tall.webm",
+        "public/media/m-home-tall.mp4"
+      ],
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = H2T; tail cross-faded into head for a seamless loop (14 credits)",
+      "jobId": "7b1a02e0-7276-4fe0-840e-4dcb7cd3b528",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081404_7b1a02e0-7276-4fe0-840e-4dcb7cd3b528.mp4",
+      "size": [
+        1080,
+        1936
+      ],
+      "placement": "Home full-screen film on phones",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "rm-img011",
+      "id": "RM-img011",
+      "file": "public/media/rm-img011.mp4",
+      "sources": [
+        "public/media/rm-img011.webm",
+        "public/media/rm-img011.mp4"
+      ],
+      "kind": "video",
+      "provenance": "real_portfolio_motion_added",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 5 s, silent), start and end frame = the studio photograph img011 (imported from theflowerstudiotci.com); prompt asks to preserve the arrangement exactly and add only subtle motion (8.75 credits)",
+      "jobId": "f04ffac6-3838-4784-b13a-0d48363f96d1",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081136_f04ffac6-3838-4784-b13a-0d48363f96d1.mp4",
+      "size": [
+        720,
+        1280
+      ],
+      "placement": "Over the studio photograph img011 in the gallery and Home; always labelled \"Motion added digitally\"",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "rm-img008",
+      "id": "RM-img008",
+      "file": "public/media/rm-img008.mp4",
+      "sources": [
+        "public/media/rm-img008.webm",
+        "public/media/rm-img008.mp4"
+      ],
+      "kind": "video",
+      "provenance": "real_portfolio_motion_added",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 5 s, silent), start and end frame = the studio photograph img008 (imported from theflowerstudiotci.com); prompt asks to preserve the arrangement exactly and add only subtle motion (8.75 credits)",
+      "jobId": "be98c025-6b33-410d-9032-22c826faf2d6",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081135_be98c025-6b33-410d-9032-22c826faf2d6.mp4",
+      "size": [
+        720,
+        720
+      ],
+      "placement": "Over the studio photograph img008 in the gallery and Home; always labelled \"Motion added digitally\"",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "rm-img015",
+      "id": "RM-img015",
+      "file": "public/media/rm-img015.mp4",
+      "sources": [
+        "public/media/rm-img015.webm",
+        "public/media/rm-img015.mp4"
+      ],
+      "kind": "video",
+      "provenance": "real_portfolio_motion_added",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 5 s, silent), start and end frame = the studio photograph img015 (imported from theflowerstudiotci.com); prompt asks to preserve the arrangement exactly and add only subtle motion (8.75 credits)",
+      "jobId": "d840196f-306d-4acc-b181-b981b6bb0687",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_081136_d840196f-306d-4acc-b181-b981b6bb0687.mp4",
+      "size": [
+        720,
+        720
+      ],
+      "placement": "Over the studio photograph img015 in the gallery and Home; always labelled \"Motion added digitally\"",
+      "alt": "",
+      "status": "accepted"
     }
   ]
 }

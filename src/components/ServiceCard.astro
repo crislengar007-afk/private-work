@@ -1,0 +1,182 @@
+---
+/**
+ * A service entry point: the service's concept film plays while the card is
+ * hovered or focused (or, on touch screens, while it is centred in view).
+ * The still poster is the first frame of that film.
+ */
+import { Picture } from 'astro:assets';
+import Icon from './Icon.astro';
+import type { Service } from '../data/services';
+import { serviceFilm, decor } from '../data/decor';
+import { galleryItems } from '../data/gallery';
+
+interface Props {
+  service: Service;
+  index: number;
+  sizes: string;
+  heading?: 'h2' | 'h3';
+  eager?: boolean;
+  class?: string;
+  /** hover: plays while hovered or focused; open: its container decides. */
+  motion?: 'hover' | 'open';
+}
+
+const { service, index, sizes, heading: Heading = 'h3', eager = false, class: className, motion = 'hover' } = Astro.props;
+const f = serviceFilm(service.campaign);
+const fallback = decor(`s-${service.campaign}`) ?? { image: galleryItems[0].image, alt: galleryItems[0].alt };
+const poster = f?.poster ?? fallback;
+const number = String(index + 1).padStart(2, '0');
+---
+
+<a
+  class:list={['scard', className]}
+  href={`/our-services/${service.id}/`}
+  id={service.id}
+  data-motion-root
+  style={`--focus: ${service.focus}`}
+>
+  <span class="scard-media">
+    <Picture
+      src={poster.image}
+      alt=""
+      widths={[480, 800, 1200, 1600].filter((w) => w <= poster.image.width)}
+      sizes={sizes}
+      formats={['avif', 'webp']}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+    {
+      f && f.video.length > 0 && (
+        <video
+          data-motion={motion}
+          data-wide={JSON.stringify(f.video)}
+          muted
+          loop
+          playsinline
+          preload="none"
+          aria-hidden="true"
+          tabindex="-1"
+        />
+      )
+    }
+  </span>
+  <span class="scard-body">
+    <span class="scard-index" aria-hidden="true">{number}</span>
+    <Heading class="scard-title">{service.title}</Heading>
+    <span class="scard-summary">{service.summary}</span>
+    <span class="scard-go">Discover <Icon name="arrow-right" class="arrow" /></span>
+  </span>
+</a>
+
+<style>
+  .scard {
+    --on-media: #f6f3ee;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: end;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    background: #1b2322;
+    color: var(--on-media);
+    text-decoration: none;
+  }
+
+  .scard-media,
+  .scard-media :global(picture),
+  .scard-media :global(img),
+  .scard-media video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .scard-media {
+    z-index: -1;
+  }
+
+  .scard-media :global(img),
+  .scard-media video {
+    object-fit: cover;
+    object-position: var(--focus);
+    transition:
+      transform 1.2s var(--ease-out),
+      opacity 700ms var(--ease-out);
+  }
+
+  .scard-media video {
+    opacity: 0;
+  }
+
+  .scard:global(.is-moving) .scard-media video {
+    opacity: 1;
+  }
+
+  :global(.motion-paused) .scard-media video {
+    opacity: 0;
+  }
+
+  .scard-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(12 18 17 / 0.82) 0%, rgb(12 18 17 / 0.35) 45%, rgb(12 18 17 / 0.05) 75%);
+    transition: opacity var(--dur-2) var(--ease-out);
+  }
+
+  .scard:hover .scard-media :global(img),
+  .scard:hover .scard-media video,
+  .scard:focus-visible .scard-media :global(img),
+  .scard:focus-visible .scard-media video {
+    transform: scale(1.04);
+  }
+
+  .scard:focus-visible {
+    outline: 2px solid var(--lagoon);
+    outline-offset: 3px;
+  }
+
+  .scard-body {
+    display: grid;
+    gap: 0.5rem;
+    padding: clamp(1.1rem, 2.2vw, 1.75rem);
+    text-shadow: 0 1px 18px rgb(0 0 0 / 0.3);
+  }
+
+  .scard-index {
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    color: rgb(246 243 238 / 0.8);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scard-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--step-3);
+    line-height: 1.05;
+    color: var(--on-media);
+  }
+
+  .scard-summary {
+    max-width: 26rem;
+    color: rgb(246 243 238 / 0.88);
+    font-size: 0.9688rem;
+    line-height: 1.5;
+  }
+
+  .scard-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+
+  .scard:hover :global(.arrow) {
+    transform: translateX(0.25em);
+  }
+</style>

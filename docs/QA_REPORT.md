@@ -4,7 +4,26 @@
 **Branch:** `claude/flower-studio-tci-redesign-9qjl69`
 **Build:** `npm run build` (Astro 7, static output)
 
-## Summary
+## Motion round (full-screen films, service pages, interactive motion)
+
+| Area | Result |
+| --- | --- |
+| Automated tests | **62 passed**, 2 skipped by design: the mobile-menu test on desktop, and the hover-reel test on mobile. New tests cover the service pages, film playback after load, the site-wide pause persisting across pages, the reel opening the hovered service, the gallery's labelled motion with its still switch, the full-screen control, and no film downloads under reduced motion. |
+| Type check | `astro check`: 0 errors, 0 warnings |
+| Bugs found and fixed | Component `display` rules overrode the `hidden` attribute, so the Pause control showed under reduced motion and the viewer clip stayed visible. A global `[hidden]` rule fixed it. Collapsed reel cards clipped their titles; they now run upright along the edge. On phones, the outlined hero button lacked contrast over white flowers and is now solid enough. The Pause control no longer wraps. |
+| Visual review | 1440 and 390 px captures of Home, the reel, the Weddings, House guests and Arrangements pages, Services, and the viewer with motion |
+
+Performance on a local static server (the throttled profile is 375 px at DPR 3, 4× CPU, 150 ms and 1.6 Mbps):
+
+| Page | Throttled phone LCP | Desktop LCP | CLS (worst) |
+| --- | --- | --- | --- |
+| Home | 1.35 s (tall poster, AVIF) | 0.55 s | 0.013 |
+| Wedding decoration | 1.14 s | 0.50 s | 0.001 |
+| Gallery | 2.43 s | 0.12 s | 0.038 |
+
+All pages are within LCP ≤ 2.5 s and CLS ≤ 0.1. The Gallery on a throttled phone is the closest to the limit.
+
+## Summary (first build)
 
 | Area | Result |
 | --- | --- |

@@ -1,0 +1,374 @@
+---
+import Base from '../../layouts/Base.astro';
+import MotionHero from '../../components/MotionHero.astro';
+import MotionPhoto from '../../components/MotionPhoto.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import InquiryBand from '../../components/InquiryBand.astro';
+import Icon from '../../components/Icon.astro';
+import { services, type Service } from '../../data/services';
+import { galleryItems } from '../../data/gallery';
+import { serviceFilm, decor } from '../../data/decor';
+import { site } from '../../data/site';
+
+export function getStaticPaths() {
+  return services.map((service) => ({ params: { id: service.id }, props: { service } }));
+}
+
+interface Props {
+  service: Service;
+}
+
+const { service } = Astro.props;
+const index = services.findIndex((s) => s.id === service.id);
+const others = services.filter((s) => s.id !== service.id);
+const film = serviceFilm(service.campaign);
+const poster = film?.poster ?? decor(`s-${service.campaign}`)!;
+const og = poster.image;
+
+// Real photographs from the studio's portfolio, chosen for their style. The
+// published portfolio shows arrangements only, so event pages say so plainly.
+const picks: Record<string, string[]> = {
+  arrangements: ['img011', 'img008', 'img015', 'img002', 'img006', 'img010'],
+  weddings: ['img008', 'img012', 'img001', 'img016'],
+  corporate: ['img011', 'img014', 'img006', 'img005'],
+  'house-guests': ['img010', 'img004', 'img013', 'img007'],
+  hotels: ['img005', 'img001', 'img012', 'img015'],
+};
+const photos = (picks[service.id] ?? [])
+  .map((id) => galleryItems.find((g) => g.id === id))
+  .filter((g): g is NonNullable<typeof g> => !!g);
+
+const portfolioNote: Record<string, string> = {
+  arrangements: 'Arrangements from the studio’s portfolio. Open any of them in the gallery and enquire about something similar.',
+  'house-guests':
+    'Arrangements from the studio’s portfolio in the softer, welcoming palette that suits a guest room or entrance.',
+};
+const eventNoun: Record<string, string> = {
+  weddings: 'wedding',
+  corporate: 'corporate',
+  hotels: 'hotel',
+};
+const note =
+  portfolioNote[service.id] ??
+  `The studio’s published portfolio shows arrangements rather than ${eventNoun[service.id] ?? 'event'} work. These photographs show its style; ask the studio for examples of ${eventNoun[service.id] ?? 'event'} flowers.`;
+
+const questions =
+  service.questions === 'wedding'
+    ? 'The enquiry form also asks, optionally, for the venue and approximate guest numbers.'
+    : service.questions === 'hospitality'
+      ? 'The enquiry form also asks, optionally, for the location and whether you need flowers once or on an ongoing basis.'
+      : 'Tell the studio the occasion, the date and the feeling you have in mind.';
+
+const { contact } = site;
+const tel = (n: string) => `tel:${n.replace(/[^+\d]/g, '')}`;
+const [first, ...rest] = service.title.split(' ');
+---
+
+<Base
+  title={service.title}
+  description={`${service.title} from The Flower Studio TCI at Ports of Call, Grace Bay: ${service.summary}`}
+  image={og.src}
+  overlay
+>
+  <MotionHero
+    wide={poster.image}
+    alt={poster.alt}
+    wideVideo={film?.video ?? []}
+    focus={service.focus}
+    labelledby="service-title"
+    next="#details"
+  >
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/our-services/">Our services</a></li>
+        <li aria-current="page">{String(index + 1).padStart(2, '0')} of {String(services.length).padStart(2, '0')}</li>
+      </ol>
+    </nav>
+    <h1 id="service-title">
+      <span class="line"><span>{rest.length ? first : service.title}</span></span>
+      {rest.length > 0 && <span class="line"><span><em>{rest.join(' ')}</em></span></span>}
+    </h1>
+    {service.tagline ? <p class="lede">{service.tagline}</p> : <p class="lede">{service.summary}</p>}
+    <div class="hero-actions" data-dock-hide>
+      <a class="button" href={`/contact/?service=${service.id}`}>
+        Enquire about {service.title.toLowerCase()} <Icon name="arrow-right" class="arrow" />
+      </a>
+      <a class="button button--on-media" href="/gallery/">Explore the Gallery</a>
+    </div>
+  </MotionHero>
+
+  <section class="section details" id="details" aria-labelledby="details-title">
+    <div class="wrap details-grid">
+      <div class="details-lead" data-reveal>
+        <h2 id="details-title" class="visually-hidden">About {service.title.toLowerCase()}</h2>
+        <p class="statement">{service.description}</p>
+      </div>
+      <dl class="facts" data-reveal style="--reveal-delay: 120">
+        <div>
+          <dt class="label">For</dt>
+          <dd>{service.audience}</dd>
+        </div>
+        <div>
+          <dt class="label">Your enquiry</dt>
+          <dd>{questions}</dd>
+        </div>
+        <div>
+          <dt class="label">Talk to the studio</dt>
+          <dd class="contacts">
+            {contact.phone && <a href={tel(contact.phone)}>{contact.phone}</a>}
+            {contact.email && <a href={`mailto:${contact.email}`}>{contact.email}</a>}
+          </dd>
+        </div>
+        <div class="facts-cta">
+          <a class="button" href={`/contact/?service=${service.id}`}>
+            Enquire about {service.title.toLowerCase()} <Icon name="arrow-right" class="arrow" />
+          </a>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  {
+    photos.length > 0 && (
+      <section class="section portfolio" aria-labelledby="portfolio-title">
+        <div class="wrap">
+          <div class="portfolio-head" data-reveal>
+            <h2 id="portfolio-title">From the studio</h2>
+            <p class="caption">{note}</p>
+          </div>
+          <ul class="photos">
+            {photos.map((p, i) => (
+              <li data-reveal style={`--reveal-delay: ${(i % 3) * 80}`}>
+                <a href={`/gallery/?view=${p.id}`} class="photo-link" aria-label={`View in gallery: ${p.alt}`}>
+                  <MotionPhoto item={p} ratio={3 / 4} native={false} alt="" sizes="(min-width: 1024px) 22vw, (min-width: 640px) 30vw, 70vw" />
+                </a>
+                <p class="caption">{p.caption}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section more" aria-labelledby="more-title">
+    <div class="wrap">
+      <h2 id="more-title" data-reveal>More occasions</h2>
+      <ul class="more-list">
+        {
+          others.map((s) => (
+            <li data-reveal>
+              <ServiceCard service={s} index={services.indexOf(s)} sizes="(min-width: 1024px) 24vw, (min-width: 640px) 46vw, 80vw" />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <InquiryBand service={service.id} />
+</Base>
+
+<style>
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 0.5rem;
+    list-style: none;
+    padding: 0;
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    color: rgb(246 243 238 / 0.86);
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin-right: 0.5rem;
+    opacity: 0.6;
+  }
+
+  .crumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #f6f3ee;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Details ------------------------------------------------------------------ */
+  .details-grid {
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 6rem);
+  }
+
+  .statement {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: var(--step-4);
+    line-height: 1.15;
+    max-width: 22ch;
+    text-wrap: balance;
+  }
+
+  .facts {
+    display: grid;
+    gap: 1.5rem;
+    align-content: start;
+  }
+
+  .facts > div:not(.facts-cta) {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .facts dd {
+    color: var(--ink-soft);
+  }
+
+  .contacts {
+    display: grid;
+    justify-items: start;
+  }
+
+  .contacts a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+  }
+
+  .facts-cta {
+    padding-top: 0.5rem;
+  }
+
+  @media (min-width: 960px) {
+    .details-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      align-items: start;
+    }
+  }
+
+  /* Portfolio ---------------------------------------------------------------- */
+  .portfolio {
+    padding-top: 0;
+  }
+
+  .portfolio-head {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  .portfolio-head h2 {
+    font-size: var(--step-5);
+  }
+
+  .portfolio-head .caption {
+    max-width: 36rem;
+  }
+
+  @media (min-width: 1024px) {
+    .portfolio-head {
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+    }
+  }
+
+  .photos {
+    list-style: none;
+    padding: 0 var(--gutter) 0.75rem;
+    margin-inline: calc(-1 * var(--gutter));
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(70vw, 20rem);
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    align-items: start;
+  }
+
+  .photos > li {
+    display: grid;
+    gap: 0.6rem;
+    scroll-snap-align: start;
+  }
+
+  .photos > li:nth-child(even) {
+    margin-top: clamp(1.5rem, 4vw, 3.5rem);
+  }
+
+  .photo-link {
+    display: block;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  @media (min-width: 1024px) {
+    .photos {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-inline: 0;
+      padding: 0;
+      overflow: visible;
+    }
+    .photos:has(> li:nth-child(5)) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* More occasions ------------------------------------------------------------ */
+  .more {
+    background: var(--sand);
+  }
+
+  .more h2 {
+    font-size: var(--step-4);
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .more-list {
+    list-style: none;
+    padding: 0 var(--gutter) 0.75rem;
+    margin-inline: calc(-1 * var(--gutter));
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(80vw, 22rem);
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+  }
+
+  .more-list > li {
+    display: grid;
+    scroll-snap-align: start;
+  }
+
+  .more-list :global(.scard) {
+    aspect-ratio: 3 / 4;
+  }
+
+  .more-list :global(.scard-title) {
+    font-size: var(--step-2);
+  }
+
+  @media (min-width: 1024px) {
+    .more-list {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-inline: 0;
+      padding: 0;
+      overflow: visible;
+    }
+  }
+</style>

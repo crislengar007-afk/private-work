@@ -54,3 +54,19 @@ export function decorVideo(key: string): VideoSource[] {
 export function heroVideo(): string | undefined {
   return decorVideo('hero-loop').find((s) => s.type === 'video/mp4')?.src;
 }
+
+export interface Film {
+  poster: Decor;
+  video: VideoSource[];
+}
+
+/** A generated loop with the still it starts on (the poster). */
+export function film(posterKey: string, videoKey: string): Film | undefined {
+  const poster = decor(posterKey);
+  return poster ? { poster, video: decorVideo(videoKey) } : undefined;
+}
+
+/** The full-screen concept film for a service, with its wide poster. */
+export function serviceFilm(campaign?: string): Film | undefined {
+  return campaign ? film(`s-${campaign}-wide`, `m-${campaign}`) : undefined;
+}

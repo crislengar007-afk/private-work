@@ -14,9 +14,11 @@ interface Props {
   dock?: boolean;
   /** Emit LocalBusiness structured data (Home page). */
   business?: boolean;
+  /** The page opens with a full-screen film: the header starts light, over it. */
+  overlay?: boolean;
 }
 
-const { title, description, image, dock = true, business = false } = Astro.props;
+const { title, description, image, dock = true, business = false, overlay = false } = Astro.props;
 const fullTitle = title === site.name ? title : `${title} | ${site.name}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
 const ogImage = image ? new URL(image, Astro.site ?? site.url).href : undefined;
@@ -71,7 +73,7 @@ const jsonLd = business && {
     </script>
     <slot name="head" />
   </head>
-  <body>
+  <body class:list={{ 'overlay-hero': overlay }}>
     <a class="skip-link" href="#main">Skip to content</a>
     <Header />
     <main id="main" tabindex="-1">
@@ -79,6 +81,11 @@ const jsonLd = business && {
     </main>
     <Footer />
     {dock && <ContactDock />}
+
+    <script>
+      import { initMotion } from '../scripts/motion';
+      initMotion();
+    </script>
 
     <script>
       // Gentle entrance for content marked [data-reveal]; once per element.

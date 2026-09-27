@@ -1,7 +1,7 @@
 ---
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import Media from '../components/Media.astro';
+import MotionPhoto from '../components/MotionPhoto.astro';
 import Icon from '../components/Icon.astro';
 import InquiryBand from '../components/InquiryBand.astro';
 import { galleryItems, collections, collectionLabel } from '../data/gallery';
@@ -23,6 +23,7 @@ const viewerData = await Promise.all(
       height: item.height,
       src: variants[variants.length - 1].src,
       srcset: variants.map((v, i) => `${v.src} ${widths[i]}w`).join(', '),
+      motion: item.motion,
     };
   }),
 );
@@ -40,6 +41,10 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
       <p class="lede">
         Every photograph here is the studio’s own work. Open any arrangement to see it in full, then enquire about
         something similar for your occasion.
+      </p>
+      <p class="caption">
+        A few photographs move: that gentle motion was added digitally with Higgsfield and is labelled on each one. The
+        arrangements themselves are unchanged.
       </p>
     </div>
   </section>
@@ -76,12 +81,8 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
               aria-haspopup="dialog"
               aria-label={`View larger: ${item.alt}`}
             >
-              <Media
-                image={item.image}
-                alt={item.alt}
-                ratio={item.ratio}
-                native
-                zoom
+              <MotionPhoto
+                item={item}
                 sizes={item.ratio < 0.92 ? '(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw' : '(min-width: 640px) 512px, 90vw'}
                 eager={i < 2}
               />
@@ -102,9 +103,14 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     <h2 id="viewer-title" class="visually-hidden">Photograph viewer</h2>
     <div class="viewer-bar">
       <p class="viewer-count" data-count aria-live="polite"></p>
-      <button type="button" class="viewer-close" data-close autofocus>
-        Close <Icon name="x" />
-      </button>
+      <div class="viewer-tools">
+        <button type="button" class="viewer-tool" data-fullscreen aria-pressed="false" hidden>
+          <span data-fullscreen-label>Full screen</span>
+        </button>
+        <button type="button" class="viewer-close" data-close autofocus>
+          Close <Icon name="x" />
+        </button>
+      </div>
     </div>
 
     <div class="viewer-stage" data-stage>
@@ -113,6 +119,7 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
       </button>
       <figure class="viewer-figure" data-figure>
         <img data-img alt="" decoding="async" hidden />
+        <video data-viewer-video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" hidden></video>
       </figure>
       <button type="button" class="viewer-nav next" data-next aria-label="Next photograph">
         <Icon name="arrow-right" />
@@ -120,7 +127,13 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     </div>
 
     <div class="viewer-foot">
-      <p class="viewer-caption" data-caption></p>
+      <div class="viewer-text">
+        <p class="viewer-caption" data-caption></p>
+        <p class="viewer-motion" data-motion-note hidden>
+          <span>Motion added digitally to the studio’s photograph.</span>
+          <button type="button" class="viewer-motion-toggle" data-motion-switch aria-pressed="true">Show the still photograph</button>
+        </p>
+      </div>
       <a class="link viewer-enquire" data-enquire href="/contact/">
         Enquire about this arrangement <Icon name="arrow-right" class="arrow" />
       </a>
@@ -360,6 +373,59 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     color: #b8c0b8;
   }
 
+  .viewer-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 1.25rem;
+  }
+
+  .viewer-tool,
+  .viewer-motion-toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 1rem;
+    border: 1px solid rgb(236 233 224 / 0.3);
+    border-radius: var(--pill);
+    background: transparent;
+    color: inherit;
+    font-size: 0.875rem;
+    transition: border-color var(--dur-1) var(--ease-out);
+  }
+
+  .viewer-tool:hover,
+  .viewer-motion-toggle:hover {
+    border-color: #ece9e0;
+  }
+
+  .viewer-text {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .viewer-motion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.8125rem;
+    color: #b8c0b8;
+  }
+
+  .viewer-motion[hidden] {
+    display: none;
+  }
+
+  .viewer-motion-toggle {
+    min-height: 36px;
+    padding: 0 0.8rem;
+    font-size: 0.8125rem;
+  }
+
+  .viewer:fullscreen {
+    background: #0b0f0e;
+  }
+
   .viewer-close {
     display: inline-flex;
     align-items: center;
@@ -405,7 +471,24 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
       transform 520ms var(--ease-out);
   }
 
-  .viewer-figure.is-changing img {
+  .viewer-figure video {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity 600ms var(--ease-out);
+    pointer-events: none;
+  }
+
+  .viewer-figure video.is-playing {
+    opacity: 1;
+  }
+
+  .viewer-figure.is-changing img,
+  .viewer-figure.is-changing video {
     opacity: 0;
   }
 

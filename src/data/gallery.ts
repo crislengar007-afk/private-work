@@ -1,5 +1,6 @@
 import type { ImageMetadata } from 'astro';
 import manifest from './gallery.json';
+import { decorVideo, type VideoSource } from './decor';
 
 /**
  * Portfolio photographs: the studio's own work, imported from
@@ -25,6 +26,8 @@ interface ManifestEntry {
   credit?: string;
   status: 'published' | 'draft';
   sourceUrl: string;
+  /** Key of a Higgsfield clip made from this photograph (motion added digitally). */
+  motion?: string;
 }
 
 export interface GalleryItem {
@@ -39,6 +42,8 @@ export interface GalleryItem {
   provenance: Provenance;
   credit?: string;
   sourceUrl: string;
+  /** The same photograph with gentle motion added digitally; always labelled. */
+  motion: VideoSource[];
 }
 
 const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/gallery/*.{jpg,jpeg,png,webp,avif}', {
@@ -64,6 +69,7 @@ export const galleryItems: GalleryItem[] = typed.items.flatMap((entry) => {
       provenance: entry.provenance,
       credit: entry.credit,
       sourceUrl: entry.sourceUrl,
+      motion: entry.motion ? decorVideo(entry.motion) : [],
     },
   ];
 });
@@ -84,3 +90,6 @@ export function collectionLabel(id?: string) {
 export function selectedWork(count = 5) {
   return galleryItems.slice(0, count);
 }
+
+/** Photographs that also have a labelled motion version. */
+export const inMotion = () => galleryItems.filter((g) => g.motion.length > 0);

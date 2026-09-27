@@ -1,6 +1,8 @@
 /**
  * Gallery behaviour: collection filters with FLIP transitions, and a
- * full-screen viewer with keyboard, swipe and history support.
+ * full-screen viewer with keyboard, swipe and history support. Photographs
+ * with a labelled motion version play it in the viewer, with a switch back to
+ * the still, and the viewer can take over the whole screen.
  *
  * State lives in the URL (?collection=…&view=…) so the browser's Back
  * button, reloads and returning from the Contact page restore both the
@@ -18,6 +20,7 @@ interface ViewerItem {
   height: number;
   src: string;
   srcset: string;
+  motion: { src: string; type: string }[];
 }
 
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -153,6 +156,69 @@ export function initGallery() {
   const count = viewer.querySelector<HTMLElement>('[data-count]')!;
   const enquire = viewer.querySelector<HTMLAnchorElement>('[data-enquire]')!;
   const stage = viewer.querySelector<HTMLElement>('[data-stage]')!;
+  const video = viewer.querySelector<HTMLVideoElement>('[data-viewer-video]')!;
+  const motionNote = viewer.querySelector<HTMLElement>('[data-motion-note]')!;
+  const motionSwitch = viewer.querySelector<HTMLButtonElement>('[data-motion-switch]')!;
+  const fullscreen = viewer.querySelector<HTMLButtonElement>('[data-fullscreen]')!;
+  const fullscreenLabel = viewer.querySelector<HTMLElement>('[data-fullscreen-label]')!;
+
+  // Motion in the viewer follows the site-wide pause and reduced-motion
+  // preference; the switch lets a visitor compare with the still photograph.
+  let showMotion = true;
+  const motionAllowed = () => !reduceMotion() && !document.documentElement.classList.contains('motion-paused');
+
+  function clearMotion() {
+    video.pause();
+    video.classList.remove('is-playing');
+    video.replaceChildren();
+    video.removeAttribute('src');
+    video.load();
+    video.hidden = true;
+  }
+
+  function setMotion(item: ViewerItem) {
+    clearMotion();
+    const has = item.motion.length > 0 && motionAllowed();
+    motionNote.hidden = !has;
+    if (!has) return;
+    motionSwitch.setAttribute('aria-pressed', String(showMotion));
+    motionSwitch.textContent = showMotion ? 'Show the still photograph' : 'Show with motion';
+    if (!showMotion) return;
+    for (const s of item.motion) {
+      const source = document.createElement('source');
+      source.src = s.src;
+      source.type = s.type;
+      video.append(source);
+    }
+    video.style.maxWidth = `min(100%, ${item.width}px)`;
+    video.style.maxHeight = `min(100%, ${item.height}px)`;
+    video.hidden = false;
+    video.load();
+    video.addEventListener('playing', () => video.classList.add('is-playing'), { once: true });
+    video.play().catch(() => {
+      /* Autoplay refused: the still photograph remains. */
+    });
+  }
+
+  motionSwitch.addEventListener('click', () => {
+    showMotion = !showMotion;
+    const item = byId.get(sequence()[index]);
+    if (item) setMotion(item);
+  });
+
+  // Full screen, where the browser allows it.
+  const canFullscreen = document.fullscreenEnabled && typeof viewer.requestFullscreen === 'function';
+  fullscreen.hidden = !canFullscreen;
+  const syncFullscreen = () => {
+    const on = document.fullscreenElement === viewer;
+    fullscreen.setAttribute('aria-pressed', String(on));
+    fullscreenLabel.textContent = on ? 'Exit full screen' : 'Full screen';
+  };
+  fullscreen.addEventListener('click', () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else viewer.requestFullscreen().catch(() => (fullscreen.hidden = true));
+  });
+  document.addEventListener('fullscreenchange', syncFullscreen);
 
   let index = -1;
   let opener: HTMLElement | null = null;
@@ -207,6 +273,7 @@ export function initGallery() {
     }
     if (my !== token) return;
 
+    setMotion(item);
     caption.textContent = describe(item);
     count.textContent = `${index + 1} of ${ids.length}`;
     enquire.href = `/contact/?piece=${encodeURIComponent(item.id)}`;
@@ -247,6 +314,8 @@ export function initGallery() {
 
   viewer.addEventListener('close', () => {
     document.documentElement.style.overflow = '';
+    clearMotion();
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     token++;
     const id = sequence()[index];
     if (pushedHistory && new URL(location.href).searchParams.has('view')) {

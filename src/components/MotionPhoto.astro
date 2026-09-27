@@ -1,0 +1,88 @@
+---
+/**
+ * A portfolio photograph, with its labelled motion version where one exists.
+ * The photograph is always rendered (and is what assistive technology reads);
+ * the clip fades in over it while it is on screen and motion is welcome.
+ */
+import Media from './Media.astro';
+import type { GalleryItem } from '../data/gallery';
+
+interface Props {
+  item: GalleryItem;
+  sizes: string;
+  ratio?: number;
+  eager?: boolean;
+  zoom?: boolean;
+  arch?: boolean;
+  /** Cap at the photograph's own width (default). Off where a layout crops it. */
+  native?: boolean;
+  alt?: string;
+}
+
+const { item, sizes, ratio, eager = false, zoom = true, arch = false, native = true, alt = item.alt } = Astro.props;
+const hasMotion = item.motion.length > 0;
+---
+
+{
+  hasMotion ? (
+    <div class:list={['mphoto', { 'is-arch': arch }]} data-motion-root style={native ? `max-width: ${item.width}px` : undefined}>
+      <Media image={item.image} alt={alt} ratio={ratio ?? item.ratio} native={native} arch={arch} zoom={zoom} sizes={sizes} eager={eager} />
+      <video
+        data-motion="inview"
+        data-wide={JSON.stringify(item.motion)}
+        muted
+        loop
+        playsinline
+        preload="none"
+        aria-hidden="true"
+        tabindex="-1"
+      />
+      <span class="mphoto-tag">Motion added digitally</span>
+    </div>
+  ) : (
+    <Media image={item.image} alt={alt} ratio={ratio ?? item.ratio} native={native} arch={arch} zoom={zoom} sizes={sizes} eager={eager} />
+  )
+}
+
+<style>
+  .mphoto {
+    position: relative;
+    width: 100%;
+  }
+
+  .mphoto > video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 900ms var(--ease-out);
+    pointer-events: none;
+  }
+
+  .mphoto.is-arch > video {
+    border-radius: var(--arch);
+  }
+
+  .mphoto:global(.is-moving) > video {
+    opacity: 1;
+  }
+
+  :global(.motion-paused) .mphoto > video {
+    opacity: 0;
+  }
+
+  .mphoto-tag {
+    position: absolute;
+    left: 0.6rem;
+    bottom: 0.6rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--pill);
+    background: rgb(12 18 17 / 0.62);
+    color: #f6f3ee;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+  }
+</style>

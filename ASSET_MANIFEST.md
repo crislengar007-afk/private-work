@@ -2,8 +2,9 @@
 
 This manifest records every image and video in the preview.
 
-- **Generated assets** are concept or decorative images only. They are never presented as client work, and each one is labelled "Concept image, generated for this design" where it appears.
+- **Generated assets** are concept or decorative images and films only. They are never presented as client work. Each is labelled where it appears: "Concept image, generated for this design" or "Concept film, generated for this design", and the service cards carry one shared note.
 - **Portfolio photographs** are the studio's own work, imported from the live gallery.
+- **Portfolio photographs with motion added** (three, see "Motion round" below) keep the real photograph underneath and are always labelled "Motion added digitally".
 
 The machine-readable source is `src/data/generated-assets.json` for generated media and `src/data/gallery.json` for the portfolio.
 
@@ -37,6 +38,63 @@ All seven outputs passed, so no retries were needed. For V1, the mean absolute d
 
 Flower varieties were chosen from those visible in the studio's own photographs: white and pink roses, lilies, hydrangea, snapdragons, calla lilies and bird of paradise. No studio photograph was used as a reference, so no generated image imitates a specific client piece.
 
+## Motion round (27 September 2026)
+
+Requested: moving flowers, full-screen video, interactive pages, one page per service, and a few real photographs animated with a label.
+
+| Item | Detail |
+| --- | --- |
+| Tool | Higgsfield MCP (authenticated, Max plan) |
+| Budget approved | 130 credits |
+| Credits used | 126.75 (balance 1480.5 before, 1353.75 after) |
+| Retries | None. One submission was held by a preset suggestion; it was declined and resubmitted unchanged, with no charge for the held attempt |
+
+The test step came first: the Weddings still was widened (S2W) and one film (F2) was made and reviewed before the rest were submitted.
+
+### Posters: the first frame of each film
+
+| ID | File | Made from | Tool and credits | Job |
+| --- | --- | --- | --- | --- |
+| S1W | `src/assets/generated/s-arrangements-wide.jpg` | S1 | outpaint_image to 16:9, 2 | `5ad1f54d-0d98-490f-a8f2-f04b790e18b6` |
+| S2W | `src/assets/generated/s-weddings-wide.jpg` | S2 | outpaint_image to 16:9, 2 | `921681d8-5751-4499-8be1-14e4bc9b6719` |
+| S3W | `src/assets/generated/s-corporate-wide.jpg` | S3 | outpaint_image to 16:9, 2 | `f1853e95-1dd3-4edc-bba0-0e7486349893` |
+| S4W | `src/assets/generated/s-hotels-wide.jpg` | S4 | outpaint_image to 16:9, 2 | `a951a871-0234-40e2-8cad-d0df5baef16c` |
+| S5 | `src/assets/generated/s-house-guests-wide.jpg` | New: villa entry, welcome arrangement, sea beyond open shutters | GPT Image 2, 16:9, 2k, high, 6.5 | `51182449-e4c5-463d-9642-31b0f0abc391` |
+| H2T | `src/assets/generated/h2-tall.jpg` | H2 | outpaint_image to 9:16, 2 | `ad2f5e7d-4eb0-4e07-a238-b25ebf25ae66` |
+
+### Concept films
+
+Each film is Kling 3.0 pro, 8 s, silent, 14 credits. The prompts ask for a locked-off camera and natural motion only: petals and leaves stirring, shadows drifting, curtains lifting. Start and end frames are the same poster. After download the last 0.6 s is cross-faded into the first, so the loop has no seam. Each film is encoded at 1920 px, or 1080 px for the tall one, as VP9 WebM and H.264 MP4 at 260–460 KB, with no audio.
+
+| ID | Files (`public/media/`) | Poster | Placement | Job |
+| --- | --- | --- | --- | --- |
+| F1 | `m-arrangements.webm/.mp4` | S1W | Arrangements page, full screen; service cards | `328c1c00-d030-4301-8e81-21d521aa5752` |
+| F2 | `m-weddings.webm/.mp4` | S2W | Wedding decoration page; service cards (the test clip) | `f9420a72-6a6e-4209-94e1-1407f7d51ede` |
+| F3 | `m-corporate.webm/.mp4` | S3W | Corporate flowers page; service cards | `1c74e1c4-2b51-4efd-8a11-69ad219446ac` |
+| F4 | `m-hotels.webm/.mp4` | S4W | Luxury hotel flowers page; service cards | `31b85dbc-5699-4817-9b4a-bf0314416a5b` |
+| F5 | `m-house-guests.webm/.mp4` | S5 | House guest flowers page; service cards | `2615eb17-5198-4e01-84cb-7f73993691bc` |
+| V2 | `m-home-tall.webm/.mp4` | H2T | Home, full screen on phones | `7b1a02e0-7276-4fe0-840e-4dcb7cd3b528` |
+| V1 | `v1-loop.webm/.mp4` | H1 | Home, full screen on wider screens. Re-encoded this round at 1920 px from the original output with the same cross-fade; no new generation | `6ab44b29-e8f7-4fe8-9d0a-b036a6597511` |
+
+### The studio's photographs with motion added
+
+These three are Kling 3.0 pro, 5 s, silent, 8.75 credits each. Each started and ended on the studio's own photograph, imported from the live site. The prompt asked to preserve the flowers, colours, vase and background exactly and to add only subtle petal and leaf movement.
+
+A frame-by-frame review against the originals found no new or altered flowers. The photograph is always rendered underneath and is what the alt text describes. The clip is labelled "Motion added digitally" on the tile, and in the viewer as "Motion added digitally to the studio's photograph.", where a switch shows the still. Clips are encoded at 720 px, 50–240 KB.
+
+| Photograph | Files (`public/media/`) | Placement | Job |
+| --- | --- | --- | --- |
+| img011 | `rm-img011.webm/.mp4` (720×1280) | Gallery, Home "From the studio", Arrangements and Corporate pages | `f04ffac6-3838-4784-b13a-0d48363f96d1` |
+| img008 | `rm-img008.webm/.mp4` (720×720) | Gallery, Home, Arrangements and Weddings pages | `be98c025-6b33-410d-9032-22c826faf2d6` |
+| img015 | `rm-img015.webm/.mp4` (720×720) | Gallery, Home, Arrangements and Hotels pages | `d840196f-306d-4acc-b181-b981b6bb0687` |
+
+### Playback rules
+
+- Films load only after the page has loaded. The poster stays the largest paint.
+- Nothing loads under reduced motion or Save-Data.
+- One "Pause motion" control stops every clip and is remembered for the visit.
+- The Home film plays while it is on screen. Service cards play while hovered or focused; on touch screens they play while centred. The open card in the Home reel plays while the reel is in view.
+
 ## Generated assets in use
 
 ### H1: Home hero (desktop), video poster, social preview image
@@ -63,14 +121,14 @@ Flower varieties were chosen from those visible in the studio's own photographs:
 | Prompt (summary) | Portrait recomposition (not a crop) of H1: the same kind of arrangement fills the lower two-thirds, with calm plaster in the upper third; same light and palette. |
 | Provenance | `concept` |
 
-### V1: Home hero loop, desktop only; still image under reduced motion, small screens and Save-Data
+### V1: Home hero loop, full screen on wider screens (still image under reduced motion and Save-Data)
 
 | Field | Value |
 | --- | --- |
 | File | `public/media/v1-loop.mp4` and `public/media/v1-loop.webm` |
 | Tool | Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = H1 for a seamless loop |
 | Higgsfield job | `6ab44b29-e8f7-4fe8-9d0a-b036a6597511` |
-| Original output | 1600×904, [source file](https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060319_6ab44b29-e8f7-4fe8-9d0a-b036a6597511.mp4) |
+| Original output | 1912×1080, [source file](https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060319_6ab44b29-e8f7-4fe8-9d0a-b036a6597511.mp4). Served at 1920 px since the motion round |
 | Alt text | Decorative (aria-hidden); the still image carries the alt text |
 | Prompt (summary) | Silent website hero loop from H1 (start and end frame = H1): a very slow, restrained camera drift in and back; a faint tremor in snapdragon tips and greenery; same flowers, stems and vessel throughout; no cuts, zoom jumps, wind, new objects, people, text, logo or flicker. |
 | Provenance | `concept` |

@@ -28,8 +28,9 @@ maps each piece of content to its place in the preview.
 | `/our-services/` | `/our-services/` | Kept. `/services/` redirects to it |
 | `/gallery/` | `/gallery/` | Same |
 | `/contact/` | `/contact/` | Same |
+| — | `/our-services/arrangements/`, `/weddings/`, `/corporate/`, `/house-guests/`, `/hotels/` | New: one page per service, using the same five service texts |
 
-No redirects are needed for live URLs.
+No redirects are needed for live URLs. The live Services page used anchors on one page; the preview keeps each card's `id` on `/our-services/`, so an old anchor link still lands on the right service.
 
 ## Text
 

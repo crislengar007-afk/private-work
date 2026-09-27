@@ -105,6 +105,39 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     backdrop-filter: blur(12px) saturate(130%);
   }
 
+  /* Over a full-screen film, the resting header is light on the image. */
+  :global(.overlay-hero) .site-header:not(.is-floating) {
+    color: #f6f3ee;
+  }
+
+  :global(.overlay-hero) .site-header:not(.is-floating) .primary ul a[aria-current='page'] {
+    color: #bfe6e4;
+  }
+
+  :global(.overlay-hero) .site-header:not(.is-floating) :global(.logo .on-light) {
+    display: none;
+  }
+
+  :global(.overlay-hero) .site-header:not(.is-floating) :global(.logo .on-dark) {
+    display: block;
+  }
+
+  :global(.overlay-hero) .site-header:not(.is-floating) .header-cta {
+    background: rgb(246 243 238 / 0.14);
+    border-color: rgb(246 243 238 / 0.6);
+    color: #f6f3ee;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  :global(.overlay-hero) .site-header:not(.is-floating) .header-cta:hover {
+    background: rgb(246 243 238 / 0.28);
+  }
+
+  :global(.overlay-hero) .site-header:not(.is-floating) :focus-visible {
+    outline-color: #f6f3ee;
+  }
+
   @media (prefers-reduced-transparency: reduce) {
     .site-header.is-floating .bar {
       background: var(--stone);
