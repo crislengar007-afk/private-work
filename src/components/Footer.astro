@@ -12,7 +12,8 @@ const year = new Date().getFullYear();
     <div class="top">
       <div class="identity">
         <a href="/" class="home" aria-label="The Flower Studio TCI, home"><Wordmark size="large" /></a>
-        <p class="where">{site.location}, {site.region}</p>
+        <p class="where">{contact.address ?? `${site.location}, ${site.region}`}</p>
+        {contact.hours && <p class="hours">{contact.hours}</p>}
       </div>
 
       <nav aria-label="Footer">
@@ -29,7 +30,7 @@ const year = new Date().getFullYear();
       </nav>
 
       {
-        (contact.email || contact.phone || contact.instagram) && (
+        (contact.email || contact.phone || contact.instagram || contact.facebook) && (
           <ul class="direct" aria-label="Contact details">
             {contact.phone && (
               <li>
@@ -45,6 +46,13 @@ const year = new Date().getFullYear();
               <li>
                 <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} rel="noopener">
                   Instagram
+                </a>
+              </li>
+            )}
+            {contact.facebook && (
+              <li>
+                <a href={contact.facebook} rel="noopener">
+                  Facebook
                 </a>
               </li>
             )}
@@ -84,6 +92,11 @@ const year = new Date().getFullYear();
   .where {
     margin-top: 1rem;
     color: var(--ink-soft);
+  }
+  .hours {
+    margin-top: 0.25rem;
+    color: var(--ink-soft);
+    font-size: var(--step--1);
   }
   ul {
     list-style: none;

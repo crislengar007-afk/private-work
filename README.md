@@ -61,9 +61,11 @@ the real files are present.
    also saves text snapshots of the Home, Services, Contact and Gallery
    pages to `reference/` for fact-checking. Review any entry marked
    `altNeedsReview`.
-2. **Contact details.** Copy the phone number, email, WhatsApp number,
-   Instagram handle, address and hours from `reference/contact.txt` into
-   `src/data/site.ts`. Any value left as `null` is simply omitted.
+2. **Contact details.** The phone numbers, email, address, hours and
+   Facebook link in `src/data/site.ts` come from the search-engine index of
+   the site (see `reference/extracted-2026-09-27.md`). Confirm them against
+   `reference/contact.txt`, and add WhatsApp or Instagram if they exist.
+   Any value left as `null` is simply omitted.
 3. **Service wording.** Compare `src/data/services.ts` with
    `reference/services.txt` and adopt the studio's own descriptions.
 4. **Logo.** Save the studio's logo as `src/assets/brand/logo.svg` (or

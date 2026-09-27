@@ -3,7 +3,7 @@ import Icon from '../components/Icon.astro';
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Media from '../components/Media.astro';
-import { site, hasDirectContact } from '../data/site';
+import { site } from '../data/site';
 import { occasions, services } from '../data/services';
 import { galleryItems, collectionLabel } from '../data/gallery';
 import { decor } from '../data/decor';
@@ -44,67 +44,78 @@ const today = new Date().toISOString().slice(0, 10);
       </p>
 
       <div class="details">
-        {
-          hasDirectContact ? (
-            <dl>
-              {contact.phone && (
-                <div>
-                  <dt class="label">Telephone</dt>
-                  <dd>
-                    <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}>{contact.phone}</a>
-                  </dd>
-                </div>
-              )}
-              {contact.whatsapp && (
-                <div>
-                  <dt class="label">WhatsApp</dt>
-                  <dd>
-                    <a href={`https://wa.me/${contact.whatsapp}`} rel="noopener">
-                      Message the studio
-                    </a>
-                  </dd>
-                </div>
-              )}
-              {contact.email && (
-                <div>
-                  <dt class="label">Email</dt>
-                  <dd>
-                    <a href={`mailto:${contact.email}`}>{contact.email}</a>
-                  </dd>
-                </div>
-              )}
-              {contact.instagram && (
-                <div>
-                  <dt class="label">Instagram</dt>
-                  <dd>
-                    <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} rel="noopener">
-                      {contact.instagram}
-                    </a>
-                  </dd>
-                </div>
-              )}
+        <dl>
+          {
+            contact.phone && (
               <div>
-                <dt class="label">Studio</dt>
-                <dd>{contact.address ?? `${site.location}, ${site.region}`}</dd>
-              </div>
-              {contact.hours && (
-                <div>
-                  <dt class="label">Hours</dt>
-                  <dd>{contact.hours}</dd>
-                </div>
-              )}
-            </dl>
-          ) : (
-            <dl>
-              <div>
-                <dt class="label">Studio</dt>
+                <dt class="label">Telephone</dt>
                 <dd>
-                  {site.location}, {site.region}
+                  <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}>{contact.phone}</a>
+                  {contact.landline && (
+                    <>
+                      <br />
+                      <a href={`tel:${contact.landline.replace(/[^+\d]/g, '')}`}>{contact.landline}</a>
+                      <span class="muted"> (landline)</span>
+                    </>
+                  )}
                 </dd>
               </div>
-            </dl>
-          )
-        }
+            )
+          }
+          {
+            contact.whatsapp && (
+              <div>
+                <dt class="label">WhatsApp</dt>
+                <dd>
+                  <a href={`https://wa.me/${contact.whatsapp}`} rel="noopener">
+                    Message the studio
+                  </a>
+                </dd>
+              </div>
+            )
+          }
+          {
+            contact.email && (
+              <div>
+                <dt class="label">Email</dt>
+                <dd>
+                  <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                </dd>
+              </div>
+            )
+          }
+          <div>
+            <dt class="label">Studio</dt>
+            <dd>{contact.address ?? `${site.location}, ${site.region}`}</dd>
+          </div>
+          {
+            contact.hours && (
+              <div>
+                <dt class="label">Hours</dt>
+                <dd>{contact.hours}</dd>
+              </div>
+            )
+          }
+          {
+            (contact.instagram || contact.facebook) && (
+              <div>
+                <dt class="label">Follow</dt>
+                <dd class="social">
+                  {contact.instagram && (
+                    <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} rel="noopener">
+                      Instagram
+                    </a>
+                  )}
+                  {contact.facebook && (
+                    <a href={contact.facebook} rel="noopener">
+                      Facebook
+                    </a>
+                  )}
+                </dd>
+              </div>
+            )
+          }
+        </dl>
       </div>
 
       <figure class="orchid">
@@ -254,6 +265,16 @@ const today = new Date().toISOString().slice(0, 10);
 
   .details a:hover {
     color: var(--rose);
+  }
+
+  .details .muted {
+    color: var(--ink-soft);
+    font-size: var(--step-0);
+  }
+
+  .social {
+    display: flex;
+    gap: 1.5rem;
   }
 
   .orchid {

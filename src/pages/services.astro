@@ -77,8 +77,9 @@ const imageFor = (collection?: string) => galleryItems.find((g) => g.collection 
           <div class="studio-copy" data-reveal style="--reveal-delay: 120">
             <p class="lede">{studio.description}</p>
             <p class="where">
-              {site.location}, {site.region}
+              {site.location}, {site.area}
             </p>
+            {site.contact.hours && <p class="studio-hours">{site.contact.hours}</p>}
           </div>
         </div>
       </section>
@@ -211,6 +212,10 @@ const imageFor = (collection?: string) => galleryItems.find((g) => g.collection 
     font-family: var(--font-display);
     font-style: italic;
     font-size: var(--step-2);
+  }
+
+  .studio-hours {
+    color: var(--ink-soft);
   }
 
   @media (min-width: 900px) {
