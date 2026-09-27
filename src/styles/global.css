@@ -48,8 +48,11 @@
   --z-grain: 60;
 }
 
+/* Dark tokens follow the system setting unless a host page pins a theme
+   with data-theme on the root element. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
     --paper: #101612;
     --paper-2: #18201b;
     --ink: #ece9e0;
@@ -58,6 +61,17 @@
     --rule: rgb(236 233 224 / 0.18);
     --rule-strong: rgb(236 233 224 / 0.42);
   }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #101612;
+  --paper-2: #18201b;
+  --ink: #ece9e0;
+  --ink-soft: #aeb8af;
+  --rose: #e0a7af;
+  --rule: rgb(236 233 224 / 0.18);
+  --rule-strong: rgb(236 233 224 / 0.42);
 }
 
 /* Reset ------------------------------------------------------------------ */

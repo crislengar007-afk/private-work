@@ -128,6 +128,19 @@ test.describe('gallery', () => {
     await expect(thumbs.nth(1)).toBeFocused();
   });
 
+  test('viewer: controls are never covered by the photograph', async ({ page }) => {
+    await page.goto('/gallery/');
+    await page.locator('.grid [data-open]').first().click();
+    for (const name of ['Previous photograph', 'Next photograph', 'Close']) {
+      const hit = await page.getByRole('button', { name }).evaluate((btn) => {
+        const r = btn.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!top && btn.contains(top);
+      });
+      expect(hit, name).toBe(true);
+    }
+  });
+
   test('viewer: the Back button closes it without leaving the gallery', async ({ page }) => {
     await page.goto('/gallery/');
     await page.locator('.grid [data-open]').first().click();

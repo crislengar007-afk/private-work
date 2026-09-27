@@ -10,6 +10,7 @@ interface Piece {
   collection: string;
   thumb: string | null;
   ratio: number;
+  occasion: string;
 }
 
 type Field = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -94,8 +95,9 @@ export function initEnquiry() {
   // Pre-select the occasion when arriving from a service.
   const occasion = url.searchParams.get('occasion');
   const occasionSelect = form.querySelector<HTMLSelectElement>('select[name="occasion"]');
-  if (occasion && occasionSelect && Array.from(occasionSelect.options).some((o) => o.value === occasion)) {
-    occasionSelect.value = occasion;
+  const preset = occasion || selected?.occasion;
+  if (preset && occasionSelect && Array.from(occasionSelect.options).some((o) => o.value === preset)) {
+    occasionSelect.value = preset;
   }
 
   form.querySelector('[data-selection-remove]')?.addEventListener('click', () => {

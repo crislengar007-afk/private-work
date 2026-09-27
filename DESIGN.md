@@ -58,8 +58,9 @@ fashion magazines. Bodoni Moda's optical-size axis keeps hairlines sturdy at
 headline sizes. Geist is a neutral, highly legible grotesk that keeps body
 copy, captions and forms calm.
 
-- Display headlines use Bodoni Moda at weights 400 to 500, `opsz` 96, with
-  tracking of -0.02em. Emphasis comes from the italic of the same family.
+- Display headlines use Bodoni Moda at weight 400 with automatic optical
+  sizing, so hairlines stay sturdy at every size. Tracking is -0.02em, and
+  emphasis comes from the italic of the same family.
 - The scale is fluid:
   - `--step-6`: 3.25 to 7.5rem (hero only)
   - `--step-5`: 2.6 to 5rem
@@ -71,8 +72,8 @@ copy, captions and forms calm.
 - Body text uses Geist at 1rem to 1.0625rem with a line height of 1.65 and a
   measure of 60 to 66 characters or fewer.
 - Italic descenders use a line height of at least 1.1 on display type.
-- Small labels are Geist at 0.75rem with 0.14em uppercase tracking. They
-  appear on at most one of every three sections.
+- Small uppercase labels (Geist 0.75rem, 0.14em tracking) are only used as
+  field and definition labels. They are never eyebrows above headings.
 - No em dashes appear anywhere in visible copy.
 
 ## 3. Space and layout
@@ -116,8 +117,12 @@ of state.
 - **Easing:** `--ease-out: cubic-bezier(.22,1,.36,1)`,
   `--ease-inout: cubic-bezier(.65,0,.35,1)`. There is no linear easing on
   interface motion.
-- **Entrances:** content fades up 24px over 900ms, once per element, through
-  IntersectionObserver. There are no scroll listeners.
+- **Focal moment:** on the Home hero, the photograph is unveiled from below
+  with a rising clip-path over 1.5s while the headline lines rise from
+  behind a mask. This is CSS only, so content never depends on script.
+- **Entrances:** content blocks fade up 14px over 700ms, once each, through
+  IntersectionObserver. Photographs repeat the unveil motif with a short
+  clip-path reveal. There are no scroll listeners.
 - **The hero** plays a slow five-second loop, muted, with `playsinline` and
   a poster frame. It does not play under reduced motion, where the still
   image is shown instead.
@@ -133,6 +138,8 @@ of state.
   by the still image, and reveals are disabled.
 - There is no preloader, no custom cursor, no parallax, no marquee and no
   scroll-jacking.
+- **Icons:** Phosphor Light, inlined as SVG. Only one family and one weight
+  are used.
 
 ## 6. Responsive behaviour
 

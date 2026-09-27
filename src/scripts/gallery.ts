@@ -274,6 +274,16 @@ export function initGallery() {
     open(trigger.dataset.open!, trigger, true);
   });
 
+  // Remember the selection too, in case the query string is lost on the way.
+  enquire.addEventListener('click', () => {
+    const id = sequence()[index];
+    try {
+      if (id) sessionStorage.setItem('fs-enquiry-piece', id);
+    } catch {
+      /* Storage unavailable: the link still carries ?piece=. */
+    }
+  });
+
   viewer.querySelector('[data-close]')!.addEventListener('click', () => close());
   viewer.querySelector('[data-prev]')!.addEventListener('click', () => void show(index - 1, 'prev'));
   viewer.querySelector('[data-next]')!.addEventListener('click', () => void show(index + 1, 'next'));

@@ -4,7 +4,7 @@ import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Media from '../components/Media.astro';
 import { site, hasDirectContact } from '../data/site';
-import { occasions } from '../data/services';
+import { occasions, services } from '../data/services';
 import { galleryItems, collectionLabel } from '../data/gallery';
 import { decor } from '../data/decor';
 
@@ -22,6 +22,7 @@ const pieces = await Promise.all(
     id: item.id,
     label: item.caption ?? item.alt,
     collection: collectionLabel(item.collection) ?? '',
+    occasion: services.find((sv) => sv.collection && sv.collection === item.collection)?.occasion ?? '',
     thumb: item.image ? (await getImage({ src: item.image, width: 240, format: 'webp' })).src : null,
     ratio: item.ratio,
   })),
@@ -128,6 +129,14 @@ const today = new Date().toISOString().slice(0, 10);
       aria-labelledby="form-title"
     >
       <h2 id="form-title" class="form-title">Enquiry</h2>
+      {
+        mode === 'unavailable' && (
+          <p class="unavailable" role="note">
+            Online enquiries are not connected yet. You can still prepare your message here; the studio's direct contact
+            details will be listed on this page before it goes live.
+          </p>
+        )
+      }
 
       <div class="selection" data-selection hidden>
         <div class="selection-thumb" data-selection-thumb></div>
@@ -201,10 +210,6 @@ const today = new Date().toISOString().slice(0, 10);
           {
             mode === 'email' &&
               'This opens your email app with your enquiry written out and addressed to the studio. Nothing is sent until you send it there.'
-          }
-          {
-            mode === 'unavailable' &&
-              'Online enquiries are not connected yet. Please use the studio contact details once they are listed on this page.'
           }
         </p>
       </div>
@@ -386,6 +391,13 @@ const today = new Date().toISOString().slice(0, 10);
     gap: 1rem;
     justify-items: start;
     padding-top: 0.5rem;
+  }
+
+  .unavailable {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--rose);
+    color: var(--ink);
+    font-size: 0.9375rem;
   }
 
   .submit-note {

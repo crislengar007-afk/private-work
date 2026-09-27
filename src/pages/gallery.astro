@@ -53,8 +53,8 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     isPlaceholderGallery && (
       <div class="wrap">
         <p class="notice" role="note">
-          Portfolio photographs are being imported from the studio's current website. The frames below preview the
-          layout and interactions only; they are not work.
+          Photographs from the studio's current gallery are on their way. Until they arrive, these frames hold
+          their places.
         </p>
       </div>
     )
@@ -455,6 +455,7 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
   .viewer-pending {
     height: min(70svh, 100%);
     width: auto;
+    max-width: 100%;
     background: #1b241e;
     color: #b8c0b8;
   }
@@ -523,6 +524,10 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     .viewer-figure {
       grid-column: 1 / -1;
       grid-row: 1;
+      height: auto;
+      min-height: 0;
+      max-height: 100%;
+      overflow: hidden;
       padding: 0;
     }
     .viewer-nav {
