@@ -1,0 +1,270 @@
+---
+import Icon from '../components/Icon.astro';
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import InquiryBand from '../components/InquiryBand.astro';
+import { services } from '../data/services';
+import { galleryItems } from '../data/gallery';
+import { site } from '../data/site';
+
+const illustrated = services.filter((s) => s.collection);
+const studio = services.find((s) => !s.collection);
+const imageFor = (collection?: string) => galleryItems.find((g) => g.collection === collection);
+---
+
+<Base
+  title="Services"
+  description="Floral design for events and personal celebrations, and fresh blooms from The Flower Studio at Ports of Call, Turks and Caicos Islands."
+>
+  <section class="intro wrap" aria-labelledby="services-title">
+    <h1 id="services-title">Services</h1>
+    <p class="lede">
+      Floral design shaped around your occasion, from a single arrangement to the flowers for an entire event.
+    </p>
+  </section>
+
+  {
+    illustrated.map((service, i) => {
+      const item = imageFor(service.collection);
+      return (
+        <section
+          id={service.id}
+          class:list={['service', 'wrap', { 'is-reversed': i % 2 === 1 }]}
+          aria-labelledby={`${service.id}-title`}
+        >
+          <div class="service-media" data-reveal>
+            {item ? (
+              <a href={`/gallery/?view=${item.id}`} class="service-link" aria-label={`View in gallery: ${service.title}`}>
+                <Media
+                  image={item.image}
+                  alt={item.alt}
+                  ratio={i % 2 === 0 ? 4 / 5 : 3 / 4}
+                  sizes="(min-width: 1024px) 42vw, 100vw"
+                  zoom
+                  pendingLabel="Portfolio photograph pending import"
+                />
+              </a>
+            ) : (
+              <Media alt="" ratio={4 / 5} sizes="100vw" pendingLabel="Portfolio photograph pending import" />
+            )}
+          </div>
+          <div class="service-copy" data-reveal style="--reveal-delay: 120">
+            <h2 id={`${service.id}-title`}>{service.title}</h2>
+            <p class="lede">{service.description}</p>
+            <div class="service-actions">
+              <a class="link" href={`/contact/?occasion=${encodeURIComponent(service.occasion)}`}>
+                Enquire about {service.title.toLowerCase()} <Icon name="arrow-right" class="arrow" />
+              </a>
+              {service.collection && (
+                <a class="link muted" href={`/gallery/?collection=${service.collection}`}>
+                  See the work
+                </a>
+              )}
+            </div>
+          </div>
+        </section>
+      );
+    })
+  }
+
+  {
+    studio && (
+      <section id={studio.id} class="studio" aria-labelledby={`${studio.id}-title`}>
+        <div class="wrap studio-inner">
+          <h2 id={`${studio.id}-title`} data-reveal>
+            {studio.title}
+          </h2>
+          <div class="studio-copy" data-reveal style="--reveal-delay: 120">
+            <p class="lede">{studio.description}</p>
+            <p class="where">
+              {site.location}, {site.region}
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section begin wrap" aria-labelledby="begin-title">
+    <h2 id="begin-title" data-reveal>Beginning an enquiry</h2>
+    <dl class="begin-list">
+      <div data-reveal>
+        <dt>Share the essentials</dt>
+        <dd>The occasion, the date if you have one, and where the flowers will be.</dd>
+      </div>
+      <div data-reveal style="--reveal-delay: 90">
+        <dt>Bring a reference</dt>
+        <dd>
+          Open any photograph in the <a href="/gallery/">gallery</a> and choose
+          &ldquo;Enquire about this arrangement&rdquo; to include it.
+        </dd>
+      </div>
+      <div data-reveal style="--reveal-delay: 180">
+        <dt>Describe the feeling</dt>
+        <dd>Colours, mood and anything you would rather avoid. A few words are enough to begin.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <InquiryBand />
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 1.5rem;
+    padding-block: clamp(3rem, 8vw, 7rem) clamp(4rem, 9vw, 8rem);
+  }
+
+  .intro h1 {
+    font-size: var(--step-6);
+  }
+
+  @media (min-width: 1024px) {
+    .intro {
+      grid-template-columns: 7fr 5fr;
+      align-items: end;
+      gap: 4rem;
+    }
+    .intro .lede {
+      padding-bottom: 1rem;
+    }
+  }
+
+  .service {
+    display: grid;
+    gap: 2.5rem;
+    padding-bottom: var(--section);
+    scroll-margin-top: 6rem;
+  }
+
+  .service-link {
+    display: block;
+  }
+
+  .service-copy {
+    display: grid;
+    gap: 1.5rem;
+    align-content: center;
+    justify-items: start;
+  }
+
+  .service-copy h2 {
+    font-size: var(--step-5);
+  }
+
+  .service-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+  }
+
+  .muted {
+    color: var(--ink-soft);
+  }
+
+  @media (min-width: 900px) {
+    .service {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: clamp(1rem, 2vw, 2rem);
+      align-items: center;
+    }
+    .service-media {
+      grid-column: 1 / span 6;
+    }
+    .service-copy {
+      grid-column: 8 / span 5;
+    }
+    .is-reversed .service-media {
+      grid-column: 8 / span 5;
+      grid-row: 1;
+    }
+    .is-reversed .service-copy {
+      grid-column: 2 / span 5;
+      grid-row: 1;
+    }
+  }
+
+  .studio {
+    background: var(--paper-2);
+    padding-block: var(--section);
+    scroll-margin-top: 4rem;
+  }
+
+  .studio-inner {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .studio h2 {
+    font-size: var(--step-5);
+    max-width: 12ch;
+  }
+
+  .studio-copy {
+    display: grid;
+    gap: 1.5rem;
+    align-content: end;
+  }
+
+  .where {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-2);
+  }
+
+  @media (min-width: 900px) {
+    .studio-inner {
+      grid-template-columns: 6fr 5fr;
+      gap: 4rem;
+      align-items: end;
+    }
+  }
+
+  .begin {
+    display: grid;
+    gap: 3rem;
+  }
+
+  .begin h2 {
+    font-size: var(--step-4);
+    max-width: 12ch;
+  }
+
+  .begin-list {
+    display: grid;
+    gap: 2.25rem;
+  }
+
+  .begin-list div {
+    display: grid;
+    gap: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .begin-list dt {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.2;
+  }
+
+  .begin-list dd {
+    color: var(--ink-soft);
+    max-width: 30rem;
+  }
+
+  @media (min-width: 1024px) {
+    .begin {
+      grid-template-columns: 4fr 8fr;
+    }
+    .begin-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 3rem;
+    }
+    .begin-list div:first-child {
+      grid-column: 1 / -1;
+      max-width: 60%;
+    }
+  }
+</style>

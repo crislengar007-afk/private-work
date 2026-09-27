@@ -1,0 +1,64 @@
+---
+/**
+ * Typographic wordmark. If the studio's own logo file is added at
+ * src/assets/brand/logo.(svg|png|webp), it is used instead so the brand
+ * stays recognisable.
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  size?: 'default' | 'large';
+}
+const { size = 'default' } = Astro.props;
+
+const logos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/brand/logo.{svg,png,webp}', {
+  eager: true,
+});
+const logo = Object.values(logos)[0]?.default;
+---
+
+{
+  logo ? (
+    <Image src={logo} alt="The Flower Studio TCI" class:list={['logo', size]} height={size === 'large' ? 96 : 44} />
+  ) : (
+    <span class:list={['wordmark', size]}>
+      <span class="name">The Flower Studio</span>
+      <span class="tci">TCI</span>
+    </span>
+  )
+}
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5em;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .tci {
+    font-family: var(--font-text);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    color: var(--ink-soft);
+    transform: translateY(-0.2em);
+  }
+  .large {
+    font-size: clamp(2.2rem, 1.4rem + 3vw, 3.6rem);
+  }
+  .large .tci {
+    font-size: 0.8rem;
+  }
+  .logo {
+    width: auto;
+    height: 2.75rem;
+  }
+  .logo.large {
+    height: 6rem;
+  }
+</style>

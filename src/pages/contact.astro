@@ -1,0 +1,487 @@
+---
+import Icon from '../components/Icon.astro';
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import { site, hasDirectContact } from '../data/site';
+import { occasions } from '../data/services';
+import { galleryItems, collectionLabel } from '../data/gallery';
+import { decor } from '../data/decor';
+
+const orchid = decor('orchid-wall');
+const { contact } = site;
+
+// Optional backend. Set PUBLIC_FORM_ENDPOINT (see .env.example) to post
+// enquiries to a form service; otherwise the form composes an email.
+const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
+const mode = endpoint ? 'endpoint' : contact.email ? 'email' : 'unavailable';
+
+// Small index of gallery items so an enquiry can carry the selected photograph.
+const pieces = await Promise.all(
+  galleryItems.map(async (item) => ({
+    id: item.id,
+    label: item.caption ?? item.alt,
+    collection: collectionLabel(item.collection) ?? '',
+    thumb: item.image ? (await getImage({ src: item.image, width: 240, format: 'webp' })).src : null,
+    ratio: item.ratio,
+  })),
+);
+
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<Base
+  title="Contact"
+  description="Enquire about floral design for an event or personal celebration with The Flower Studio at Ports of Call, Turks and Caicos Islands."
+>
+  <section class="contact wrap" aria-labelledby="contact-title">
+    <div class="aside">
+      <h1 id="contact-title">Tell us about your <em>occasion.</em></h1>
+      <p class="lede">
+        Share the date, the setting and the feeling you have in mind. A photograph from the gallery helps the studio
+        understand your taste.
+      </p>
+
+      <div class="details">
+        {
+          hasDirectContact ? (
+            <dl>
+              {contact.phone && (
+                <div>
+                  <dt class="label">Telephone</dt>
+                  <dd>
+                    <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}>{contact.phone}</a>
+                  </dd>
+                </div>
+              )}
+              {contact.whatsapp && (
+                <div>
+                  <dt class="label">WhatsApp</dt>
+                  <dd>
+                    <a href={`https://wa.me/${contact.whatsapp}`} rel="noopener">
+                      Message the studio
+                    </a>
+                  </dd>
+                </div>
+              )}
+              {contact.email && (
+                <div>
+                  <dt class="label">Email</dt>
+                  <dd>
+                    <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                  </dd>
+                </div>
+              )}
+              {contact.instagram && (
+                <div>
+                  <dt class="label">Instagram</dt>
+                  <dd>
+                    <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} rel="noopener">
+                      {contact.instagram}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt class="label">Studio</dt>
+                <dd>{contact.address ?? `${site.location}, ${site.region}`}</dd>
+              </div>
+              {contact.hours && (
+                <div>
+                  <dt class="label">Hours</dt>
+                  <dd>{contact.hours}</dd>
+                </div>
+              )}
+            </dl>
+          ) : (
+            <dl>
+              <div>
+                <dt class="label">Studio</dt>
+                <dd>
+                  {site.location}, {site.region}
+                </dd>
+              </div>
+            </dl>
+          )
+        }
+      </div>
+
+      <figure class="orchid">
+        <Media
+          image={orchid?.image}
+          alt={orchid?.alt ?? ''}
+          ratio={2 / 3}
+          sizes="(min-width: 1024px) 22vw, 50vw"
+          pendingLabel="Image pending download"
+        />
+        {orchid && <figcaption class="caption">Atmospheric image, generated for this site.</figcaption>}
+      </figure>
+    </div>
+
+    <form
+      class="form"
+      novalidate
+      data-enquiry
+      data-mode={mode}
+      data-endpoint={endpoint || undefined}
+      data-email={contact.email ?? undefined}
+      aria-labelledby="form-title"
+    >
+      <h2 id="form-title" class="form-title">Enquiry</h2>
+
+      <div class="selection" data-selection hidden>
+        <div class="selection-thumb" data-selection-thumb></div>
+        <div class="selection-text">
+          <p class="label">Your selection</p>
+          <p class="selection-name" data-selection-name></p>
+          <p class="caption">
+            <a href="/gallery/" data-selection-view>View in gallery</a>
+            <span aria-hidden="true"> &middot; </span>
+            <button type="button" class="text-button" data-selection-remove>Remove</button>
+          </p>
+        </div>
+        <input type="hidden" name="piece" data-selection-input />
+      </div>
+
+      <div class="field">
+        <label for="f-name">Name</label>
+        <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="f-name-error" />
+        <p class="error" id="f-name-error" data-error-for="name"></p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="f-email-error" />
+          <p class="error" id="f-email-error" data-error-for="email"></p>
+        </div>
+        <div class="field">
+          <label for="f-phone">Telephone <span class="optional">(optional)</span></label>
+          <input id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="f-phone-error" />
+          <p class="error" id="f-phone-error" data-error-for="phone"></p>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-occasion">Occasion</label>
+          <select id="f-occasion" name="occasion" required aria-describedby="f-occasion-error">
+            <option value="">Choose one</option>
+            {occasions.map((o) => <option value={o}>{o}</option>)}
+          </select>
+          <p class="error" id="f-occasion-error" data-error-for="occasion"></p>
+        </div>
+        <div class="field">
+          <label for="f-date">Date <span class="optional">(optional)</span></label>
+          <input id="f-date" name="date" type="date" min={today} aria-describedby="f-date-error" />
+          <p class="error" id="f-date-error" data-error-for="date"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-message">Your message</label>
+        <textarea
+          id="f-message"
+          name="message"
+          rows="6"
+          required
+          minlength="10"
+          aria-describedby="f-message-hint f-message-error"></textarea>
+        <p class="hint" id="f-message-hint">Setting, colours, numbers of guests or anything else that helps.</p>
+        <p class="error" id="f-message-error" data-error-for="message"></p>
+      </div>
+
+      <div class="submit">
+        <button class="button" type="submit" data-submit disabled={mode === 'unavailable'}>
+          {mode === 'email' ? 'Compose email' : 'Send enquiry'}
+          <Icon name="arrow-right" class="arrow" />
+        </button>
+        <p class="caption submit-note" id="submit-note">
+          {mode === 'endpoint' && 'Your enquiry is sent directly to the studio.'}
+          {
+            mode === 'email' &&
+              'This opens your email app with your enquiry written out and addressed to the studio. Nothing is sent until you send it there.'
+          }
+          {
+            mode === 'unavailable' &&
+              'Online enquiries are not connected yet. Please use the studio contact details once they are listed on this page.'
+          }
+        </p>
+      </div>
+
+      <div class="status" data-status role="status" aria-live="polite" tabindex="-1"></div>
+    </form>
+  </section>
+
+  <script type="application/json" id="pieces-data" set:html={JSON.stringify(pieces)} />
+</Base>
+
+<style>
+  .contact {
+    display: grid;
+    gap: clamp(3rem, 8vw, 6rem);
+    padding-block: clamp(3rem, 8vw, 7rem) var(--section);
+  }
+
+  .aside {
+    display: grid;
+    gap: 2rem;
+    align-content: start;
+  }
+
+  h1 {
+    font-size: var(--step-5);
+  }
+
+  .details dl {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .details dd {
+    margin-top: 0.25rem;
+    font-size: var(--step-1);
+  }
+
+  .details a {
+    text-decoration-color: var(--rule-strong);
+  }
+
+  .details a:hover {
+    color: var(--rose);
+  }
+
+  .orchid {
+    width: min(100%, 18rem);
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 1024px) {
+    .contact {
+      grid-template-columns: 5fr 1fr 6fr;
+    }
+    .aside {
+      grid-column: 1;
+      position: sticky;
+      top: 6.5rem;
+    }
+    .form {
+      grid-column: 3;
+    }
+  }
+
+  /* Form -------------------------------------------------------------------- */
+  .form {
+    display: grid;
+    gap: 1.75rem;
+    align-content: start;
+  }
+
+  .form-title {
+    font-size: var(--step-3);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .field-row {
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .field-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+  }
+
+  label {
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+
+  .optional {
+    font-weight: 400;
+    color: var(--ink-soft);
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--paper) 70%, var(--paper-2));
+    color: var(--ink);
+    font-size: 1rem;
+    transition:
+      border-color var(--dur-1) var(--ease-out),
+      background-color var(--dur-1) var(--ease-out);
+  }
+
+  select {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 1.25rem) 55%,
+      calc(100% - 0.95rem) 55%;
+    background-size:
+      0.3rem 0.3rem,
+      0.3rem 0.3rem;
+    background-repeat: no-repeat;
+    padding-right: 2.5rem;
+  }
+
+  textarea {
+    min-height: 9rem;
+    resize: vertical;
+    line-height: 1.55;
+  }
+
+  input:hover,
+  select:hover,
+  textarea:hover {
+    border-color: var(--ink-soft);
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--rose);
+    outline-offset: 0;
+    border-color: var(--rose);
+    background: var(--paper);
+  }
+
+  [aria-invalid='true'] {
+    border-color: var(--rose);
+  }
+
+  .hint {
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+
+  .error {
+    font-size: var(--step--1);
+    font-weight: 500;
+    color: var(--rose);
+  }
+
+  .error:empty {
+    display: none;
+  }
+
+  .submit {
+    display: grid;
+    gap: 1rem;
+    justify-items: start;
+    padding-top: 0.5rem;
+  }
+
+  .submit-note {
+    max-width: 30rem;
+  }
+
+  .status:empty {
+    display: none;
+  }
+
+  .status {
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--rule-strong);
+    background: var(--paper-2);
+  }
+
+  .status[data-tone='error'] {
+    border-color: var(--rose);
+    color: var(--ink);
+  }
+
+  .status[data-tone='success'] {
+    border-color: var(--green);
+  }
+
+  .status :global(p + p) {
+    margin-top: 0.5rem;
+  }
+
+  .status:focus {
+    outline: none;
+  }
+
+  /* Selected gallery item ----------------------------------------------------- */
+  .selection {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 1.25rem;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+
+  .selection[hidden] {
+    display: none;
+  }
+
+  .selection-thumb :global(img),
+  .selection-thumb :global(.pending) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  .selection-thumb :global(.pending span) {
+    display: none;
+  }
+
+  .selection-name {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    line-height: 1.3;
+    margin-block: 0.2rem 0.35rem;
+  }
+
+  .text-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    text-decoration: underline;
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+    min-height: 44px;
+  }
+
+  .selection .caption a,
+  .text-button {
+    color: var(--ink);
+  }
+
+  .selection .caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 0.35rem;
+  }
+
+  .selection .caption a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+</style>
+
+<script>
+  import { initEnquiry } from '../scripts/contact';
+  initEnquiry();
+</script>

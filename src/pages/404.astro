@@ -1,0 +1,34 @@
+---
+import Icon from '../components/Icon.astro';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found" description="The page you were looking for could not be found.">
+  <section class="wrap missing" aria-labelledby="missing-title">
+    <h1 id="missing-title">This page has <em>moved on.</em></h1>
+    <p class="lede">The address may have changed when the site was redesigned.</p>
+    <div class="actions">
+      <a class="button" href="/gallery/">View the gallery <Icon name="arrow-right" class="arrow" /></a>
+      <a class="link" href="/">Home</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .missing {
+    display: grid;
+    gap: 1.5rem;
+    justify-items: start;
+    padding-block: clamp(5rem, 14vw, 11rem);
+  }
+  h1 {
+    font-size: var(--step-5);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    margin-top: 1rem;
+  }
+</style>

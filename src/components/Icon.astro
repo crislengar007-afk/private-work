@@ -1,0 +1,32 @@
+---
+/**
+ * Phosphor Light icons, inlined as SVG. One family and one weight site-wide.
+ */
+import arrowRight from '@phosphor-icons/core/assets/light/arrow-right-light.svg?raw';
+import arrowLeft from '@phosphor-icons/core/assets/light/arrow-left-light.svg?raw';
+import x from '@phosphor-icons/core/assets/light/x-light.svg?raw';
+
+const icons = { 'arrow-right': arrowRight, 'arrow-left': arrowLeft, x } as const;
+
+interface Props {
+  name: keyof typeof icons;
+  class?: string;
+}
+const { name, class: className } = Astro.props;
+const svg = icons[name].replace('<svg ', '<svg aria-hidden="true" focusable="false" width="1em" height="1em" ');
+---
+
+<span class:list={['icon', className]} set:html={svg} />
+
+<style>
+  .icon {
+    display: inline-flex;
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+  }
+  .icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+import Wordmark from './Wordmark.astro';
+import { nav, site } from '../data/site';
+import { isPlaceholderGallery } from '../data/gallery';
+
+const { contact } = site;
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="top">
+      <div class="identity">
+        <a href="/" class="home" aria-label="The Flower Studio TCI, home"><Wordmark size="large" /></a>
+        <p class="where">{site.location}, {site.region}</p>
+      </div>
+
+      <nav aria-label="Footer">
+        <ul>
+          <li><a href="/">Home</a></li>
+          {
+            nav.map((item) => (
+              <li>
+                <a href={item.href}>{item.label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      {
+        (contact.email || contact.phone || contact.instagram) && (
+          <ul class="direct" aria-label="Contact details">
+            {contact.phone && (
+              <li>
+                <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}>{contact.phone}</a>
+              </li>
+            )}
+            {contact.email && (
+              <li>
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
+              </li>
+            )}
+            {contact.instagram && (
+              <li>
+                <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} rel="noopener">
+                  Instagram
+                </a>
+              </li>
+            )}
+          </ul>
+        )
+      }
+    </div>
+
+    <div class="bottom">
+      <p>&copy; {year} {site.name}</p>
+      <p class="credit">
+        {
+          isPlaceholderGallery
+            ? 'Atmospheric images on this site are generated decoration. Portfolio photographs are awaiting import.'
+            : 'Gallery photographs show the studio’s own work. Atmospheric images elsewhere are generated decoration.'
+        }
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: clamp(4rem, 8vw, 7rem) 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  .top {
+    display: grid;
+    gap: 3rem;
+  }
+  .home {
+    text-decoration: none;
+  }
+  .where {
+    margin-top: 1rem;
+    color: var(--ink-soft);
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+  li a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+  li a:hover {
+    color: var(--rose);
+  }
+  .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    margin-top: clamp(3rem, 6vw, 5rem);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+  .credit {
+    max-width: 44rem;
+  }
+  @media (min-width: 900px) {
+    .top {
+      grid-template-columns: 6fr 3fr 3fr;
+      align-items: start;
+    }
+  }
+</style>

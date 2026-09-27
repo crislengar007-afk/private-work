@@ -1,0 +1,61 @@
+{
+  "note": "Decorative media generated with Higgsfield for The Floral Atelier concept. Not the studio's work; never used as portfolio items. Download with `npm run fetch:media`.",
+  "assets": [
+    {
+      "key": "hero-petals",
+      "file": "src/assets/generated/hero-petals.png",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "3da328df-6a20-4ad3-b910-53958b2c02ce",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_045335_3da328df-6a20-4ad3-b910-53958b2c02ce.png",
+      "size": [
+        2688,
+        1520
+      ],
+      "placement": "Home hero still and video poster",
+      "alt": "Close view of blush and ivory rose petals and a white orchid, crossed by soft palm-frond shadows."
+    },
+    {
+      "key": "atelier-table",
+      "file": "src/assets/generated/atelier-table.png",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "c6ef3e14-f0db-4937-a995-5ef985e27c7e",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_045335_c6ef3e14-f0db-4937-a995-5ef985e27c7e.png",
+      "size": [
+        1744,
+        2336
+      ],
+      "placement": "Home studio introduction, Services header",
+      "alt": "Loose rose stems, blush silk ribbon and floristry shears on a linen worktable in soft daylight."
+    },
+    {
+      "key": "orchid-wall",
+      "file": "src/assets/generated/orchid-wall.png",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "baa992c8-1868-4095-ae82-2caf025f20a9",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_045335_baa992c8-1868-4095-ae82-2caf025f20a9.png",
+      "size": [
+        1360,
+        2048
+      ],
+      "placement": "Contact page",
+      "alt": "A single white orchid stem in a bud vase against an ivory plaster wall with palm shadows."
+    },
+    {
+      "key": "hero-loop",
+      "file": "public/media/hero-loop.mp4",
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 5 s, silent), image-to-video from hero-petals",
+      "jobId": "d1cc8302-d7dd-4b6b-b422-d1898f27aaa5",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_045655_d1cc8302-d7dd-4b6b-b422-d1898f27aaa5.mp4",
+      "size": [
+        1920,
+        1080
+      ],
+      "placement": "Home hero loop (still image under reduced motion)",
+      "alt": ""
+    }
+  ]
+}

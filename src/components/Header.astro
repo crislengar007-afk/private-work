@@ -1,0 +1,312 @@
+---
+import Wordmark from './Wordmark.astro';
+import { nav } from '../data/site';
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || path.startsWith(href);
+---
+
+<div class="header-sentinel" data-header-sentinel aria-hidden="true"></div>
+<header class="site-header" data-header>
+  <div class="bar">
+    <a class="brand" href="/" aria-label="The Flower Studio TCI, home">
+      <Wordmark />
+    </a>
+
+    <nav class="primary" aria-label="Primary">
+      <ul>
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <button class="menu-toggle" type="button" aria-haspopup="dialog" aria-controls="site-menu" data-menu-open>
+      <span>Menu</span>
+      <span class="lines" aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+
+<dialog class="menu" id="site-menu" aria-label="Site menu" data-menu>
+  <div class="menu-top">
+    <a class="brand" href="/" aria-label="The Flower Studio TCI, home"><Wordmark /></a>
+    <button class="menu-close" type="button" data-menu-close autofocus>
+      <span>Close</span>
+      <span class="lines is-x" aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+  <nav aria-label="Menu">
+    <ul>
+      <li style="--i: 0"><a href="/" aria-current={path === '/' ? 'page' : undefined}>Home</a></li>
+      {
+        nav.map((item, i) => (
+          <li style={`--i: ${i + 1}`}>
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</dialog>
+
+<style>
+  .header-sentinel {
+    position: absolute;
+    top: 0;
+    height: 1px;
+    width: 1px;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    padding: 0.75rem var(--gutter) 0;
+    pointer-events: none;
+  }
+
+  .bar {
+    pointer-events: auto;
+    max-width: calc(var(--max) - 2 * var(--gutter));
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    min-height: 3.75rem;
+    padding: 0.5rem 0;
+    border: 1px solid transparent;
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      border-color var(--dur-2) var(--ease-out),
+      padding var(--dur-2) var(--ease-out);
+  }
+
+  /* Once the page scrolls, the bar settles into a quiet floating strip. */
+  .site-header.is-floating .bar {
+    padding-inline: 1.25rem;
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    border-color: var(--rule);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .site-header.is-floating .bar {
+      background: var(--paper);
+      backdrop-filter: none;
+    }
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  .primary ul {
+    display: flex;
+    gap: clamp(1.5rem, 3vw, 2.75rem);
+    list-style: none;
+    padding: 0;
+  }
+
+  .primary a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.9375rem;
+    font-weight: 450;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+  }
+
+  .primary a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.6rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  .primary a:hover::after,
+  .primary a[aria-current='page']::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .primary a[aria-current='page'] {
+    color: var(--rose);
+  }
+
+  .menu-toggle,
+  .menu-close {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 44px;
+    padding: 0 0.25rem;
+    border: 0;
+    background: none;
+    font-size: 0.9375rem;
+    font-weight: 450;
+  }
+
+  .lines {
+    position: relative;
+    width: 1.5rem;
+    height: 0.5rem;
+  }
+
+  .lines i {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: currentColor;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  .lines i:first-child {
+    top: 0;
+  }
+
+  .lines i:last-child {
+    bottom: 0;
+  }
+
+  .lines.is-x i:first-child {
+    transform: translateY(0.25rem) rotate(45deg);
+  }
+
+  .lines.is-x i:last-child {
+    transform: translateY(-0.25rem) rotate(-45deg);
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .primary {
+      display: none;
+    }
+    .menu-toggle {
+      display: inline-flex;
+    }
+  }
+
+  /* Mobile menu -------------------------------------------------------- */
+
+  .menu {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0.75rem var(--gutter) 2.5rem;
+    border: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .menu[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .menu::backdrop {
+    background: var(--paper);
+  }
+
+  .menu-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3.75rem;
+    padding-block: 0.5rem;
+  }
+
+  .menu nav {
+    margin-top: auto;
+  }
+
+  .menu ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .menu li a {
+    display: block;
+    padding-block: 0.35rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 12vw, 4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .menu li a[aria-current='page'] {
+    font-style: italic;
+    color: var(--rose);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .menu[open] li {
+      animation: menu-in var(--dur-3) var(--ease-out) both;
+      animation-delay: calc(80ms + var(--i) * 70ms);
+    }
+  }
+
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(2.5rem);
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const sentinel = document.querySelector('[data-header-sentinel]');
+  if (header && sentinel && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      header.classList.toggle('is-floating', !entry.isIntersecting);
+    }, { rootMargin: '48px 0px 0px 0px' }).observe(sentinel);
+  }
+
+  const menu = document.querySelector<HTMLDialogElement>('[data-menu]');
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+  const closeBtn = document.querySelector<HTMLButtonElement>('[data-menu-close]');
+  openBtn?.addEventListener('click', () => {
+    menu?.showModal();
+    openBtn.setAttribute('aria-expanded', 'true');
+  });
+  closeBtn?.addEventListener('click', () => menu?.close());
+  menu?.addEventListener('close', () => {
+    openBtn?.setAttribute('aria-expanded', 'false');
+    openBtn?.focus();
+  });
+  // Close the menu if the viewport grows past the mobile breakpoint.
+  matchMedia('(min-width: 768px)').addEventListener('change', (e) => {
+    if (e.matches && menu?.open) menu.close();
+  });
+</script>

@@ -1,0 +1,555 @@
+---
+import Icon from '../components/Icon.astro';
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import InquiryBand from '../components/InquiryBand.astro';
+import { galleryItems, collections, collectionLabel, isPlaceholderGallery } from '../data/gallery';
+
+// Full-size sources for the viewer, generated at build time.
+const viewerData = await Promise.all(
+  galleryItems.map(async (item) => {
+    let src: string | undefined;
+    let srcset: string | undefined;
+    if (item.image) {
+      const widths = [1200, 1800, 2400].filter((w) => w <= item.image!.width);
+      if (widths.length === 0) widths.push(item.image.width);
+      const variants = await Promise.all(
+        widths.map((w) => getImage({ src: item.image!, width: w, format: 'webp' })),
+      );
+      src = variants[variants.length - 1].src;
+      srcset = variants.map((v, i) => `${v.src} ${widths[i]}w`).join(', ');
+    }
+    return {
+      id: item.id,
+      alt: item.alt,
+      caption: item.caption ?? '',
+      collection: item.collection ?? '',
+      collectionLabel: collectionLabel(item.collection) ?? '',
+      ratio: item.ratio,
+      src,
+      srcset,
+      placeholder: Boolean(item.placeholder),
+    };
+  }),
+);
+
+const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 'square');
+---
+
+<Base
+  title="Gallery"
+  description="The gallery of The Flower Studio TCI: floral design for events and personal celebrations in the Turks and Caicos Islands."
+>
+  <section class="intro wrap" aria-labelledby="gallery-title">
+    <h1 id="gallery-title">Gallery</h1>
+    <p class="lede">
+      Floral design by The Flower Studio. Select a photograph to see it in full, and enquire about any arrangement
+      that feels close to what you have in mind.
+    </p>
+  </section>
+
+  {
+    isPlaceholderGallery && (
+      <div class="wrap">
+        <p class="notice" role="note">
+          Portfolio photographs are being imported from the studio's current website. The frames below preview the
+          layout and interactions only; they are not work.
+        </p>
+      </div>
+    )
+  }
+
+  <section class="wrap gallery" aria-label="Photographs" data-gallery>
+    {
+      collections.length > 0 && (
+        <div class="filters" data-filters>
+          <div class="filter-group" role="group" aria-label="Filter by collection">
+            <button type="button" class="filter" data-filter="" aria-pressed="true">
+              All
+            </button>
+            {collections.map((c) => (
+              <button type="button" class="filter" data-filter={c.id} aria-pressed="false">
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <p class="filter-status caption" aria-live="polite" data-filter-status>
+            {galleryItems.length} photographs
+          </p>
+        </div>
+      )
+    }
+
+    <ul class="grid" data-grid>
+      {
+        galleryItems.map((item, i) => (
+          <li
+            class="item is-shown"
+            data-id={item.id}
+            data-collection={item.collection ?? ''}
+            data-orient={orient(item.ratio)}
+          >
+            <button
+              type="button"
+              class="thumb"
+              data-open={item.id}
+              aria-haspopup="dialog"
+              aria-label={`View larger: ${item.alt || item.caption || 'photograph'}`}
+            >
+              <Media
+                image={item.image}
+                alt={item.alt}
+                ratio={item.ratio}
+                sizes="(min-width: 1024px) 50vw, (min-width: 640px) 60vw, 100vw"
+                eager={i < 2}
+                zoom
+                pendingLabel={item.caption}
+              />
+            </button>
+            {(item.caption || item.collection) && !item.placeholder && (
+              <p class="caption item-caption">
+                {item.caption}
+                {item.caption && item.collection && <span aria-hidden="true"> &middot; </span>}
+                {item.collection && <span class="item-collection">{collectionLabel(item.collection)}</span>}
+              </p>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="empty" data-empty hidden>No photographs in this collection yet.</p>
+  </section>
+
+  <dialog class="viewer" data-viewer aria-labelledby="viewer-title">
+    <h2 id="viewer-title" class="visually-hidden">Photograph viewer</h2>
+    <div class="viewer-bar">
+      <p class="viewer-count" data-count aria-live="polite"></p>
+      <button type="button" class="viewer-close" data-close autofocus>
+        Close <Icon name="x" />
+      </button>
+    </div>
+
+    <div class="viewer-stage" data-stage>
+      <button type="button" class="viewer-nav prev" data-prev aria-label="Previous photograph">
+        <Icon name="arrow-left" />
+      </button>
+      <figure class="viewer-figure" data-figure>
+        <img data-img alt="" decoding="async" />
+        <div class="pending viewer-pending" data-pending hidden><span>Portfolio photograph pending import</span></div>
+      </figure>
+      <button type="button" class="viewer-nav next" data-next aria-label="Next photograph">
+        <Icon name="arrow-right" />
+      </button>
+    </div>
+
+    <div class="viewer-foot">
+      <p class="viewer-caption" data-caption></p>
+      <a class="link viewer-enquire" data-enquire href="/contact/">
+        Enquire about this arrangement <Icon name="arrow-right" class="arrow" />
+      </a>
+    </div>
+  </dialog>
+
+  <script type="application/json" id="gallery-data" set:html={JSON.stringify(viewerData)} />
+
+  <InquiryBand heading="Seen something you love?" text="Mention the photograph in your enquiry, or use the link beside any image to bring it with you." />
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 1.5rem;
+    padding-block: clamp(3rem, 8vw, 7rem) clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .intro h1 {
+    font-size: var(--step-6);
+  }
+
+  @media (min-width: 1024px) {
+    .intro {
+      grid-template-columns: 7fr 5fr;
+      align-items: end;
+      gap: 4rem;
+    }
+    .intro .lede {
+      padding-bottom: 1rem;
+    }
+  }
+
+  .notice {
+    max-width: 48rem;
+    margin-bottom: 3rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+  }
+
+  .gallery {
+    padding-bottom: var(--section);
+    scroll-margin-top: 5.5rem;
+  }
+
+  /* Filters ------------------------------------------------------------------ */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-bottom: clamp(3rem, 6vw, 5rem);
+    padding-block: 0.75rem;
+    border-block: 1px solid var(--rule);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.75rem;
+  }
+
+  .filter {
+    position: relative;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    color: var(--ink-soft);
+    transition: color var(--dur-1) var(--ease-out);
+  }
+
+  .filter::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.4rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+
+  .filter:hover {
+    color: var(--ink);
+  }
+
+  .filter[aria-pressed='true'] {
+    color: var(--rose);
+    font-style: italic;
+  }
+
+  .filter[aria-pressed='true']::after {
+    transform: scaleX(1);
+  }
+
+  /* Art-directed grid ----------------------------------------------------------
+     The rhythm is keyed to the position among *visible* items, so filtering
+     keeps the composition intact. Portrait images take narrower slots so no
+     single photograph dominates the page. */
+  .grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2vw, 2rem);
+    row-gap: clamp(3rem, 8vw, 7rem);
+    align-items: start;
+  }
+
+  .item {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .item[hidden] {
+    display: none;
+  }
+
+  .item:nth-child(even of .is-shown) {
+    grid-column: 3 / -1;
+  }
+
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .item:nth-child(odd of .is-shown) {
+      grid-column: 1 / span 7;
+    }
+    .item:nth-child(even of .is-shown) {
+      grid-column: 8 / span 5;
+      margin-top: clamp(4rem, 14vw, 9rem);
+    }
+    .item[data-orient='landscape']:nth-child(odd of .is-shown) {
+      grid-column: 1 / span 8;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .item:nth-child(6n + 1 of .is-shown) {
+      grid-column: 1 / span 7;
+    }
+    .item[data-orient='portrait']:nth-child(6n + 1 of .is-shown) {
+      grid-column: 2 / span 5;
+    }
+    .item:nth-child(6n + 2 of .is-shown) {
+      grid-column: 9 / span 4;
+      margin-top: clamp(6rem, 14vw, 14rem);
+    }
+    .item[data-orient='landscape']:nth-child(6n + 2 of .is-shown) {
+      grid-column: 8 / span 5;
+    }
+    .item:nth-child(6n + 3 of .is-shown) {
+      grid-column: 2 / span 4;
+    }
+    .item[data-orient='landscape']:nth-child(6n + 3 of .is-shown) {
+      grid-column: 1 / span 6;
+    }
+    .item:nth-child(6n + 4 of .is-shown) {
+      grid-column: 7 / span 5;
+      margin-top: clamp(3rem, 8vw, 8rem);
+    }
+    .item[data-orient='landscape']:nth-child(6n + 4 of .is-shown) {
+      grid-column: 7 / span 6;
+    }
+    .item:nth-child(6n + 5 of .is-shown) {
+      grid-column: 1 / span 5;
+    }
+    .item[data-orient='landscape']:nth-child(6n + 5 of .is-shown) {
+      grid-column: 1 / span 7;
+    }
+    .item:nth-child(6n of .is-shown) {
+      grid-column: 8 / span 4;
+      margin-top: clamp(5rem, 12vw, 12rem);
+    }
+    .item[data-orient='landscape']:nth-child(6n of .is-shown) {
+      grid-column: 8 / span 5;
+    }
+  }
+
+  .thumb {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: inherit;
+    cursor: zoom-in;
+  }
+
+  .item-caption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .empty {
+    padding-block: 4rem;
+    color: var(--ink-soft);
+  }
+
+  /* Viewer -------------------------------------------------------------------- */
+  .viewer {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--scrim);
+    color: #ece9e0;
+    overscroll-behavior: contain;
+  }
+
+  .viewer[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .viewer::backdrop {
+    background: var(--scrim);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .viewer[open] {
+      animation: viewer-in 420ms var(--ease-out);
+    }
+  }
+
+  @keyframes viewer-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .viewer :focus-visible {
+    outline-color: #e0a7af;
+  }
+
+  .viewer-bar,
+  .viewer-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    padding: 0.75rem var(--gutter);
+  }
+
+  .viewer-count {
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    color: #b8c0b8;
+  }
+
+  .viewer-close {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 44px;
+    padding: 0 0.25rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 0.9375rem;
+  }
+
+  .viewer-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: 0;
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+  }
+
+  .viewer-figure {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    min-height: 0;
+    padding: 0 0.5rem;
+  }
+
+  .viewer-figure img,
+  .viewer-pending {
+    grid-area: 1 / 1;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition:
+      opacity 320ms var(--ease-out),
+      transform 520ms var(--ease-out);
+  }
+
+  .viewer-pending {
+    height: min(70svh, 100%);
+    width: auto;
+    background: #1b241e;
+    color: #b8c0b8;
+  }
+
+  .viewer-pending span {
+    background: #1b241e;
+  }
+
+  .viewer-figure.is-changing img,
+  .viewer-figure.is-changing .viewer-pending {
+    opacity: 0;
+  }
+
+  .viewer-figure.is-changing[data-dir='next'] img,
+  .viewer-figure.is-changing[data-dir='next'] .viewer-pending {
+    transform: translateX(-1.5rem);
+  }
+
+  .viewer-figure.is-changing[data-dir='prev'] img,
+  .viewer-figure.is-changing[data-dir='prev'] .viewer-pending {
+    transform: translateX(1.5rem);
+  }
+
+  .viewer-nav {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-inline: clamp(0.25rem, 2vw, 1.5rem);
+    border: 1px solid rgb(236 233 224 / 0.3);
+    background: transparent;
+    color: inherit;
+    font-size: 1.25rem;
+    transition:
+      border-color var(--dur-1) var(--ease-out),
+      background-color var(--dur-1) var(--ease-out);
+  }
+
+  .viewer-nav:hover {
+    border-color: #ece9e0;
+    background: rgb(236 233 224 / 0.08);
+  }
+
+  .viewer-caption {
+    font-size: 0.9375rem;
+    color: #d6dad3;
+    max-width: 42rem;
+  }
+
+  .viewer-enquire {
+    color: #ece9e0;
+    white-space: nowrap;
+  }
+
+  .viewer-enquire:hover {
+    color: #e0a7af;
+  }
+
+  @media (max-width: 767px) {
+    /* Controls sit in their own row so they never cover the photograph. */
+    .viewer-stage {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: minmax(0, 1fr) auto;
+      row-gap: 0.75rem;
+    }
+    .viewer-figure {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      padding: 0;
+    }
+    .viewer-nav {
+      grid-row: 2;
+      width: 3rem;
+      height: 3rem;
+      margin: 0;
+    }
+    .viewer-nav.prev {
+      grid-column: 1;
+      justify-self: start;
+      margin-left: var(--gutter);
+    }
+    .viewer-nav.next {
+      grid-column: 2;
+      justify-self: end;
+      margin-right: var(--gutter);
+    }
+    .viewer-foot {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+  }
+</style>
+
+<script>
+  import { initGallery } from '../scripts/gallery';
+  initGallery();
+</script>

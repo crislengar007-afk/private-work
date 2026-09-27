@@ -1,0 +1,59 @@
+---
+import Icon from './Icon.astro';
+interface Props {
+  heading?: string;
+  text?: string;
+}
+const {
+  heading = 'Tell us about your occasion.',
+  text = 'Share the date, the setting and the feeling you have in mind. The studio will take it from there.',
+} = Astro.props;
+---
+
+<section class="band" aria-labelledby="band-heading">
+  <div class="wrap band-inner">
+    <h2 id="band-heading" data-reveal>{heading}</h2>
+    <div class="band-copy" data-reveal style="--reveal-delay: 120">
+      <p>{text}</p>
+      <a class="button button--light" href="/contact/">
+        Contact the studio <Icon name="arrow-right" class="arrow" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .band {
+    background: var(--green);
+    color: var(--on-green);
+    padding-block: clamp(5rem, 10vw, 9rem);
+  }
+  .band-inner {
+    display: grid;
+    gap: 2.5rem;
+  }
+  h2 {
+    font-size: var(--step-5);
+    max-width: 14ch;
+  }
+  .band-copy {
+    display: grid;
+    gap: 2rem;
+    align-content: end;
+    justify-items: start;
+    max-width: 30rem;
+  }
+  .band-copy p {
+    color: rgb(243 241 234 / 0.82);
+    font-size: var(--step-1);
+  }
+  .band :focus-visible {
+    outline-color: var(--on-green);
+  }
+  @media (min-width: 900px) {
+    .band-inner {
+      grid-template-columns: 7fr 5fr;
+      align-items: end;
+    }
+  }
+</style>
