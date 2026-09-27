@@ -1,5 +1,5 @@
 ---
-import Wordmark from './Wordmark.astro';
+import Logo from './Logo.astro';
 import { nav } from '../data/site';
 
 const path = Astro.url.pathname;
@@ -9,9 +9,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
 <div class="header-sentinel" data-header-sentinel aria-hidden="true"></div>
 <header class="site-header" data-header>
   <div class="bar">
-    <a class="brand" href="/" aria-label="The Flower Studio TCI, home">
-      <Wordmark />
-    </a>
+    <a class="brand" href="/" aria-label="The Flower Studio TCI, home"><Logo width={196} /></a>
 
     <nav class="primary" aria-label="Primary">
       <ul>
@@ -25,9 +23,10 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
           ))
         }
       </ul>
+      <a class="button header-cta" href="/contact/">Request flowers</a>
     </nav>
 
-    <button class="menu-toggle" type="button" aria-haspopup="dialog" aria-controls="site-menu" data-menu-open>
+    <button class="menu-toggle" type="button" aria-haspopup="dialog" aria-controls="site-menu" aria-expanded="false" data-menu-open>
       <span>Menu</span>
       <span class="lines" aria-hidden="true"><i></i><i></i></span>
     </button>
@@ -36,7 +35,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
 
 <dialog class="menu" id="site-menu" aria-label="Site menu" data-menu>
   <div class="menu-top">
-    <a class="brand" href="/" aria-label="The Flower Studio TCI, home"><Wordmark /></a>
+    <a class="brand" href="/" aria-label="The Flower Studio TCI, home"><Logo width={170} /></a>
     <button class="menu-close" type="button" data-menu-close autofocus>
       <span>Close</span>
       <span class="lines is-x" aria-hidden="true"><i></i><i></i></span>
@@ -56,6 +55,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
       }
     </ul>
   </nav>
+  <a class="button menu-cta" href="/contact/">Request flowers</a>
 </dialog>
 
 <style>
@@ -68,10 +68,8 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
 
   .site-header {
     position: sticky;
-    top: 0;
+    top: env(safe-area-inset-top, 0px);
     z-index: var(--z-header);
-    /* The bar keeps constant inner padding; the header offsets it so the
-       wordmark still aligns with the page gutter. Only colour animates. */
     padding: 0.75rem calc(var(--gutter) - 1.25rem) 0;
     pointer-events: none;
   }
@@ -84,25 +82,28 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
-    min-height: 3.75rem;
-    padding: 0.5rem 1.25rem;
+    min-height: 4rem;
+    padding: 0.4rem 0.6rem 0.4rem 1.25rem;
     border: 1px solid transparent;
+    border-radius: var(--pill);
     transition:
       background-color var(--dur-2) var(--ease-out),
-      border-color var(--dur-2) var(--ease-out);
+      border-color var(--dur-2) var(--ease-out),
+      box-shadow var(--dur-2) var(--ease-out);
   }
 
-  /* Once the page scrolls, the bar settles into a quiet floating strip. */
+  /* Once the page scrolls, the bar settles into a floating limestone pill. */
   .site-header.is-floating .bar {
-    background: color-mix(in srgb, var(--paper) 95%, transparent);
+    background: color-mix(in srgb, var(--stone) 94%, transparent);
     border-color: var(--rule);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
-    backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: 0 10px 30px -18px rgb(29 38 39 / 0.35);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    backdrop-filter: blur(12px) saturate(130%);
   }
 
   @media (prefers-reduced-transparency: reduce) {
     .site-header.is-floating .bar {
-      background: var(--paper);
+      background: var(--stone);
       backdrop-filter: none;
     }
   }
@@ -114,30 +115,34 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     text-decoration: none;
   }
 
+  .primary {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.25rem, 2.5vw, 2.25rem);
+  }
+
   .primary ul {
     display: flex;
-    gap: clamp(1.5rem, 3vw, 2.75rem);
+    gap: clamp(1.25rem, 2.5vw, 2.25rem);
     list-style: none;
     padding: 0;
   }
 
-  .primary a {
+  .primary ul a {
     position: relative;
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    font-size: 0.9375rem;
-    font-weight: 450;
-    letter-spacing: 0.01em;
+    font-size: 0.9688rem;
     text-decoration: none;
   }
 
-  .primary a::after {
+  .primary ul a::after {
     content: '';
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0.6rem;
+    bottom: 0.55rem;
     height: 1px;
     background: currentColor;
     transform: scaleX(0);
@@ -145,14 +150,19 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     transition: transform var(--dur-2) var(--ease-out);
   }
 
-  .primary a:hover::after,
-  .primary a[aria-current='page']::after {
+  .primary ul a:hover::after,
+  .primary ul a[aria-current='page']::after {
     transform: scaleX(1);
     transform-origin: left;
   }
 
-  .primary a[aria-current='page'] {
-    color: var(--rose);
+  .primary ul a[aria-current='page'] {
+    color: var(--lagoon);
+  }
+
+  .header-cta {
+    min-height: 2.9rem;
+    padding: 0.6rem 1.3rem;
   }
 
   .menu-toggle,
@@ -161,11 +171,10 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     align-items: center;
     gap: 0.75rem;
     min-height: 44px;
-    padding: 0 0.25rem;
+    padding: 0 0.75rem;
     border: 0;
     background: none;
-    font-size: 0.9375rem;
-    font-weight: 450;
+    font-size: 0.9688rem;
   }
 
   .lines {
@@ -203,7 +212,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     display: none;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 860px) {
     .primary {
       display: none;
     }
@@ -212,17 +221,16 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     }
   }
 
-  /* Mobile menu -------------------------------------------------------- */
-
+  /* Mobile menu ------------------------------------------------------------ */
   .menu {
     width: 100%;
     max-width: none;
     height: 100%;
     max-height: none;
     margin: 0;
-    padding: 0.75rem var(--gutter) 2.5rem;
+    padding: calc(0.75rem + env(safe-area-inset-top, 0px)) var(--gutter) calc(2rem + env(safe-area-inset-bottom, 0px));
     border: 0;
-    background: var(--paper);
+    background: var(--stone);
     color: var(--ink);
   }
 
@@ -232,15 +240,14 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
   }
 
   .menu::backdrop {
-    background: var(--paper);
+    background: var(--stone);
   }
 
   .menu-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 3.75rem;
-    padding-block: 0.5rem;
+    min-height: 4rem;
   }
 
   .menu nav {
@@ -251,28 +258,34 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
     list-style: none;
     padding: 0;
     display: grid;
-    gap: 0.25rem;
+    gap: 0.1rem;
   }
 
   .menu li a {
     display: block;
-    padding-block: 0.35rem;
+    padding-block: 0.25rem;
     font-family: var(--font-display);
-    font-size: clamp(2.75rem, 12vw, 4rem);
+    font-weight: 300;
+    font-size: clamp(2.8rem, 13vw, 4.2rem);
     line-height: 1.1;
-    letter-spacing: -0.02em;
     text-decoration: none;
   }
 
   .menu li a[aria-current='page'] {
     font-style: italic;
-    color: var(--rose);
+    color: var(--lagoon);
+  }
+
+  .menu-cta {
+    margin-top: 2rem;
+    align-self: stretch;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .menu[open] li {
+    .menu[open] li,
+    .menu[open] .menu-cta {
       animation: menu-in var(--dur-3) var(--ease-out) both;
-      animation-delay: calc(80ms + var(--i) * 70ms);
+      animation-delay: calc(80ms + var(--i, 4) * 70ms);
     }
   }
 
@@ -288,9 +301,12 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
   const header = document.querySelector<HTMLElement>('[data-header]');
   const sentinel = document.querySelector('[data-header-sentinel]');
   if (header && sentinel && 'IntersectionObserver' in window) {
-    new IntersectionObserver(([entry]) => {
-      header.classList.toggle('is-floating', !entry.isIntersecting);
-    }, { rootMargin: '48px 0px 0px 0px' }).observe(sentinel);
+    new IntersectionObserver(
+      ([entry]) => {
+        header.classList.toggle('is-floating', !entry.isIntersecting);
+      },
+      { rootMargin: '48px 0px 0px 0px' },
+    ).observe(sentinel);
   }
 
   const menu = document.querySelector<HTMLDialogElement>('[data-menu]');
@@ -299,14 +315,16 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
   openBtn?.addEventListener('click', () => {
     menu?.showModal();
     openBtn.setAttribute('aria-expanded', 'true');
+    // The page behind stays still while the menu is open.
+    document.documentElement.style.overflow = 'hidden';
   });
   closeBtn?.addEventListener('click', () => menu?.close());
   menu?.addEventListener('close', () => {
+    document.documentElement.style.overflow = '';
     openBtn?.setAttribute('aria-expanded', 'false');
     openBtn?.focus();
   });
-  // Close the menu if the viewport grows past the mobile breakpoint.
-  matchMedia('(min-width: 768px)').addEventListener('change', (e) => {
+  matchMedia('(min-width: 861px)').addEventListener('change', (e) => {
     if (e.matches && menu?.open) menu.close();
   });
 </script>

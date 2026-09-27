@@ -2,17 +2,13 @@ import type { ImageMetadata } from 'astro';
 import manifest from './gallery.json';
 
 /**
- * Portfolio photographs: the studio's own work.
- *
- * `gallery.json` is written by `npm run import:gallery`, which copies the
- * photographs published on theflowerstudiotci.com/gallery/ into
- * src/assets/gallery/ and records each image's source URL, alt text and
- * caption. Collections are only assigned where the source groups them.
- *
- * Until that import has run, the gallery renders clearly labelled
- * placeholder frames so layout and interactions can be reviewed. They are
- * never presented as work.
+ * Portfolio photographs: the studio's own work, imported from
+ * theflowerstudiotci.com/gallery/ by `npm run import:gallery` and curated in
+ * gallery.json (alt text, captions and palette categories written from
+ * visual inspection). Generated imagery never enters this dataset.
  */
+
+export type Provenance = 'real_portfolio' | 'concept';
 
 export interface Collection {
   id: string;
@@ -25,6 +21,9 @@ interface ManifestEntry {
   alt: string;
   caption?: string;
   collection?: string;
+  provenance: Provenance;
+  credit?: string;
+  status: 'published' | 'draft';
   sourceUrl: string;
 }
 
@@ -33,23 +32,24 @@ export interface GalleryItem {
   alt: string;
   caption?: string;
   collection?: string;
-  image?: ImageMetadata;
-  /** Width / height, used for layout when there is no image yet. */
+  image: ImageMetadata;
+  width: number;
+  height: number;
   ratio: number;
-  sourceUrl?: string;
-  placeholder?: boolean;
+  provenance: Provenance;
+  credit?: string;
+  sourceUrl: string;
 }
 
-const files = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/assets/gallery/*.{jpg,jpeg,png,webp,avif}',
-  { eager: true },
-);
+const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/gallery/*.{jpg,jpeg,png,webp,avif}', {
+  eager: true,
+});
 
-const typed = manifest as { collections: Collection[]; items: ManifestEntry[] };
+const typed = manifest as unknown as { collections: Collection[]; items: ManifestEntry[] };
 
-const real: GalleryItem[] = typed.items.flatMap((entry) => {
+export const galleryItems: GalleryItem[] = typed.items.flatMap((entry) => {
   const mod = files[`/src/assets/gallery/${entry.file}`];
-  if (!mod) return [];
+  if (!mod || entry.status !== 'published' || entry.provenance !== 'real_portfolio') return [];
   const image = mod.default;
   return [
     {
@@ -58,49 +58,29 @@ const real: GalleryItem[] = typed.items.flatMap((entry) => {
       caption: entry.caption,
       collection: entry.collection,
       image,
+      width: image.width,
+      height: image.height,
       ratio: image.width / image.height,
+      provenance: entry.provenance,
+      credit: entry.credit,
       sourceUrl: entry.sourceUrl,
     },
   ];
 });
 
-const placeholderCollections: Collection[] = [
-  { id: 'events', label: 'Events' },
-  { id: 'celebrations', label: 'Celebrations' },
-];
+const countFor = (id: string) => galleryItems.filter((item) => item.collection === id).length;
 
-// Proportions vary the way a real portfolio does, so the art-directed
-// layout can be judged honestly before photographs arrive.
-const placeholderRatios = [4 / 5, 3 / 2, 2 / 3, 1, 4 / 5, 3 / 4, 3 / 2, 4 / 5, 2 / 3, 1, 3 / 4, 4 / 5];
-
-const placeholders: GalleryItem[] = placeholderRatios.map((ratio, i) => ({
-  id: `pending-${i + 1}`,
-  alt: '',
-  caption: 'Portfolio photograph pending import',
-  collection: placeholderCollections[i % 3 === 2 ? 1 : 0].id,
-  ratio,
-  placeholder: true,
-}));
-
-export const isPlaceholderGallery = real.length === 0;
-
-export const galleryItems: GalleryItem[] = isPlaceholderGallery ? placeholders : real;
-
-const allCollections = isPlaceholderGallery ? placeholderCollections : typed.collections;
-
-/** Collections worth filtering by: at least two, each with two or more items. */
-export const collections: Collection[] = (() => {
-  const counted = allCollections.filter(
-    (c) => galleryItems.filter((item) => item.collection === c.id).length >= 2,
-  );
-  return counted.length >= 2 ? counted : [];
+/** Collections with real items, with counts computed from the records. Empty ones are omitted. */
+export const collections: (Collection & { count: number })[] = (() => {
+  const withItems = typed.collections.map((c) => ({ ...c, count: countFor(c.id) })).filter((c) => c.count > 0);
+  return withItems.length >= 2 ? withItems : [];
 })();
 
 export function collectionLabel(id?: string) {
-  return allCollections.find((c) => c.id === id)?.label;
+  return typed.collections.find((c) => c.id === id)?.label;
 }
 
-/** First items of the gallery, used for the Home page sequence. */
+/** Curated first items of the gallery, used for the Home page preview. */
 export function selectedWork(count = 5) {
   return galleryItems.slice(0, count);
 }

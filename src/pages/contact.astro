@@ -1,18 +1,17 @@
 ---
-import Icon from '../components/Icon.astro';
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import Media from '../components/Media.astro';
-import { site } from '../data/site';
-import { occasions, services } from '../data/services';
+import Icon from '../components/Icon.astro';
+import { site, hours } from '../data/site';
+import { services } from '../data/services';
 import { galleryItems, collectionLabel } from '../data/gallery';
-import { decor } from '../data/decor';
 
-const orchid = decor('orchid-wall');
 const { contact } = site;
+const tel = (n: string) => `tel:${n.replace(/[^+\d]/g, '')}`;
 
-// Optional backend. Set PUBLIC_FORM_ENDPOINT (see .env.example) to post
-// enquiries to a form service; otherwise the form composes an email.
+// Delivery: a configured form endpoint (PUBLIC_FORM_ENDPOINT) or, until one
+// exists, a clearly labelled email draft. The preview never reports a
+// submission it cannot confirm.
 const endpoint = import.meta.env.PUBLIC_FORM_ENDPOINT || '';
 const mode = endpoint ? 'endpoint' : contact.email ? 'email' : 'unavailable';
 
@@ -22,112 +21,102 @@ const pieces = await Promise.all(
     id: item.id,
     label: item.caption ?? item.alt,
     collection: collectionLabel(item.collection) ?? '',
-    occasion: services.find((sv) => sv.collection && sv.collection === item.collection)?.occasion ?? '',
-    thumb: item.image ? (await getImage({ src: item.image, width: 240, format: 'webp' })).src : null,
-    ratio: item.ratio,
+    thumb: (await getImage({ src: item.image, width: 200, format: 'webp' })).src,
   })),
 );
 
+const serviceOptions = services.map((s) => ({ id: s.id, label: s.title, isEvent: s.isEvent }));
 const today = new Date().toISOString().slice(0, 10);
 ---
 
 <Base
   title="Contact"
-  description="Enquire about floral design for an event or personal celebration with The Flower Studio at Ports of Call, Turks and Caicos Islands."
+  description="Request flowers or discuss an event with The Flower Studio TCI at Ports of Call, Grace Bay. Phone, email, opening hours and directions."
+  dock={false}
 >
   <section class="contact wrap" aria-labelledby="contact-title">
     <div class="aside">
-      <h1 id="contact-title">Tell us about your <em>occasion.</em></h1>
+      <h1 id="contact-title">Request <em>flowers</em></h1>
       <p class="lede">
-        Share the date, the setting and the feeling you have in mind. A photograph from the gallery helps the studio
-        understand your taste.
+        For any enquiries or floral needs, get in touch with our floral artisans. Share the occasion and the feeling you
+        have in mind, and we will take it from there.
       </p>
 
-      <div class="details">
-        <dl>
-          {
-            contact.phone && (
-              <div>
-                <dt class="label">Telephone</dt>
-                <dd>
-                  <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}>{contact.phone}</a>
-                  {contact.landline && (
-                    <>
-                      <br />
-                      <a href={`tel:${contact.landline.replace(/[^+\d]/g, '')}`}>{contact.landline}</a>
-                      <span class="muted"> (landline)</span>
-                    </>
-                  )}
-                </dd>
-              </div>
-            )
-          }
-          {
-            contact.whatsapp && (
-              <div>
-                <dt class="label">WhatsApp</dt>
-                <dd>
-                  <a href={`https://wa.me/${contact.whatsapp}`} rel="noopener">
-                    Message the studio
+      <dl class="details">
+        {
+          contact.phone && (
+            <div>
+              <dt class="label">Telephone</dt>
+              <dd>
+                <a href={tel(contact.phone)}>{contact.phone}</a>
+                {contact.landline && (
+                  <>
+                    <br />
+                    <a href={tel(contact.landline)}>{contact.landline}</a> <span class="muted">(landline)</span>
+                  </>
+                )}
+              </dd>
+            </div>
+          )
+        }
+        {
+          contact.email && (
+            <div>
+              <dt class="label">Email</dt>
+              <dd>
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
+              </dd>
+            </div>
+          )
+        }
+        <div>
+          <dt class="label">Studio</dt>
+          <dd>
+            {contact.address}
+            {
+              contact.mapUrl && (
+                <>
+                  <br />
+                  <a class="link" href={contact.mapUrl} rel="noopener">
+                    Get directions <Icon name="arrow-right" class="arrow" />
                   </a>
-                </dd>
-              </div>
-            )
-          }
-          {
-            contact.email && (
-              <div>
-                <dt class="label">Email</dt>
-                <dd>
-                  <a href={`mailto:${contact.email}`}>{contact.email}</a>
-                </dd>
-              </div>
-            )
-          }
-          <div>
-            <dt class="label">Studio</dt>
-            <dd>{contact.address ?? `${site.location}, ${site.region}`}</dd>
-          </div>
-          {
-            contact.hours && (
-              <div>
-                <dt class="label">Hours</dt>
-                <dd>{contact.hours}</dd>
-              </div>
-            )
-          }
-          {
-            (contact.instagram || contact.facebook) && (
-              <div>
-                <dt class="label">Follow</dt>
-                <dd class="social">
-                  {contact.instagram && (
-                    <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} rel="noopener">
-                      Instagram
-                    </a>
-                  )}
-                  {contact.facebook && (
-                    <a href={contact.facebook} rel="noopener">
-                      Facebook
-                    </a>
-                  )}
-                </dd>
-              </div>
-            )
-          }
-        </dl>
-      </div>
-
-      <figure class="orchid">
-        <Media
-          image={orchid?.image}
-          alt={orchid?.alt ?? ''}
-          ratio={2 / 3}
-          sizes="(min-width: 1024px) 22vw, 50vw"
-          pendingLabel="Image pending download"
-        />
-        {orchid && <figcaption class="caption">Atmospheric image, generated for this site.</figcaption>}
-      </figure>
+                </>
+              )
+            }
+          </dd>
+        </div>
+        <div>
+          <dt class="label">Opening hours</dt>
+          <dd>
+            {
+              hours.map((h) => (
+                <span class="hours-row">
+                  {h.days}: <span class="num">{h.time}</span>
+                </span>
+              ))
+            }
+          </dd>
+        </div>
+        {
+          (contact.instagram || contact.facebook) && (
+            <div>
+              <dt class="label">Follow</dt>
+              <dd class="social">
+                {contact.instagram && (
+                  <a href={`https://www.instagram.com/${contact.instagram}/`} rel="noopener">
+                    Instagram
+                  </a>
+                )}
+                {contact.facebook && (
+                  <a href={contact.facebook} rel="noopener">
+                    Facebook
+                  </a>
+                )}
+              </dd>
+            </div>
+          )
+        }
+      </dl>
     </div>
 
     <form
@@ -137,26 +126,31 @@ const today = new Date().toISOString().slice(0, 10);
       data-mode={mode}
       data-endpoint={endpoint || undefined}
       data-email={contact.email ?? undefined}
+      data-services={JSON.stringify(serviceOptions)}
       aria-labelledby="form-title"
     >
-      <h2 id="form-title" class="form-title">Enquiry</h2>
+      <h2 id="form-title" class="form-title">Your enquiry</h2>
+
       {
-        mode === 'unavailable' && (
-          <p class="unavailable" role="note">
-            Online enquiries are not connected yet. You can still prepare your message here; the studio's direct contact
-            details will be listed on this page before it goes live.
+        mode !== 'endpoint' && (
+          <p class="setup-note" role="note">
+            <strong>Preview:</strong> online delivery is not connected yet.
+            {mode === 'email'
+              ? ` “Compose email” opens your email app with this enquiry addressed to ${contact.email}. Nothing is sent until you send it there, and this page does not store your details.`
+              : ' Please use the telephone or email details on this page.'}
           </p>
         )
       }
 
+      <p class="required-note caption">All fields are required unless marked optional.</p>
+
       <div class="selection" data-selection hidden>
-        <div class="selection-thumb" data-selection-thumb></div>
+        <img class="selection-thumb" data-selection-thumb alt="" width="88" height="110" />
         <div class="selection-text">
           <p class="label">Your selection</p>
           <p class="selection-name" data-selection-name></p>
-          <p class="caption">
+          <p class="selection-actions caption">
             <a href="/gallery/" data-selection-view>View in gallery</a>
-            <span aria-hidden="true"> &middot; </span>
             <button type="button" class="text-button" data-selection-remove>Remove</button>
           </p>
         </div>
@@ -184,45 +178,47 @@ const today = new Date().toISOString().slice(0, 10);
 
       <div class="field-row">
         <div class="field">
-          <label for="f-occasion">Occasion</label>
-          <select id="f-occasion" name="occasion" required aria-describedby="f-occasion-error">
-            <option value="">Choose one</option>
-            {occasions.map((o) => <option value={o}>{o}</option>)}
+          <label for="f-service">Service</label>
+          <select id="f-service" name="service" required aria-describedby="f-service-error">
+            <option value="">Choose a service</option>
+            {serviceOptions.map((s) => <option value={s.id}>{s.label}</option>)}
+            <option value="other">Something else</option>
           </select>
-          <p class="error" id="f-occasion-error" data-error-for="occasion"></p>
+          <p class="error" id="f-service-error" data-error-for="service"></p>
         </div>
         <div class="field">
-          <label for="f-date">Date <span class="optional">(optional)</span></label>
+          <label for="f-date">Date needed <span class="optional">(optional)</span></label>
           <input id="f-date" name="date" type="date" min={today} aria-describedby="f-date-error" />
           <p class="error" id="f-date-error" data-error-for="date"></p>
         </div>
       </div>
 
+      <fieldset class="event-fields" data-event-fields hidden>
+        <legend>For events <span class="optional">(optional)</span></legend>
+        <div class="field">
+          <label for="f-venue">Venue or location</label>
+          <input id="f-venue" name="venue" type="text" autocomplete="off" />
+        </div>
+      </fieldset>
+
       <div class="field">
-        <label for="f-message">Your message</label>
-        <textarea
-          id="f-message"
-          name="message"
-          rows="6"
-          required
-          minlength="10"
-          aria-describedby="f-message-hint f-message-error"></textarea>
-        <p class="hint" id="f-message-hint">Setting, colours, numbers of guests or anything else that helps.</p>
+        <label for="f-message">Tell us about it</label>
+        <textarea id="f-message" name="message" rows="5" required minlength="10" aria-describedby="f-message-hint f-message-error"></textarea>
+        <p class="hint" id="f-message-hint">The occasion, colours you love, the setting, anything that helps.</p>
         <p class="error" id="f-message-error" data-error-for="message"></p>
+      </div>
+
+      <!-- Spam trap: hidden from people and assistive tech; bots tend to fill it. -->
+      <div class="trap" aria-hidden="true">
+        <label for="f-website">Website</label>
+        <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off" />
       </div>
 
       <div class="submit">
         <button class="button" type="submit" data-submit disabled={mode === 'unavailable'}>
-          {mode === 'email' ? 'Compose email' : 'Send enquiry'}
+          <span data-submit-label>{mode === 'email' ? 'Compose email' : 'Send enquiry'}</span>
           <Icon name="arrow-right" class="arrow" />
         </button>
-        <p class="caption submit-note" id="submit-note">
-          {mode === 'endpoint' && 'Your enquiry is sent directly to the studio.'}
-          {
-            mode === 'email' &&
-              'This opens your email app with your enquiry written out and addressed to the studio. Nothing is sent until you send it there.'
-          }
-        </p>
       </div>
 
       <div class="status" data-status role="status" aria-live="polite" tabindex="-1"></div>
@@ -235,8 +231,8 @@ const today = new Date().toISOString().slice(0, 10);
 <style>
   .contact {
     display: grid;
-    gap: clamp(3rem, 8vw, 6rem);
-    padding-block: clamp(3rem, 8vw, 7rem) var(--section);
+    gap: clamp(3rem, 7vw, 5rem);
+    padding-block: clamp(2.5rem, 7vw, 6rem) var(--section);
   }
 
   .aside {
@@ -246,30 +242,41 @@ const today = new Date().toISOString().slice(0, 10);
   }
 
   h1 {
-    font-size: var(--step-5);
+    font-size: var(--step-6);
   }
 
-  .details dl {
+  .details {
     display: grid;
-    gap: 1.25rem;
+    gap: 1.4rem;
   }
 
   .details dd {
-    margin-top: 0.25rem;
+    margin-top: 0.3rem;
     font-size: var(--step-1);
   }
 
-  .details a {
+  .details a:not(.link) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     text-decoration-color: var(--rule-strong);
   }
 
   .details a:hover {
-    color: var(--rose);
+    color: var(--lagoon);
   }
 
-  .details .muted {
+  .muted {
     color: var(--ink-soft);
     font-size: var(--step-0);
+  }
+
+  .hours-row {
+    display: block;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
   }
 
   .social {
@@ -277,42 +284,47 @@ const today = new Date().toISOString().slice(0, 10);
     gap: 1.5rem;
   }
 
-  .orchid {
-    width: min(100%, 18rem);
-    display: grid;
-    gap: 0.75rem;
-  }
-
   @media (min-width: 1024px) {
     .contact {
-      grid-template-columns: 5fr 1fr 6fr;
+      grid-template-columns: 5fr 6fr;
+      gap: clamp(3rem, 7vw, 7rem);
     }
     .aside {
-      grid-column: 1;
       position: sticky;
       top: 6.5rem;
-    }
-    .form {
-      grid-column: 3;
     }
   }
 
   /* Form -------------------------------------------------------------------- */
   .form {
     display: grid;
-    gap: 1.75rem;
+    gap: 1.6rem;
     align-content: start;
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    background: var(--stone-2);
+    border: 1px solid var(--rule);
+    border-radius: 1.25rem;
   }
 
   .form-title {
-    font-size: var(--step-3);
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--rule);
+    font-size: var(--step-4);
+  }
+
+  .setup-note {
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 0.75rem;
+    background: var(--stone);
+    font-size: 0.9375rem;
+  }
+
+  .required-note {
+    margin-top: -0.5rem;
   }
 
   .field-row {
     display: grid;
-    gap: 1.75rem;
+    gap: 1.6rem;
   }
 
   @media (min-width: 640px) {
@@ -323,11 +335,12 @@ const today = new Date().toISOString().slice(0, 10);
 
   .field {
     display: grid;
-    gap: 0.5rem;
+    gap: 0.45rem;
     align-content: start;
   }
 
-  label {
+  label,
+  legend {
     font-weight: 500;
     font-size: 0.9375rem;
   }
@@ -344,8 +357,8 @@ const today = new Date().toISOString().slice(0, 10);
     min-height: 3.25rem;
     padding: 0.8rem 1rem;
     border: 1px solid var(--rule-strong);
-    border-radius: 0;
-    background: color-mix(in srgb, var(--paper) 70%, var(--paper-2));
+    border-radius: 0.75rem;
+    background: var(--stone);
     color: var(--ink);
     font-size: 1rem;
     transition:
@@ -368,7 +381,7 @@ const today = new Date().toISOString().slice(0, 10);
   }
 
   textarea {
-    min-height: 9rem;
+    min-height: 8.5rem;
     resize: vertical;
     line-height: 1.55;
   }
@@ -382,14 +395,13 @@ const today = new Date().toISOString().slice(0, 10);
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {
-    outline: 2px solid var(--rose);
+    outline: 2px solid var(--lagoon);
     outline-offset: 0;
-    border-color: var(--rose);
-    background: var(--paper);
+    border-color: var(--lagoon);
   }
 
   [aria-invalid='true'] {
-    border-color: var(--rose);
+    border-color: var(--lotus);
   }
 
   .hint {
@@ -400,29 +412,36 @@ const today = new Date().toISOString().slice(0, 10);
   .error {
     font-size: var(--step--1);
     font-weight: 500;
-    color: var(--rose);
+    color: var(--lotus);
   }
 
   .error:empty {
     display: none;
   }
 
+  .event-fields {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.1rem 1.25rem 1.3rem;
+    border: 1px solid var(--rule);
+    border-radius: 0.75rem;
+  }
+
+  .event-fields[hidden] {
+    display: none;
+  }
+
+  .trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
   .submit {
     display: grid;
-    gap: 1rem;
     justify-items: start;
-    padding-top: 0.5rem;
-  }
-
-  .unavailable {
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--rose);
-    color: var(--ink);
-    font-size: 0.9375rem;
-  }
-
-  .submit-note {
-    max-width: 30rem;
   }
 
   .status:empty {
@@ -430,18 +449,18 @@ const today = new Date().toISOString().slice(0, 10);
   }
 
   .status {
-    padding: 1.25rem 1.5rem;
+    padding: 1.1rem 1.25rem;
     border: 1px solid var(--rule-strong);
-    background: var(--paper-2);
+    border-radius: 0.75rem;
+    background: var(--stone);
   }
 
   .status[data-tone='error'] {
-    border-color: var(--rose);
-    color: var(--ink);
+    border-color: var(--lotus);
   }
 
   .status[data-tone='success'] {
-    border-color: var(--green);
+    border-color: var(--lagoon);
   }
 
   .status :global(p + p) {
@@ -456,33 +475,45 @@ const today = new Date().toISOString().slice(0, 10);
   .selection {
     display: grid;
     grid-template-columns: 5.5rem 1fr;
-    gap: 1.25rem;
+    gap: 1.1rem;
     align-items: center;
-    padding: 1rem;
+    padding: 0.85rem;
     border: 1px solid var(--rule);
-    background: var(--paper-2);
+    border-radius: 0.75rem;
+    background: var(--stone);
   }
 
   .selection[hidden] {
     display: none;
   }
 
-  .selection-thumb :global(img),
-  .selection-thumb :global(.pending) {
+  .selection-thumb {
     width: 100%;
     aspect-ratio: 4 / 5;
     object-fit: cover;
-  }
-
-  .selection-thumb :global(.pending span) {
-    display: none;
+    border-radius: 999px 999px 0 0;
+    background: var(--sand);
   }
 
   .selection-name {
     font-family: var(--font-display);
-    font-size: var(--step-1);
-    line-height: 1.3;
-    margin-block: 0.2rem 0.35rem;
+    font-size: var(--step-2);
+    line-height: 1.2;
+    margin-block: 0.1rem 0.2rem;
+  }
+
+  .selection-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
+  }
+
+  .selection-actions a,
+  .text-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
   }
 
   .text-button {
@@ -492,25 +523,6 @@ const today = new Date().toISOString().slice(0, 10);
     text-decoration: underline;
     text-underline-offset: 0.22em;
     text-decoration-thickness: 1px;
-    min-height: 44px;
-  }
-
-  .selection .caption a,
-  .text-button {
-    color: var(--ink);
-  }
-
-  .selection .caption {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0 0.35rem;
-  }
-
-  .selection .caption a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
   }
 </style>
 

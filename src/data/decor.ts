@@ -4,15 +4,24 @@ import type { ImageMetadata } from 'astro';
 import registry from './generated-assets.json';
 
 /**
- * Decorative imagery generated with Higgsfield. Recorded in
- * generated-assets.json with the job that produced it. Every consumer must
- * cope with a missing file (the media may not be downloaded yet).
+ * Generated imagery (Higgsfield), recorded in generated-assets.json and
+ * ASSET_MANIFEST.md. Concept and decorative use only; never portfolio.
+ * Every consumer copes with a missing file.
  */
 
-const files = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/assets/generated/*.{png,jpg,jpeg,webp}',
-  { eager: true },
-);
+const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/generated/*.{png,jpg,jpeg,webp}', {
+  eager: true,
+});
+
+interface Entry {
+  key: string;
+  file: string;
+  kind: string;
+  alt: string;
+  sources?: string[];
+}
+
+const entries = registry.assets as Entry[];
 
 export interface Decor {
   image: ImageMetadata;
@@ -20,18 +29,28 @@ export interface Decor {
 }
 
 export function decor(key: string): Decor | undefined {
-  const entry = registry.assets.find((a) => a.key === key);
+  const entry = entries.find((a) => a.key === key);
   if (!entry || entry.kind !== 'image') return undefined;
   const mod = files[`/${entry.file}`];
   return mod ? { image: mod.default, alt: entry.alt } : undefined;
 }
 
-/** Public URL of the hero loop, if it has been downloaded. */
-export function heroVideo(): string | undefined {
-  const entry = registry.assets.find((a) => a.key === 'hero-loop');
-  if (!entry) return undefined;
-  const onDisk = path.join(process.cwd(), entry.file);
-  return fs.existsSync(onDisk) ? '/' + path.relative('public', entry.file) : undefined;
+export interface VideoSource {
+  src: string;
+  type: string;
 }
 
-export const generatedAssets = registry.assets;
+/** Web sources for a generated clip that exist on disk, best codec first. */
+export function decorVideo(key: string): VideoSource[] {
+  const entry = entries.find((a) => a.key === key);
+  if (!entry || entry.kind !== 'video') return [];
+  const candidates = entry.sources ?? [entry.file];
+  return candidates
+    .filter((f) => fs.existsSync(path.join(process.cwd(), f)))
+    .map((f) => ({ src: '/' + path.relative('public', f), type: f.endsWith('.webm') ? 'video/webm' : 'video/mp4' }));
+}
+
+/** Back-compat for the comparison pages. */
+export function heroVideo(): string | undefined {
+  return decorVideo('hero-loop').find((s) => s.type === 'video/mp4')?.src;
+}

@@ -1,0 +1,48 @@
+---
+/**
+ * The studio's own logo (lotus mark and wordmark), from the live site.
+ * The light version is used when the page is in dark mode.
+ */
+import dark from '../assets/brand/tfstci_logo-1.png';
+import light from '../assets/brand/tfstci_logo_ft.png';
+
+interface Props {
+  width?: number;
+}
+const { width = 200 } = Astro.props;
+const h = Math.round((width * dark.height) / dark.width);
+---
+
+<span class="logo" style={`--w:${width}px`}>
+  <img class="on-light" src={dark.src} width={width} height={h} alt="The Flower Studio" />
+  <img class="on-dark" src={light.src} width={width} height={h} alt="" aria-hidden="true" />
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    width: var(--w);
+    max-width: 52vw;
+  }
+  img {
+    width: 100%;
+    height: auto;
+  }
+  .on-dark {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .on-dark {
+      display: block;
+    }
+    :global(:root:not([data-theme='light'])) .on-light {
+      display: none;
+    }
+  }
+  :global(:root[data-theme='dark']) .on-dark {
+    display: block;
+  }
+  :global(:root[data-theme='dark']) .on-light {
+    display: none;
+  }
+</style>

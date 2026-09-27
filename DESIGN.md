@@ -1,163 +1,97 @@
-# The Floral Atelier: Design System
+# Island Atelier: Design System
 
-Working concept for The Flower Studio TCI. The site should feel like a luxury
-floral atelier presented through an editorial magazine. The flowers supply the
-colour, and the interface frames them quietly.
+This is the selected direction (B) from the three homepage concepts. Directions A (Botanical
+Editorial) and C (Minimal Floral Gallery) remain at `/directions/` for comparison.
 
-**Design read:** an editorial luxury portfolio for clients planning island
-weddings, events and personal celebrations in the Turks and Caicos Islands.
-The language is a fashion-magazine layout built with native CSS, a Didone
-display serif and restrained, motivated motion.
+**Positioning:** modern island elegance, floral artistry, personal service.
 
-**Dials (Taste):** variance 7, motion 4, density 3. The layouts are
-asymmetric, the motion is quiet and the layout is airy, like a gallery.
+Every visual choice comes from the business itself:
 
----
+- The light display serif echoes the logo's wordmark.
+- Lotus pink is the logo's own mark colour.
+- Lagoon is the turquoise backdrop from the studio's own photographs, deepened for contrast.
+- The limestone and linen neutrals let the vivid real work stand out without competing with it.
+
+**Signature:** the arch. It frames the hero and the portfolio highlights, and acts as a quiet
+architectural reference without beach clichés.
 
 ## 1. Colour
 
-One page theme follows the system preference, and both modes use the same
-tokens. There is one accent, muted rose, which is used sparingly: link hover,
-the active filter, selection and small details. Deep botanical green is a
-structural colour for primary buttons and the single colour-block section on
-each page, the inquiry invitation.
+The page theme follows the system setting; an explicit `data-theme` on the root element overrides it.
 
-| Token          | Light     | Dark      | Use                                   |
-| -------------- | --------- | --------- | ------------------------------------- |
-| `--paper`      | `#F3F1EA` | `#101612` | Page background (green-leaning ivory) |
-| `--paper-2`    | `#E8E6DC` | `#18201B` | Image frames, quiet bands             |
-| `--ink`        | `#17221C` | `#ECE9E0` | Headlines and body text               |
-| `--ink-soft`   | `#48574E` | `#AEB8AF` | Captions, secondary text (AA)         |
-| `--green`      | `#1E3A2D` | `#1E3A2D` | Primary buttons, inquiry band         |
-| `--on-green`   | `#F3F1EA` | `#F3F1EA` | Text on green                         |
-| `--rose`       | `#8A4753` | `#E0A7AF` | Single accent                         |
-| `--rule`       | ink @ 16% | ink @ 18% | Hairline rules                        |
+| Token | Light | Dark | Role |
+| --- | --- | --- | --- |
+| `--stone` | `#ECE7DE` | `#121817` | Page ground (limestone) |
+| `--stone-2` | `#E4DED3` | `#181F1E` | Quiet bands, footer, form panel |
+| `--sand` | `#DDD5C7` | `#1F2726` | Service band, media placeholders |
+| `--ink` | `#1D2627` | `#ECE7DE` | Text |
+| `--ink-soft` | `#4D5856` | `#A9B3B0` | Secondary text |
+| `--lagoon` | `#0F6366` | `#6CC3C4` | The one interactive accent: buttons, links, active states, focus |
+| `--lotus` | `#A93F66` | `#E58FAE` | Small details only: rules, errors, quotes |
 
-Contrast was measured with the WCAG formula:
+Contrast, measured with the WCAG formula:
 
-- `--ink` on `--paper`: 14.5:1 light, 15.1:1 dark
-- `--ink-soft` on `--paper`: 6.8:1 light, 9.0:1 dark
-- `--rose` on `--paper`: 6.0:1 light, 9.0:1 dark
-- `--on-green` on `--green`: 10.9:1
+- `--ink` on stone: 12.6:1
+- `--ink-soft` on stone: 6.0:1, and 5.1:1 on sand
+- `--lagoon` on stone: 5.2:1 or better
+- Button text on lagoon: 5.8:1 or better
+- `--lotus`: 4.75:1
 
-What the palette avoids: the generic beige, brass and espresso luxury
-palette, gradients, glows and pure black or pure white.
+Dark mode stays at 7.6:1 or above throughout.
 
 ## 2. Typography
 
-| Role    | Family                         | Source and licence                                      |
-| ------- | ------------------------------ | ------------------------------------------------------- |
-| Display | **Bodoni Moda** (variable, opsz) | Google Fonts / Fontsource, SIL Open Font License 1.1 |
-| Text    | **Geist** (variable)           | Vercel / Fontsource, SIL Open Font License 1.1          |
+| Role | Family | Source and licence |
+| --- | --- | --- |
+| Display | Cormorant Garamond (variable; roman and italic) | Fontsource, SIL OFL 1.1 |
+| Text | Hanken Grotesk (variable) | Fontsource, SIL OFL 1.1 |
 
-Both fonts are self-hosted through `@fontsource-variable/*` with
-`font-display: swap`, and no third-party font requests are made at runtime.
+- Both fonts are self-hosted with `font-display: swap`. The fallbacks are Garamond or Times, and system-ui.
+- Display type is light (300 to 400) with line height 1.02 to 1.1 and balanced wrapping. Emphasis uses the italic, in lagoon.
+- Body text is 1rem to 1.0625rem at line height 1.65, with a reading measure of 38rem or less.
+- Small uppercase labels (0.75rem, 0.16em tracking) are for field and definition terms only. They are never used as eyebrows above headings.
 
-**Why a Didone:** the high-contrast modern serif is the typographic voice of
-fashion magazines. Bodoni Moda's optical-size axis keeps hairlines sturdy at
-headline sizes. Geist is a neutral, highly legible grotesk that keeps body
-copy, captions and forms calm.
+## 3. Space, shape and layout
 
-- Display headlines use Bodoni Moda at weight 400 with automatic optical
-  sizing, so hairlines stay sturdy at every size. Tracking is -0.02em, and
-  emphasis comes from the italic of the same family.
-- The scale is fluid:
-  - `--step-6`: 3.25 to 7.5rem (hero only)
-  - `--step-5`: 2.6 to 5rem
-  - `--step-4`: 2 to 3.4rem
-  - `--step-3`: 1.5 to 2.2rem
-  - `--step-1`: 1.125rem
-  - `--step-0`: 1rem (17px body)
-  - `--step--1`: 0.8125rem (captions)
-- Body text uses Geist at 1rem to 1.0625rem with a line height of 1.65 and a
-  measure of 60 to 66 characters or fewer.
-- Italic descenders use a line height of at least 1.1 on display type.
-- Small uppercase labels (Geist 0.75rem, 0.14em tracking) are only used as
-  field and definition labels. They are never eyebrows above headings.
-- No em dashes appear anywhere in visible copy.
+- The page gutter is `clamp(1.25rem, 4vw, 3.5rem)`, and the maximum width is 1440 px.
+- Section rhythm is `clamp(5.5rem, 11vw, 10rem)`.
+- **Shape rule:** interactive controls are pills (buttons, filters, nav bar, jump links). Featured media uses the arch (`999px 999px 0 0`). Form fields and panels use a 0.75rem or 1.25rem radius. Gallery photographs are square-cornered.
+- Layouts are asymmetric:
+  - **Home hero:** 7/5 split with the arch on the right.
+  - **Services:** alternating two-column rows, stacked below 900 px.
+  - **Gallery:** a three-step staggered rhythm keyed to the visible items, so filtering keeps the composition.
 
-## 3. Space and layout
+## 4. Imagery
 
-- The base unit is 8px. The page gutter is `clamp(1.25rem, 4vw, 3.5rem)`.
-- The content grid has 12 columns up to a maximum width of 1440px. Reading
-  columns are 640px or narrower.
-- Section rhythm is `clamp(6rem, 12vw, 11rem)`, which leaves generous
-  whitespace.
-- Compositions are asymmetric: images offset against type, with
-  deliberately empty columns. There are no three-equal-card rows, and no
-  layout family repeats on the same page.
-- The corner radius is **0 everywhere**, which keeps the look sharp and
-  editorial. Structure comes from hairline rules and negative space, not
-  cards or shadows.
-- Each page has at most one colour-block section, the green inquiry
-  invitation.
+- **Real portfolio** (`provenance: real_portfolio`): shown unfiltered at its true colour, and never enlarged beyond its native pixels. The 512 px squares cap at 512 CSS px, both in the grid and in the viewer.
+- **Concepts** (`provenance: concept`, Higgsfield): used for the hero and four service sections only. Each carries a "Concept image, generated for this design" label and appears in ASSET_MANIFEST.md. None enters the gallery.
+- Frames reserve their aspect ratio, and images are served as responsive AVIF and WebP. Only the hero still is eager and high priority; everything below the fold is lazy.
 
-## 4. Image treatment
+## 5. Motion
 
-- **Authentic portfolio photographs are shown unfiltered**, for true colour
-  and no stylisation. They sit on a `--paper-2` frame colour while loading,
-  with dimensions reserved through `width` and `height` and `aspect-ratio`.
-- The gallery varies proportions using each photograph's own ratio. Placement
-  varies by position in the rhythm, and photographs are not cropped into a
-  uniform grid.
-- Captions sit *below* images in small Geist. No labels or pills are
-  overlaid on photographs.
-- **Generated imagery (Higgsfield) is decorative only**: macro petals,
-  atelier textures and light. It never depicts a complete arrangement
-  presented as client work. It is recorded in `src/data/assets.ts` and
-  credited in the footer.
-- Media are produced as responsive AVIF and WebP through `astro:assets`, and
-  everything below the fold is lazy-loaded.
-
-## 5. Interaction and motion
-
-Motion is used only to communicate hierarchy, sequence, feedback or a change
-of state.
-
-- **Easing:** `--ease-out: cubic-bezier(.22,1,.36,1)`,
-  `--ease-inout: cubic-bezier(.65,0,.35,1)`. There is no linear easing on
-  interface motion.
-- **Focal moment:** on the Home hero, the photograph is unveiled from below
-  with a rising clip-path over 1.5s while the headline lines rise from
-  behind a mask. This is CSS only, so content never depends on script.
-- **Entrances:** content blocks fade up 14px over 700ms, once each, through
-  IntersectionObserver. Photographs repeat the unveil motif with a short
-  clip-path reveal. There are no scroll listeners.
-- **The hero** plays a slow five-second loop, muted, with `playsinline` and
-  a poster frame. It does not play under reduced motion, where the still
-  image is shown instead.
-- **Hover:** photographs ease toward a scale of 1.03 over 1.2s, and links
-  draw an underline. Touch devices get the same affordances on focus and tap.
-- **Gallery filters** use a FLIP transition in which items glide to new
-  positions and new items fade in. The container height is locked during the
-  swap to avoid jumps.
-- **The viewer** crossfades between images. It supports arrow keys, Home and
-  End, Escape and swipe, traps focus and returns focus to the originating
-  thumbnail when closed.
-- **Reduced motion:** all transitions collapse to instant, video is replaced
-  by the still image, and reveals are disabled.
-- There is no preloader, no custom cursor, no parallax, no marquee and no
-  scroll-jacking.
-- **Icons:** Phosphor Light, inlined as SVG. Only one family and one weight
-  are used.
+- **One authored moment:** on the Home hero, the arch opens upward (a clip-path rise over 1.6 s) while the headline lines rise from a mask. This is CSS only, so the content never depends on script.
+- **The loop (V1):** starts only after page load, on desktop, with motion allowed and Save-Data off. A "Pause motion" control is provided.
+- **Supporting motion:**
+  - Content fades up 16 px once as it enters the viewport.
+  - Arched photographs settle into their frames.
+  - Gallery filters use a FLIP glide.
+  - The viewer crossfades between photographs.
+  - Links and buttons have a subtle hover glide.
+- **Easing:** `cubic-bezier(.22,1,.36,1)`, and `(.76,0,.24,1)` for the arch.
+- **Reduced motion:** transitions are near-instant, the video never loads, and reveals are shown immediately.
+- There is no scroll-jacking, parallax, preloader or custom cursor.
 
 ## 6. Responsive behaviour
 
-| Width     | Layout                                                                   |
-| --------- | ------------------------------------------------------------------------ |
-| < 640     | Single column. The gallery alternates full-width and inset images. The nav becomes a full-screen menu. |
-| 640-1023  | Two-column gallery with an offset second column. Split sections stack.   |
-| >= 1024   | Twelve-column asymmetric compositions and a six-step gallery rhythm.     |
+| Width | Behaviour |
+| --- | --- |
+| Under 640 px | Single column. The portfolio preview becomes a horizontal snap strip. The gallery alternates full and inset items. |
+| Under 861 px | Full-screen menu dialog, and the mobile hero uses the separately composed H2 portrait. |
+| Under 861 px | A contact dock (Call and Request flowers) sits at the viewport foot, with matching reserved padding. It is hidden on Contact. |
+| 1024 px and up | Five service entry points in one row, and a three-column gallery rhythm. |
 
-- Heroes use `min-height: 100svh`, never `100vh`.
-- Tap targets are 44px or larger. The viewer controls sit within thumb reach
-  on mobile.
-- No horizontal overflow is allowed at any width. This was verified at 360,
-  768, 1024 and 1440 pixels.
+Verified at 375, 768, 1440 and 1920 px with no horizontal overflow.
 
 ## 7. Voice
 
-The voice is plain, warm and precise. Copy uses only verified facts about the
-studio (see `src/data/site.ts`), with no invented testimonials, awards,
-prices, clients or venues. Interface language is functional: "View the
-gallery", "Enquire", "Send enquiry".
+The copy is the studio's own, condensed rather than rewritten in meaning. It uses verified facts only: no prices, delivery zones, turnaround times or testimonials. Primary actions are "Explore the Gallery" and "Request Flowers". Service calls to action read "Enquire about …".

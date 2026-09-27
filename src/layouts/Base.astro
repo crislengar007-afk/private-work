@@ -2,32 +2,62 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import ContactDock from '../components/ContactDock.astro';
 import { site } from '../data/site';
 
 interface Props {
   title: string;
   description: string;
-  /** Absolute or root-relative URL of a social preview image. */
+  /** Root-relative or absolute URL of a social preview image. */
   image?: string;
+  /** Show the mobile contact dock (off on the Contact page). */
+  dock?: boolean;
+  /** Emit LocalBusiness structured data (Home page). */
+  business?: boolean;
 }
 
-const { title, description, image } = Astro.props;
+const { title, description, image, dock = true, business = false } = Astro.props;
 const fullTitle = title === site.name ? title : `${title} | ${site.name}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
 const ogImage = image ? new URL(image, Astro.site ?? site.url).href : undefined;
+const { contact } = site;
+
+// Only facts displayed on the live site; confirm with the owner before launch.
+const jsonLd = business && {
+  '@context': 'https://schema.org',
+  '@type': 'Florist',
+  name: site.name,
+  url: site.url,
+  email: contact.email,
+  telephone: contact.phone,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Ports of Call, Leeward through Grace Bay',
+    addressRegion: 'Providenciales',
+    postalCode: 'TKCA 1ZZ',
+    addressCountry: 'TC',
+  },
+  openingHoursSpecification: [
+    { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '07:00', closes: '19:00' },
+    { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Sunday', opens: '08:00', closes: '15:00' },
+  ],
+  sameAs: [contact.instagram && `https://www.instagram.com/${contact.instagram}/`, contact.facebook].filter(Boolean),
+};
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical.href} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#f3f1ea" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#101612" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#ece7de" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121817" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={fullTitle} />
@@ -35,6 +65,7 @@ const ogImage = image ? new URL(image, Astro.site ?? site.url).href : undefined;
     <meta property="og:url" content={canonical.href} />
     {ogImage && <meta property="og:image" content={ogImage} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <script is:inline>
       document.documentElement.classList.add('js');
     </script>
@@ -47,6 +78,7 @@ const ogImage = image ? new URL(image, Astro.site ?? site.url).href : undefined;
       <slot />
     </main>
     <Footer />
+    {dock && <ContactDock />}
 
     <script>
       // Gentle entrance for content marked [data-reveal]; once per element.

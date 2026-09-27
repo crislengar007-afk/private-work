@@ -1,0 +1,215 @@
+---
+import Base from '../layouts/Base.astro';
+import Media from '../components/Media.astro';
+import Icon from '../components/Icon.astro';
+import InquiryBand from '../components/InquiryBand.astro';
+import { services, mission } from '../data/services';
+import { galleryItems } from '../data/gallery';
+import { decor } from '../data/decor';
+
+// Generated campaign stills (concepts) where they exist; otherwise real work.
+const imageFor = (id: string, campaign?: string) => {
+  const concept = campaign ? decor(`s-${campaign}`) : undefined;
+  if (concept) return { image: concept.image, alt: concept.alt, concept: true };
+  const real = galleryItems.find((g) => g.id === (id === 'house-guests' ? 'img010' : 'img011')) ?? galleryItems[0];
+  return { image: real.image, alt: real.alt, concept: false };
+};
+---
+
+<Base
+  title="Our services"
+  description="Arrangements, wedding decoration, corporate flowers, house guest flowers and luxury hotel flowers from The Flower Studio TCI at Ports of Call, Grace Bay."
+>
+  <section class="intro wrap" aria-labelledby="services-title">
+    <h1 id="services-title">Our services</h1>
+    <div class="intro-copy">
+      <p class="lede">
+        From a single arrangement to the flowers for a wedding or a hotel, every design is composed around you and your
+        occasion.
+      </p>
+      <nav aria-label="Services on this page">
+        <ul class="jump">
+          {services.map((s) => <li><a href={`#${s.id}`}>{s.title}</a></li>)}
+        </ul>
+      </nav>
+    </div>
+  </section>
+
+  {
+    services.map((s, i) => {
+      const media = imageFor(s.id, s.campaign);
+      return (
+        <section id={s.id} class:list={['service', { 'is-reversed': i % 2 === 1 }]} aria-labelledby={`${s.id}-title`}>
+          <div class="wrap service-grid">
+            <figure class="service-media" data-reveal>
+              <Media
+                image={media.image}
+                alt={media.alt}
+                ratio={3 / 4}
+                arch
+                native={!media.concept}
+                sizes="(min-width: 900px) 40vw, 92vw"
+              />
+              <figcaption>
+                {media.concept ? (
+                  <span class="concept-tag">Concept image, generated for this design</span>
+                ) : (
+                  <span class="caption">From the studio’s portfolio</span>
+                )}
+              </figcaption>
+            </figure>
+            <div class="service-copy" data-reveal style="--reveal-delay: 120">
+              <h2 id={`${s.id}-title`}>{s.title}</h2>
+              {s.tagline && <p class="tagline">{s.tagline}</p>}
+              <p class="lede">{s.description}</p>
+              <p class="audience">{s.audience}</p>
+              <div class="service-actions">
+                <a class="button" href={`/contact/?service=${s.id}`}>
+                  Enquire about {s.title.toLowerCase()} <Icon name="arrow-right" class="arrow" />
+                </a>
+              </div>
+              {s.isEvent && (
+                <p class="caption note">The enquiry form asks a few optional event questions, such as the venue.</p>
+              )}
+            </div>
+          </div>
+        </section>
+      );
+    })
+  }
+
+  <section class="section promise wrap" aria-label="Our mission">
+    <p class="promise-quote">{mission}</p>
+  </section>
+
+  <InquiryBand />
+</Base>
+
+<style>
+  .intro {
+    display: grid;
+    gap: 1.75rem;
+    padding-block: clamp(2.5rem, 7vw, 6rem) clamp(3rem, 7vw, 6rem);
+  }
+
+  .intro h1 {
+    font-size: var(--step-6);
+  }
+
+  .intro-copy {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .jump {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .jump a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 1rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--pill);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition:
+      border-color var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
+  }
+
+  .jump a:hover {
+    border-color: var(--lagoon);
+    color: var(--lagoon);
+  }
+
+  @media (min-width: 1024px) {
+    .intro {
+      grid-template-columns: 6fr 5fr;
+      align-items: end;
+      gap: 4rem;
+    }
+  }
+
+  .service {
+    padding-block: clamp(3rem, 7vw, 6rem);
+    scroll-margin-top: 5rem;
+  }
+
+  .service:nth-of-type(even) {
+    background: var(--stone-2);
+  }
+
+  .service-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .service-media {
+    display: grid;
+    gap: 0.6rem;
+    width: min(100%, 34rem);
+  }
+
+  .service-copy {
+    display: grid;
+    gap: 1.1rem;
+    justify-items: start;
+  }
+
+  .service-copy h2 {
+    font-size: var(--step-5);
+  }
+
+  .tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--lagoon);
+    line-height: 1.25;
+  }
+
+  .audience {
+    color: var(--ink-soft);
+    font-size: 0.9688rem;
+    padding-left: 1rem;
+    border-left: 1px solid var(--lotus);
+  }
+
+  .service-actions {
+    margin-top: 0.5rem;
+  }
+
+  .note {
+    max-width: 30rem;
+  }
+
+  @media (min-width: 900px) {
+    .service-grid {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      gap: clamp(3rem, 6vw, 6rem);
+    }
+    .is-reversed .service-media {
+      order: 2;
+      justify-self: end;
+    }
+  }
+
+  .promise-quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: var(--step-4);
+    line-height: 1.2;
+    max-width: 30ch;
+    margin-inline: auto;
+    text-align: center;
+    text-wrap: balance;
+  }
+</style>

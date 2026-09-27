@@ -1,6 +1,201 @@
 {
-  "importedFrom": null,
-  "importedAt": null,
-  "collections": [],
-  "items": []
+  "importedFrom": "https://theflowerstudiotci.com/gallery/",
+  "importedAt": "2026-09-27T05:44:38.618Z",
+  "collections": [
+    {
+      "id": "whites",
+      "label": "White"
+    },
+    {
+      "id": "reds",
+      "label": "Red"
+    },
+    {
+      "id": "tropical",
+      "label": "Tropical"
+    },
+    {
+      "id": "pinks",
+      "label": "Pink and purple"
+    }
+  ],
+  "items": [
+    {
+      "id": "img011",
+      "file": "img011.jpg",
+      "alt": "Bird of paradise, orange and yellow roses and pink asters in a tall tropical arrangement.",
+      "caption": "Tropical arrangement, upright",
+      "collection": "tropical",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img011.jpg"
+    },
+    {
+      "id": "img008",
+      "file": "img008.jpg",
+      "alt": "White roses and lilies with dark green foliage against a turquoise backdrop.",
+      "caption": "White roses and lilies",
+      "collection": "whites",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img008.jpg"
+    },
+    {
+      "id": "img002",
+      "file": "img002.jpg",
+      "alt": "A glass vase of purple calla lilies, pink roses and waxflower on a wooden table.",
+      "caption": "Calla lilies in glass",
+      "collection": "pinks",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img002.jpg"
+    },
+    {
+      "id": "img015",
+      "file": "img015.jpg",
+      "alt": "A dense arrangement of red roses and yellow solidago against a turquoise backdrop.",
+      "caption": "Red roses on turquoise",
+      "collection": "reds",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img015.jpg"
+    },
+    {
+      "id": "img006",
+      "file": "img006.jpg",
+      "alt": "A tropical arrangement of bird of paradise, yellow roses, pink gerberas and green hydrangea.",
+      "caption": "Bird of paradise mix",
+      "collection": "tropical",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img006.jpg"
+    },
+    {
+      "id": "img010",
+      "file": "img010.jpg",
+      "alt": "Pink roses, white lilies, purple statice and snapdragons in a full mixed arrangement.",
+      "caption": "Pink roses and lilies",
+      "collection": "pinks",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img010.jpg"
+    },
+    {
+      "id": "img012",
+      "file": "img012.jpg",
+      "alt": "White roses, chrysanthemums and hydrangea with lilies in a tall arrangement.",
+      "caption": "White roses and hydrangea",
+      "collection": "whites",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img012.jpg"
+    },
+    {
+      "id": "img003",
+      "file": "img003.jpg",
+      "alt": "Red roses with sprigs of yellow solidago and glossy green leaves, seen up close.",
+      "caption": "Red roses and solidago",
+      "collection": "reds",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img003.jpg"
+    },
+    {
+      "id": "img016",
+      "file": "img016.jpg",
+      "alt": "White lilies, roses and snapdragons with trailing greenery, tall and airy.",
+      "caption": "White lilies and snapdragons",
+      "collection": "whites",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img016.jpg"
+    },
+    {
+      "id": "img013",
+      "file": "img013.jpg",
+      "alt": "A close view of pink roses, white lilies, yellow solidago and purple statice.",
+      "caption": "Pink roses, close",
+      "collection": "pinks",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img013.jpg"
+    },
+    {
+      "id": "img007",
+      "file": "img007.jpg",
+      "alt": "Purple calla lilies, pink roses and waxflower against a turquoise backdrop.",
+      "caption": "Calla lilies and roses",
+      "collection": "pinks",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img007.jpg"
+    },
+    {
+      "id": "img001",
+      "file": "img001.jpg",
+      "alt": "A low white trough arrangement of white roses, lilies and deep green foliage.",
+      "caption": "White trough arrangement",
+      "collection": "whites",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img001.jpg"
+    },
+    {
+      "id": "img014",
+      "file": "img014.jpg",
+      "alt": "Bird of paradise, yellow roses, lilies and pink gerberas against a turquoise backdrop.",
+      "caption": "Bird of paradise and roses",
+      "collection": "tropical",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img014.jpg"
+    },
+    {
+      "id": "img004",
+      "file": "img004.jpg",
+      "alt": "A bright mixed arrangement of pink roses, yellow lilies and snapdragons.",
+      "caption": "Bright mixed arrangement",
+      "collection": "pinks",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img004.jpg"
+    },
+    {
+      "id": "img009",
+      "file": "img009.jpg",
+      "alt": "Deep red roses with yellow solidago, photographed against pale blue.",
+      "caption": "Red roses, upright",
+      "collection": "reds",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img009.jpg"
+    },
+    {
+      "id": "img005",
+      "file": "img005.jpg",
+      "alt": "A tall white arrangement of chrysanthemums, hydrangea and lilies.",
+      "caption": "Tall white arrangement",
+      "collection": "whites",
+      "provenance": "real_portfolio",
+      "credit": "The Flower Studio TCI",
+      "status": "published",
+      "sourceUrl": "https://theflowerstudiotci.com/wp-content/uploads/2023/10/img005.jpg"
+    }
+  ],
+  "note": "Alt text, captions and palette categories written from visual inspection on 2026-09-27. Categories describe colour only; the source gallery has no categories."
 }

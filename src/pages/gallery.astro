@@ -1,35 +1,28 @@
 ---
-import Icon from '../components/Icon.astro';
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Media from '../components/Media.astro';
+import Icon from '../components/Icon.astro';
 import InquiryBand from '../components/InquiryBand.astro';
-import { galleryItems, collections, collectionLabel, isPlaceholderGallery } from '../data/gallery';
+import { galleryItems, collections, collectionLabel } from '../data/gallery';
 
-// Full-size sources for the viewer, generated at build time.
+// Full-size sources for the viewer, generated at build time and never wider
+// than the original photograph.
 const viewerData = await Promise.all(
   galleryItems.map(async (item) => {
-    let src: string | undefined;
-    let srcset: string | undefined;
-    if (item.image) {
-      const widths = [1200, 1800, 2400].filter((w) => w <= item.image!.width);
-      if (widths.length === 0) widths.push(item.image.width);
-      const variants = await Promise.all(
-        widths.map((w) => getImage({ src: item.image!, width: w, format: 'webp' })),
-      );
-      src = variants[variants.length - 1].src;
-      srcset = variants.map((v, i) => `${v.src} ${widths[i]}w`).join(', ');
-    }
+    const widths = [800, 1200, 1600].filter((w) => w < item.width);
+    widths.push(item.width);
+    const variants = await Promise.all(widths.map((w) => getImage({ src: item.image, width: w, format: 'webp' })));
     return {
       id: item.id,
       alt: item.alt,
       caption: item.caption ?? '',
       collection: item.collection ?? '',
       collectionLabel: collectionLabel(item.collection) ?? '',
-      ratio: item.ratio,
-      src,
-      srcset,
-      placeholder: Boolean(item.placeholder),
+      width: item.width,
+      height: item.height,
+      src: variants[variants.length - 1].src,
+      srcset: variants.map((v, i) => `${v.src} ${widths[i]}w`).join(', '),
     };
   }),
 );
@@ -39,38 +32,29 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
 
 <Base
   title="Gallery"
-  description="The gallery of The Flower Studio TCI: floral design for events and personal celebrations in the Turks and Caicos Islands."
+  description="Floral arrangements by The Flower Studio TCI at Ports of Call, Grace Bay. Browse the studio's own work and enquire about any arrangement."
 >
   <section class="intro wrap" aria-labelledby="gallery-title">
     <h1 id="gallery-title">Gallery</h1>
-    <p class="lede">
-      Floral design by The Flower Studio. Select a photograph to see it in full, and enquire about any arrangement
-      that feels close to what you have in mind.
-    </p>
+    <div class="intro-copy">
+      <p class="lede">
+        Every photograph here is the studio’s own work. Open any arrangement to see it in full, then enquire about
+        something similar for your occasion.
+      </p>
+    </div>
   </section>
-
-  {
-    isPlaceholderGallery && (
-      <div class="wrap">
-        <p class="notice" role="note">
-          Photographs from the studio's current gallery are on their way. Until they arrive, these frames hold
-          their places.
-        </p>
-      </div>
-    )
-  }
 
   <section class="wrap gallery" aria-label="Photographs" data-gallery>
     {
       collections.length > 0 && (
         <div class="filters" data-filters>
-          <div class="filter-group" role="group" aria-label="Filter by collection">
+          <div class="filter-group" role="group" aria-label="Filter by colour">
             <button type="button" class="filter" data-filter="" aria-pressed="true">
-              All
+              All <span class="count">{galleryItems.length}</span>
             </button>
             {collections.map((c) => (
               <button type="button" class="filter" data-filter={c.id} aria-pressed="false">
-                {c.label}
+                {c.label} <span class="count">{c.count}</span>
               </button>
             ))}
           </div>
@@ -84,42 +68,34 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     <ul class="grid" data-grid>
       {
         galleryItems.map((item, i) => (
-          <li
-            class="item is-shown"
-            data-id={item.id}
-            data-collection={item.collection ?? ''}
-            data-orient={orient(item.ratio)}
-          >
+          <li class="item is-shown" data-id={item.id} data-collection={item.collection ?? ''} data-orient={orient(item.ratio)}>
             <button
               type="button"
               class="thumb"
               data-open={item.id}
               aria-haspopup="dialog"
-              aria-label={`View larger: ${item.alt || item.caption || 'photograph'}`}
+              aria-label={`View larger: ${item.alt}`}
             >
               <Media
                 image={item.image}
                 alt={item.alt}
                 ratio={item.ratio}
-                sizes="(min-width: 1024px) 50vw, (min-width: 640px) 60vw, 100vw"
-                eager={i < 2}
+                native
                 zoom
-                pendingLabel={item.caption}
+                sizes={item.ratio < 0.92 ? '(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw' : '(min-width: 640px) 512px, 90vw'}
+                eager={i < 2}
               />
             </button>
-            {(item.caption || item.collection) && !item.placeholder && (
-              <p class="caption item-caption">
-                {item.caption}
-                {item.caption && item.collection && <span aria-hidden="true"> &middot; </span>}
-                {item.collection && <span class="item-collection">{collectionLabel(item.collection)}</span>}
-              </p>
-            )}
+            <p class="caption item-caption">
+              {item.caption}
+              {item.collection && <span class="item-collection">{collectionLabel(item.collection)}</span>}
+            </p>
           </li>
         ))
       }
     </ul>
 
-    <p class="empty" data-empty hidden>No photographs in this collection yet.</p>
+    <p class="empty" data-empty hidden>No photographs in this colour yet.</p>
   </section>
 
   <dialog class="viewer" data-viewer aria-labelledby="viewer-title">
@@ -137,7 +113,6 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
       </button>
       <figure class="viewer-figure" data-figure>
         <img data-img alt="" decoding="async" hidden />
-        <div class="pending viewer-pending" data-pending hidden><span>Portfolio photograph pending import</span></div>
       </figure>
       <button type="button" class="viewer-nav next" data-next aria-label="Next photograph">
         <Icon name="arrow-right" />
@@ -154,14 +129,14 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
 
   <script type="application/json" id="gallery-data" set:html={JSON.stringify(viewerData)} />
 
-  <InquiryBand heading="Seen something you love?" text="Mention the photograph in your enquiry, or use the link beside any image to bring it with you." />
+  <InquiryBand text="Seen an arrangement you love? Mention it in your enquiry, or use the link beside any photograph to bring it with you." />
 </Base>
 
 <style>
   .intro {
     display: grid;
     gap: 1.5rem;
-    padding-block: clamp(3rem, 8vw, 7rem) clamp(2.5rem, 5vw, 4rem);
+    padding-block: clamp(2.5rem, 7vw, 6rem) clamp(2rem, 4vw, 3.5rem);
   }
 
   .intro h1 {
@@ -170,23 +145,13 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
 
   @media (min-width: 1024px) {
     .intro {
-      grid-template-columns: 7fr 5fr;
+      grid-template-columns: 6fr 5fr;
       align-items: end;
       gap: 4rem;
     }
-    .intro .lede {
+    .intro-copy {
       padding-bottom: 1rem;
     }
-  }
-
-  .notice {
-    max-width: 48rem;
-    margin-bottom: 3rem;
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--rule);
-    background: var(--paper-2);
-    color: var(--ink-soft);
-    font-size: 0.9375rem;
   }
 
   .gallery {
@@ -201,7 +166,7 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     align-items: center;
     justify-content: space-between;
     gap: 1rem 2rem;
-    margin-bottom: clamp(3rem, 6vw, 5rem);
+    margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
     padding-block: 0.75rem;
     border-block: 1px solid var(--rule);
   }
@@ -209,66 +174,61 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
   .filter-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem 1.75rem;
+    gap: 0.5rem;
   }
 
   .filter {
-    position: relative;
-    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     min-height: 44px;
-    padding: 0;
-    border: 0;
-    background: none;
-    font-family: var(--font-display);
-    font-size: var(--step-2);
-    color: var(--ink-soft);
-    transition: color var(--dur-1) var(--ease-out);
-  }
-
-  .filter::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0.4rem;
-    height: 1px;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--dur-2) var(--ease-out);
+    min-width: 44px;
+    padding: 0 1.1rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--pill);
+    background: transparent;
+    font-size: 0.9688rem;
+    transition:
+      background-color var(--dur-1) var(--ease-out),
+      border-color var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out);
   }
 
   .filter:hover {
-    color: var(--ink);
+    border-color: var(--ink);
   }
 
   .filter[aria-pressed='true'] {
-    color: var(--rose);
-    font-style: italic;
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--stone);
   }
 
-  .filter[aria-pressed='true']::after {
-    transform: scaleX(1);
+  .count {
+    font-size: 0.8125rem;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Art-directed grid ----------------------------------------------------------
-     The rhythm is keyed to the position among *visible* items, so filtering
-     keeps the composition intact. Portrait images take narrower slots so no
-     single photograph dominates the page. */
+  /* Editorial grid --------------------------------------------------------------
+     The rhythm follows the position among *visible* items, so filtering keeps
+     the composition. Squares are the studio's 512px originals and are never
+     enlarged beyond that (Media native). */
   .grid {
     list-style: none;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: clamp(1rem, 2vw, 2rem);
-    row-gap: clamp(3rem, 8vw, 7rem);
+    row-gap: clamp(2.5rem, 6vw, 5.5rem);
     align-items: start;
   }
 
   .item {
     grid-column: 1 / -1;
     display: grid;
-    gap: 0.85rem;
+    gap: 0.75rem;
+    justify-items: start;
   }
 
   .item[hidden] {
@@ -277,60 +237,43 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
 
   .item:nth-child(even of .is-shown) {
     grid-column: 3 / -1;
+    justify-items: end;
   }
 
-  @media (min-width: 640px) and (max-width: 1023px) {
+  .item:nth-child(even of .is-shown) .item-caption {
+    justify-self: end;
+  }
+
+  @media (min-width: 640px) {
     .item:nth-child(odd of .is-shown) {
-      grid-column: 1 / span 7;
+      grid-column: 1 / span 6;
+      justify-items: start;
     }
     .item:nth-child(even of .is-shown) {
-      grid-column: 8 / span 5;
-      margin-top: clamp(4rem, 14vw, 9rem);
+      grid-column: 7 / span 6;
+      margin-top: clamp(3rem, 12vw, 8rem);
+      justify-items: start;
     }
-    .item[data-orient='landscape']:nth-child(odd of .is-shown) {
-      grid-column: 1 / span 8;
+    .item:nth-child(even of .is-shown) .item-caption {
+      justify-self: start;
     }
   }
 
   @media (min-width: 1024px) {
-    .item:nth-child(6n + 1 of .is-shown) {
-      grid-column: 1 / span 7;
+    .item:nth-child(3n + 1 of .is-shown) {
+      grid-column: 1 / span 4;
+      margin-top: 0;
     }
-    .item[data-orient='portrait']:nth-child(6n + 1 of .is-shown) {
-      grid-column: 2 / span 5;
+    .item:nth-child(3n + 2 of .is-shown) {
+      grid-column: 5 / span 4;
+      margin-top: clamp(4rem, 9vw, 9rem);
     }
-    .item:nth-child(6n + 2 of .is-shown) {
+    .item:nth-child(3n of .is-shown) {
       grid-column: 9 / span 4;
-      margin-top: clamp(6rem, 14vw, 14rem);
+      margin-top: clamp(1.5rem, 4vw, 4rem);
     }
-    .item[data-orient='landscape']:nth-child(6n + 2 of .is-shown) {
-      grid-column: 8 / span 5;
-    }
-    .item:nth-child(6n + 3 of .is-shown) {
-      grid-column: 2 / span 4;
-    }
-    .item[data-orient='landscape']:nth-child(6n + 3 of .is-shown) {
-      grid-column: 1 / span 6;
-    }
-    .item:nth-child(6n + 4 of .is-shown) {
-      grid-column: 7 / span 5;
-      margin-top: clamp(3rem, 8vw, 8rem);
-    }
-    .item[data-orient='landscape']:nth-child(6n + 4 of .is-shown) {
-      grid-column: 7 / span 6;
-    }
-    .item:nth-child(6n + 5 of .is-shown) {
-      grid-column: 1 / span 5;
-    }
-    .item[data-orient='landscape']:nth-child(6n + 5 of .is-shown) {
-      grid-column: 1 / span 7;
-    }
-    .item:nth-child(6n of .is-shown) {
-      grid-column: 8 / span 4;
-      margin-top: clamp(5rem, 12vw, 12rem);
-    }
-    .item[data-orient='landscape']:nth-child(6n of .is-shown) {
-      grid-column: 8 / span 5;
+    .item[data-orient='portrait'] .thumb {
+      max-width: 26rem;
     }
   }
 
@@ -344,10 +287,18 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     cursor: zoom-in;
   }
 
+  .thumb :global(.frame) {
+    width: 100%;
+  }
+
   .item-caption {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
+    gap: 0.25rem 0.75rem;
+  }
+
+  .item-collection {
+    color: var(--lagoon);
   }
 
   .empty {
@@ -391,7 +342,7 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
   }
 
   .viewer :focus-visible {
-    outline-color: #e0a7af;
+    outline-color: #6cc3c4;
   }
 
   .viewer-bar,
@@ -427,55 +378,42 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     min-height: 0;
+    height: 100%;
     touch-action: pan-y pinch-zoom;
     user-select: none;
   }
 
   .viewer-figure {
-    display: grid;
-    place-items: center;
+    position: relative;
     height: 100%;
     min-height: 0;
-    padding: 0 0.5rem;
+    overflow: hidden;
+    margin: 0 0.5rem;
   }
 
-  .viewer-figure img,
-  .viewer-pending {
-    grid-area: 1 / 1;
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
+  /* The photograph is contained within the stage and never enlarged past
+     its own pixels (max sizes are set per image by the script). */
+  .viewer-figure img {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     transition:
       opacity 320ms var(--ease-out),
       transform 520ms var(--ease-out);
   }
 
-  .viewer-pending {
-    height: min(70svh, 100%);
-    width: auto;
-    max-width: 100%;
-    background: #1b241e;
-    color: #b8c0b8;
-  }
-
-  .viewer-pending span {
-    background: #1b241e;
-  }
-
-  .viewer-figure.is-changing img,
-  .viewer-figure.is-changing .viewer-pending {
+  .viewer-figure.is-changing img {
     opacity: 0;
   }
 
-  .viewer-figure.is-changing[data-dir='next'] img,
-  .viewer-figure.is-changing[data-dir='next'] .viewer-pending {
+  .viewer-figure.is-changing[data-dir='next'] img {
     transform: translateX(-1.5rem);
   }
 
-  .viewer-figure.is-changing[data-dir='prev'] img,
-  .viewer-figure.is-changing[data-dir='prev'] .viewer-pending {
+  .viewer-figure.is-changing[data-dir='prev'] img {
     transform: translateX(1.5rem);
   }
 
@@ -511,7 +449,7 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
   }
 
   .viewer-enquire:hover {
-    color: #e0a7af;
+    color: #6cc3c4;
   }
 
   @media (max-width: 767px) {
@@ -524,11 +462,8 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
     .viewer-figure {
       grid-column: 1 / -1;
       grid-row: 1;
-      height: auto;
-      min-height: 0;
-      max-height: 100%;
-      overflow: hidden;
-      padding: 0;
+      height: 100%;
+      margin: 0;
     }
     .viewer-nav {
       grid-row: 2;

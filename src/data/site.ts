@@ -1,18 +1,7 @@
 /**
- * Business facts. Only verified information belongs here.
- *
- * Verified 2026-09-27 from the search-engine index of theflowerstudiotci.com
- * (the live site itself was unreachable from the build environment):
- *   - The Flower Studio at Ports of Call opened in March 2023.
- *   - Serves the Turks and Caicos Islands, residents and visitors.
- *   - Founded by a young entrepreneur with a background in luxury services.
- *   - Floral design for events and personal celebrations.
- *
- * Contact details below were read on 2026-09-27 from the search-engine index
- * of theflowerstudiotci.com (consistent across several queries) and the
- * studio's Facebook page title. Confirm them against the live Contact page
- * with `npm run import:gallery`, which saves reference/contact.txt.
- * Any value that is `null` is omitted by every component rather than guessed.
+ * Business facts, as displayed on theflowerstudiotci.com (read 2026-09-27;
+ * see CONTENT_MAP.md and reference/*.txt). Confirm with the owner before
+ * publication. Any value that is `null` is omitted rather than guessed.
  */
 
 export interface ContactDetails {
@@ -24,6 +13,7 @@ export interface ContactDetails {
   instagram: string | null;
   facebook: string | null;
   address: string | null;
+  mapUrl: string | null;
   hours: string | null;
 }
 
@@ -40,16 +30,24 @@ export const site = {
     phone: '+1 649 241 4343',
     landline: '+1 649 946 4043',
     whatsapp: null,
-    instagram: null,
-    facebook: 'https://www.facebook.com/theflowerstudiotci/',
-    address: 'Ports of Call, Grace Bay, Providenciales, Turks and Caicos Islands',
+    instagram: 'theflowerstudiotci',
+    facebook: 'https://www.facebook.com/theflowerstudiotci',
+    address: 'Ports of Call, Leeward through Grace Bay, Turks and Caicos Islands, TKCA 1ZZ',
+    mapUrl: 'https://goo.gl/maps/64xcxPowM6JqJkMa7',
     hours: 'Monday to Saturday, 7am to 7pm. Sunday, 8am to 3pm.',
   } satisfies ContactDetails as ContactDetails,
 };
 
+export const hours = [
+  { days: 'Monday to Saturday', time: '7:00 AM to 7:00 PM' },
+  { days: 'Sunday', time: '8:00 AM to 3:00 PM' },
+];
+
+export const tagline = 'Bringing flower elegance to your island experience';
+
 export const nav = [
+  { href: '/our-services/', label: 'Services' },
   { href: '/gallery/', label: 'Gallery' },
-  { href: '/services/', label: 'Services' },
   { href: '/contact/', label: 'Contact' },
 ] as const;
 

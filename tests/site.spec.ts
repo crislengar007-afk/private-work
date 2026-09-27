@@ -4,7 +4,7 @@ import { TEST_ENDPOINT } from '../playwright.config';
 const pages = [
   { path: '/', title: /The Flower Studio TCI/ },
   { path: '/gallery/', title: /^Gallery \| The Flower Studio TCI$/ },
-  { path: '/services/', title: /^Services \| The Flower Studio TCI$/ },
+  { path: '/our-services/', title: /^Our services \| The Flower Studio TCI$/ },
   { path: '/contact/', title: /^Contact \| The Flower Studio TCI$/ },
 ];
 
@@ -50,7 +50,8 @@ test.describe('pages', () => {
       } else {
         await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: label, exact: true }).click();
       }
-      await expect(page).toHaveURL(new RegExp(`/${label.toLowerCase()}/$`));
+      const slug = label === 'Services' ? 'our-services' : label.toLowerCase();
+      await expect(page).toHaveURL(new RegExp(`/${slug}/$`));
       await expect(page.locator('[aria-current="page"]').first()).toBeAttached();
     }
   });
@@ -72,7 +73,7 @@ test.describe('pages', () => {
 test.describe('gallery', () => {
   test('filters by collection, updates the URL and keeps it on reload', async ({ page }) => {
     await page.goto('/gallery/');
-    const filters = page.getByRole('group', { name: 'Filter by collection' });
+    const filters = page.getByRole('group', { name: 'Filter by colour' });
     test.skip((await filters.count()) === 0, 'no collections in the current content');
 
     const target = filters.getByRole('button').nth(1);
@@ -132,7 +133,7 @@ test.describe('gallery', () => {
     await page.goto('/gallery/');
     await page.locator('.grid [data-open]').first().click();
     for (const name of ['Previous photograph', 'Next photograph', 'Close']) {
-      const hit = await page.getByRole('button', { name }).evaluate((btn) => {
+      const hit = await page.getByRole('button', { name, exact: true }).evaluate((btn) => {
         const r = btn.getBoundingClientRect();
         const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
         return !!top && btn.contains(top);
@@ -182,7 +183,7 @@ test.describe('gallery', () => {
 
   test('a deep link opens the viewer, and returning restores it', async ({ page }) => {
     await page.goto('/');
-    await page.locator('a.work').first().click();
+    await page.locator('a.strip-link').first().click();
     await expect(page).toHaveURL(/\/gallery\/\?view=/);
     await expect(page.getByRole('dialog', { name: 'Photograph viewer' })).toBeVisible();
 
@@ -212,10 +213,19 @@ test.describe('enquiry', () => {
     await expect(page).toHaveURL(/\/contact\/$/);
   });
 
-  test('a service link pre-selects the occasion', async ({ page }) => {
+  test('a service link pre-selects the service, and event services show event questions', async ({ page }) => {
+    await page.goto('/our-services/');
+    await page.getByRole('link', { name: /Enquire about wedding decoration/ }).click();
+    await expect(page).toHaveURL(/\/contact\/\?service=weddings$/);
+    await expect(page.getByLabel('Service', { exact: true })).toHaveValue('weddings');
+    await expect(page.getByLabel('Venue or location')).toBeVisible();
+    await page.getByLabel('Service', { exact: true }).selectOption('arrangements');
+    await expect(page.getByLabel('Venue or location')).toBeHidden();
+  });
+
+  test('the old /services/ route redirects to /our-services/', async ({ page }) => {
     await page.goto('/services/');
-    await page.getByRole('link', { name: /Enquire about events/ }).click();
-    await expect(page.getByLabel('Occasion', { exact: true })).toHaveValue('Event');
+    await expect(page).toHaveURL(/\/our-services\/$/);
   });
 
   test('validates inline and focuses the first problem', async ({ page }) => {
@@ -238,9 +248,25 @@ test.describe('enquiry', () => {
   async function fillValid(page: Page) {
     await page.getByLabel('Name').fill('Ana Rivera');
     await page.getByLabel('Email').fill('ana@example.com');
-    await page.getByLabel('Occasion', { exact: true }).selectOption('Event');
-    await page.getByLabel('Your message').fill('Flowers for a dinner for twelve on the beach.');
+    await page.getByLabel('Service', { exact: true }).selectOption('corporate');
+    await page.getByLabel('Tell us about it').fill('Flowers for a dinner for twelve on the beach.');
+    // The form rejects submissions faster than a person could type (spam check).
+    await page.waitForTimeout(2600);
   }
+
+  test('the hidden spam field blocks sending', async ({ page }) => {
+    let sent = false;
+    await page.route(TEST_ENDPOINT, (route) => {
+      sent = true;
+      return route.fulfill({ status: 200, body: '{}' });
+    });
+    await page.goto('/contact/');
+    await fillValid(page);
+    await page.locator('input[name="website"]').evaluate((el: HTMLInputElement) => (el.value = 'spam'));
+    await page.getByRole('button', { name: /Send enquiry/ }).click();
+    await expect(page.locator('[data-status]')).toContainText('too quick');
+    expect(sent).toBe(false);
+  });
 
   test('reports success only when the endpoint confirms it', async ({ page }) => {
     let body: Record<string, string> | undefined;
@@ -255,7 +281,7 @@ test.describe('enquiry', () => {
     await page.getByRole('button', { name: /Send enquiry/ }).click();
     await expect(page.locator('[data-status]')).toContainText('has been sent to the studio');
     expect(body?.name).toBe('Ana Rivera');
-    expect(body?.occasion).toBe('Event');
+    expect(body?.service).toBe('Corporate flowers');
     expect(body?.piece).toBeTruthy();
     expect(body?.pieceUrl).toContain('/gallery/?view=');
   });
@@ -268,7 +294,7 @@ test.describe('enquiry', () => {
     const status = page.locator('[data-status]');
     await expect(status).toContainText('could not be sent');
     await expect(status).not.toContainText('has been sent');
-    await expect(page.getByLabel('Your message')).toHaveValue(/dinner for twelve/);
+    await expect(page.getByLabel('Tell us about it')).toHaveValue(/dinner for twelve/);
   });
 });
 
@@ -286,7 +312,7 @@ test.describe('reduced motion', () => {
     expect(playing).toBe(0);
 
     await page.goto('/gallery/');
-    const filters = page.getByRole('group', { name: 'Filter by collection' });
+    const filters = page.getByRole('group', { name: 'Filter by colour' });
     if ((await filters.count()) > 0) {
       await filters.getByRole('button').nth(1).click();
       // CSS transitions are shortened to 0.01ms by the reduced-motion rule;

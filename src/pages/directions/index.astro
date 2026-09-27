@@ -1,0 +1,107 @@
+---
+// Three homepage directions, kept for comparison (SPEC §4). Not indexed.
+import '@fontsource-variable/hanken-grotesk';
+import '@fontsource-variable/cormorant-garamond';
+
+const directions = [
+  {
+    id: 'a',
+    name: 'Botanical Editorial',
+    palette: [['Ivory', '#F3F1EA'], ['Botanical green', '#1E3A2D'], ['Ink', '#17221C'], ['Muted rose', '#8A4753']],
+    type: 'Bodoni Moda (Didone display) with Geist (text)',
+    hero: 'Split screen: an oversized Didone headline beside a full-height generated macro still.',
+    rationale:
+      'The most "magazine" of the three, with confident typography and a single green colour block. But the palette and type owe nothing to the studio’s logo or photographs, and the cool green sits awkwardly beside the vivid, turquoise-backed portfolio.',
+  },
+  {
+    id: 'b',
+    name: 'Island Atelier',
+    palette: [['Limestone', '#ECE7DE'], ['Sand', '#DDD5C7'], ['Lagoon', '#11696C'], ['Lotus (logo)', '#C4527A'], ['Ink', '#1D2627']],
+    type: 'Cormorant Garamond (light display serif, close to the logo wordmark) with Hanken Grotesk (text)',
+    hero: 'A limestone arch framing the cinematic loop, with a live HTML headline and two actions to its left. The arch then frames portfolio highlights.',
+    rationale:
+      'Every choice is drawn from the business itself. The light serif echoes the logo, lotus pink is the logo’s own colour, and lagoon comes from the turquoise backdrop in the studio’s real photographs. The limestone neutrals let vivid work sing without competing with it, and the arch gives the site a recognisable, place-rooted signature without beach clichés.',
+    recommended: true,
+  },
+  {
+    id: 'c',
+    name: 'Minimal Floral Gallery',
+    palette: [['Gallery white', '#F7F7F5'], ['Ink', '#111413'], ['Stone', '#5A5F5C']],
+    type: 'Schibsted Grotesk (single family, tight display tracking)',
+    hero: 'A full-bleed triptych of real portfolio photographs, with the headline beneath.',
+    rationale:
+      'The most honest showcase of real work, and the fastest to scan. But the studio’s photos were shot quickly on bright backdrops, and at this scale they carry the whole brand alone. The result reads as a stock florist grid rather than a luxury studio, and it loses the warmth of the island.',
+  },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Three Directions | The Flower Studio TCI</title>
+    <meta name="description" content="Three homepage directions for The Flower Studio TCI, with the recommended direction." />
+  </head>
+  <body>
+    <main>
+      <header class="intro">
+        <h1>Three directions for The Flower Studio</h1>
+        <p>
+          Each direction is a working homepage built with the studio’s real portfolio, copy and services. Open one to
+          scroll it at full size. Direction B is recommended and carries through the preview site.
+        </p>
+      </header>
+
+      {
+        directions.map((d) => (
+          <section class:list={['dir', { rec: d.recommended }]} aria-labelledby={`d-${d.id}`}>
+            <div class="meta">
+              <p class="letter">{d.id.toUpperCase()}{d.recommended && <span class="badge">Recommended</span>}</p>
+              <h2 id={`d-${d.id}`}>{d.name}</h2>
+              <dl>
+                <div><dt>Type</dt><dd>{d.type}</dd></div>
+                <div><dt>Hero</dt><dd>{d.hero}</dd></div>
+                <div><dt>Why</dt><dd>{d.rationale}</dd></div>
+              </dl>
+              <ul class="swatches" aria-label="Palette">
+                {d.palette.map(([name, hex]) => (
+                  <li><span class="chip" style={`background:${hex}`} /><span>{name}<br /><code>{hex}</code></span></li>
+                ))}
+              </ul>
+              <a class="open" href={`${d.id}/`}>Open direction {d.id.toUpperCase()}</a>
+            </div>
+            <div class="shots">
+              <figure class="desk"><img src={`/directions/${d.id}-desktop.webp`} alt={`Direction ${d.id.toUpperCase()} homepage at desktop width`} width="960" height="1600" loading="lazy" /><figcaption>Desktop, 1440px</figcaption></figure>
+              <figure class="mob"><img src={`/directions/${d.id}-mobile.webp`} alt={`Direction ${d.id.toUpperCase()} homepage at mobile width`} width="300" height="1300" loading="lazy" /><figcaption>Mobile, 390px</figcaption></figure>
+            </div>
+          </section>
+        ))
+      }
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  :root { --bg:#ece7de; --card:#f6f3ee; --ink:#1d2627; --soft:#4d5856; --lagoon:#11696c; --rule:#1d262722; color-scheme: light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --bg:#141a1a; --card:#1c2323; --ink:#ebe6dc; --soft:#aab3b0; --lagoon:#6cc3c4; --rule:#ebe6dc26; color-scheme: dark; } }
+  :root[data-theme='dark'] { --bg:#141a1a; --card:#1c2323; --ink:#ebe6dc; --soft:#aab3b0; --lagoon:#6cc3c4; --rule:#ebe6dc26; color-scheme: dark; }
+  * { box-sizing:border-box; margin:0 }
+  body { background:var(--bg); color:var(--ink); font:16px/1.6 'Hanken Grotesk Variable', system-ui, sans-serif }
+  main { max-width:1280px; margin:auto; padding:clamp(2rem,5vw,4rem) clamp(1rem,4vw,2.5rem) 5rem; display:grid; gap:2.5rem }
+  h1, h2 { font-family:'Cormorant Garamond Variable', Garamond, serif; font-weight:400; line-height:1.08; text-wrap:balance }
+  h1 { font-size:clamp(2.4rem,5vw,4rem) } .intro p { max-width:42rem; color:var(--soft); margin-top:1rem; font-size:1.1rem }
+  .dir { display:grid; gap:2rem; padding:clamp(1.25rem,3vw,2.5rem); background:var(--card); border:1px solid var(--rule); border-radius:4px }
+  .rec { outline:2px solid var(--lagoon); outline-offset:-2px }
+  .letter { font-size:.85rem; letter-spacing:.14em; color:var(--soft); display:flex; gap:.75rem; align-items:center }
+  .badge { background:var(--lagoon); color:var(--card); padding:.15rem .6rem; border-radius:999px; letter-spacing:.04em; font-size:.75rem }
+  h2 { font-size:clamp(2rem,3.5vw,2.8rem); margin:.25rem 0 1.25rem }
+  dl { display:grid; gap:.9rem } dt { font-weight:600; font-size:.85rem } dd { color:var(--soft) }
+  .swatches { list-style:none; padding:0; display:flex; flex-wrap:wrap; gap:1rem; margin:1.5rem 0 } .swatches li { display:flex; gap:.6rem; align-items:center; font-size:.85rem }
+  .chip { width:2.25rem; height:2.25rem; border-radius:50%; border:1px solid var(--rule) } code { color:var(--soft); font-size:.8rem }
+  .open { display:inline-flex; align-items:center; min-height:44px; color:var(--lagoon); font-weight:600 }
+  .shots { display:grid; grid-template-columns:minmax(0,3.2fr) minmax(0,1fr); gap:1rem; align-items:start }
+  figure { display:grid; gap:.4rem } figcaption { font-size:.8rem; color:var(--soft) }
+  .shots img { width:100%; height:auto; border:1px solid var(--rule); border-radius:4px; background:#ddd }
+  @media (min-width:1000px) { .dir { grid-template-columns:minmax(0,4fr) minmax(0,7fr) } }
+  @media (max-width:560px) { .shots { grid-template-columns:minmax(0,1fr) minmax(0,.5fr) } }
+</style>

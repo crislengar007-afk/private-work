@@ -1,13 +1,20 @@
 ---
 import Icon from './Icon.astro';
+import { site } from '../data/site';
+
 interface Props {
   heading?: string;
   text?: string;
+  /** Pre-selected service for the enquiry link. */
+  service?: string;
 }
 const {
-  heading = 'Tell us about your occasion.',
-  text = 'Share the date, the setting and the feeling you have in mind. The studio will take it from there.',
+  heading = 'Create something beautiful together',
+  text = 'Tell us about the occasion, the setting and the feeling you have in mind. Or call the studio directly.',
+  service,
 } = Astro.props;
+const { contact } = site;
+const tel = (n: string) => `tel:${n.replace(/[^+\d]/g, '')}`;
 ---
 
 <section class="band" aria-labelledby="band-heading">
@@ -15,18 +22,22 @@ const {
     <h2 id="band-heading" data-reveal>{heading}</h2>
     <div class="band-copy" data-reveal style="--reveal-delay: 120">
       <p>{text}</p>
-      <a class="button button--light" href="/contact/">
-        Contact the studio <Icon name="arrow-right" class="arrow" />
+      <a class="button button--light" href={service ? `/contact/?service=${service}` : '/contact/'}>
+        Request Flowers <Icon name="arrow-right" class="arrow" />
       </a>
+      <ul class="alts">
+        {contact.phone && <li><a href={tel(contact.phone)}>{contact.phone}</a></li>}
+        {contact.email && <li><a href={`mailto:${contact.email}`}>{contact.email}</a></li>}
+      </ul>
     </div>
   </div>
 </section>
 
 <style>
   .band {
-    background: var(--green);
-    color: var(--on-green);
-    padding-block: clamp(5rem, 10vw, 9rem);
+    background: var(--lagoon);
+    color: var(--on-lagoon);
+    padding-block: clamp(4.5rem, 10vw, 8.5rem);
   }
   .band-inner {
     display: grid;
@@ -34,21 +45,37 @@ const {
   }
   h2 {
     font-size: var(--step-5);
-    max-width: 14ch;
+    max-width: 17ch;
+  }
+  h2 :global(em) {
+    color: inherit;
   }
   .band-copy {
     display: grid;
-    gap: 2rem;
-    align-content: end;
+    gap: 1.5rem;
     justify-items: start;
+    align-content: end;
     max-width: 30rem;
   }
   .band-copy p {
-    color: rgb(243 241 234 / 0.82);
+    opacity: 0.88;
     font-size: var(--step-1);
   }
+  .alts {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+  .alts a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration-color: color-mix(in srgb, var(--on-lagoon) 45%, transparent);
+  }
   .band :focus-visible {
-    outline-color: var(--on-green);
+    outline-color: var(--on-lagoon);
   }
   @media (min-width: 900px) {
     .band-inner {

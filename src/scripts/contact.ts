@@ -1,21 +1,27 @@
 /**
- * Enquiry form: carries a selected gallery photograph, validates inline,
- * and submits to a configured endpoint or composes an email. It never
- * reports success unless the endpoint confirms it.
+ * Enquiry form: carries a selected gallery photograph, pre-selects a service,
+ * shows optional event questions only for event services, validates inline,
+ * filters obvious spam, and submits to a configured endpoint or composes an
+ * email. It never reports success unless the endpoint confirms it.
  */
 
 interface Piece {
   id: string;
   label: string;
   collection: string;
-  thumb: string | null;
-  ratio: number;
-  occasion: string;
+  thumb: string;
+}
+
+interface ServiceOption {
+  id: string;
+  label: string;
+  isEvent: boolean;
 }
 
 type Field = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 const STORAGE_KEY = 'fs-enquiry-piece';
+const MIN_FILL_MS = 2500;
 
 const messages: Record<string, (el: Field) => string | null> = {
   name: (el) => (el.value.trim() ? null : 'Please enter your name.'),
@@ -29,7 +35,7 @@ const messages: Record<string, (el: Field) => string | null> = {
     if (!v) return null;
     return /^[+()\d\s.-]{7,}$/.test(v) ? null : 'Please use digits, spaces and an optional leading +.';
   },
-  occasion: (el) => (el.value ? null : 'Please choose the occasion.'),
+  service: (el) => (el.value ? null : 'Please choose a service.'),
   date: (el) => {
     const input = el as HTMLInputElement;
     if (!input.value) return null;
@@ -37,12 +43,12 @@ const messages: Record<string, (el: Field) => string | null> = {
   },
   message: (el) => {
     const v = el.value.trim();
-    if (!v) return 'Please tell us a little about the occasion.';
+    if (!v) return 'Please tell us a little about what you need.';
     return v.length < 10 ? 'Please add a few more words so the studio can help.' : null;
   },
 };
 
-function safeSession(action: 'get' | 'set' | 'remove', value?: string) {
+function session(action: 'get' | 'set' | 'remove', value?: string) {
   try {
     if (action === 'get') return sessionStorage.getItem(STORAGE_KEY);
     if (action === 'set') sessionStorage.setItem(STORAGE_KEY, value!);
@@ -53,58 +59,59 @@ function safeSession(action: 'get' | 'set' | 'remove', value?: string) {
   return null;
 }
 
+const escape = (s: string) =>
+  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+
 export function initEnquiry() {
   const form = document.querySelector<HTMLFormElement>('[data-enquiry]');
   if (!form) return;
+  const startedAt = Date.now();
 
   const pieces: Piece[] = JSON.parse(document.getElementById('pieces-data')?.textContent || '[]');
+  const serviceOptions: ServiceOption[] = JSON.parse(form.dataset.services || '[]');
   const status = form.querySelector<HTMLElement>('[data-status]')!;
   const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+  const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]')!;
   const mode = form.dataset.mode as 'endpoint' | 'email' | 'unavailable';
+  const url = new URL(location.href);
 
-  // Selection handoff ----------------------------------------------------------
+  // Service pre-selection and event questions ---------------------------------
+  const serviceSelect = form.querySelector<HTMLSelectElement>('select[name="service"]')!;
+  const eventFields = form.querySelector<HTMLElement>('[data-event-fields]')!;
+  const syncEventFields = () => {
+    const isEvent = serviceOptions.find((s) => s.id === serviceSelect.value)?.isEvent ?? false;
+    eventFields.hidden = !isEvent;
+  };
+  const preset = url.searchParams.get('service');
+  if (preset && Array.from(serviceSelect.options).some((o) => o.value === preset)) serviceSelect.value = preset;
+  syncEventFields();
+  serviceSelect.addEventListener('change', syncEventFields);
+
+  // Gallery selection handoff ------------------------------------------------
   const selection = form.querySelector<HTMLElement>('[data-selection]')!;
   const selectionInput = form.querySelector<HTMLInputElement>('[data-selection-input]')!;
-  let selected: Piece | undefined;
-
-  const url = new URL(location.href);
-  const requested = url.searchParams.get('piece') ?? safeSession('get');
-  selected = pieces.find((p) => p.id === requested);
+  const requested = url.searchParams.get('piece') ?? session('get');
+  let selected = pieces.find((p) => p.id === requested);
 
   if (selected) {
-    const thumb = form.querySelector<HTMLElement>('[data-selection-thumb]')!;
-    if (selected.thumb) {
-      const img = document.createElement('img');
-      img.src = selected.thumb;
-      img.alt = '';
-      img.width = 88;
-      img.height = 110;
-      thumb.replaceChildren(img);
-    } else {
-      thumb.innerHTML = '<div class="pending" aria-hidden="true"></div>';
-    }
-    const name = [selected.label, selected.collection].filter(Boolean).join(', ');
-    form.querySelector('[data-selection-name]')!.textContent = name;
+    form.querySelector<HTMLImageElement>('[data-selection-thumb]')!.src = selected.thumb;
+    form.querySelector('[data-selection-name]')!.textContent = [selected.label, selected.collection]
+      .filter(Boolean)
+      .join(', ');
     form.querySelector<HTMLAnchorElement>('[data-selection-view]')!.href =
       `/gallery/?view=${encodeURIComponent(selected.id)}`;
     selectionInput.value = selected.id;
     selection.hidden = false;
-    safeSession('set', selected.id);
-  }
-
-  // Pre-select the occasion when arriving from a service.
-  const occasion = url.searchParams.get('occasion');
-  const occasionSelect = form.querySelector<HTMLSelectElement>('select[name="occasion"]');
-  const preset = occasion || selected?.occasion;
-  if (preset && occasionSelect && Array.from(occasionSelect.options).some((o) => o.value === preset)) {
-    occasionSelect.value = preset;
+    session('set', selected.id);
+    if (!preset && !serviceSelect.value) serviceSelect.value = 'arrangements';
+    syncEventFields();
   }
 
   form.querySelector('[data-selection-remove]')?.addEventListener('click', () => {
     selected = undefined;
     selection.hidden = true;
     selectionInput.value = '';
-    safeSession('remove');
+    session('remove');
     const clean = new URL(location.href);
     clean.searchParams.delete('piece');
     history.replaceState(history.state, '', clean);
@@ -112,11 +119,12 @@ export function initEnquiry() {
   });
 
   // Validation ---------------------------------------------------------------
-  const fields = Array.from(form.querySelectorAll<Field>('input[name]:not([type="hidden"]), select, textarea'));
+  const fields = Array.from(form.querySelectorAll<Field>('[name]')).filter(
+    (el) => el.name in messages,
+  );
 
   function check(el: Field, show: boolean) {
-    const rule = messages[el.name];
-    const error = rule ? rule(el) : null;
+    const error = messages[el.name]?.(el) ?? null;
     if (show || el.getAttribute('aria-invalid') === 'true') {
       const slot = form!.querySelector<HTMLElement>(`[data-error-for="${el.name}"]`);
       if (slot) slot.textContent = error ?? '';
@@ -127,7 +135,6 @@ export function initEnquiry() {
   }
 
   for (const el of fields) {
-    // Validate after the visitor leaves a field, then live once it is flagged.
     el.addEventListener('blur', () => {
       if (el.value) check(el, true);
     });
@@ -143,12 +150,15 @@ export function initEnquiry() {
 
   function payload() {
     const data = new FormData(form!);
+    const service = String(data.get('service') ?? '');
+    const serviceLabel = serviceOptions.find((s) => s.id === service)?.label ?? (service === 'other' ? 'Something else' : '');
     return {
       name: String(data.get('name') ?? '').trim(),
       email: String(data.get('email') ?? '').trim(),
       phone: String(data.get('phone') ?? '').trim(),
-      occasion: String(data.get('occasion') ?? ''),
+      service: serviceLabel,
       date: String(data.get('date') ?? ''),
+      venue: eventFields.hidden ? '' : String(data.get('venue') ?? '').trim(),
       message: String(data.get('message') ?? '').trim(),
       piece: selected ? `${selected.id} (${[selected.label, selected.collection].filter(Boolean).join(', ')})` : '',
       pieceUrl: selected ? new URL(`/gallery/?view=${encodeURIComponent(selected.id)}`, location.origin).href : '',
@@ -161,18 +171,16 @@ export function initEnquiry() {
       `Name: ${p.name}`,
       `Email: ${p.email}`,
       p.phone && `Telephone: ${p.phone}`,
-      `Occasion: ${p.occasion}`,
-      p.date && `Date: ${p.date}`,
+      `Service: ${p.service}`,
+      p.date && `Date needed: ${p.date}`,
+      p.venue && `Venue: ${p.venue}`,
       p.piece && `Gallery selection: ${p.piece}`,
       p.pieceUrl && `Link: ${p.pieceUrl}`,
     ].filter(Boolean);
     const body = [...details, '', p.message].join('\n');
-    const subject = `Enquiry: ${p.occasion}${p.date ? `, ${p.date}` : ''}`;
+    const subject = `Flower enquiry: ${p.service}${p.date ? `, ${p.date}` : ''}`;
     return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
-
-  const escape = (s: string) =>
-    s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -185,13 +193,20 @@ export function initEnquiry() {
       return;
     }
 
+    // Spam checks: the hidden field must be empty and the form must not be
+    // submitted faster than a person could fill it. Nothing is sent otherwise.
+    const trap = form.querySelector<HTMLInputElement>('input[name="website"]');
+    if ((trap && trap.value) || Date.now() - startedAt < MIN_FILL_MS) {
+      setStatus('error', '<p>Sorry, that was too quick for us to accept. Please try again in a moment.</p>');
+      return;
+    }
+
     const email = form.dataset.email;
 
     if (mode === 'endpoint' && form.dataset.endpoint) {
       submit.disabled = true;
-      const label = submit.firstChild!;
-      const original = label.textContent;
-      label.textContent = 'Sending ';
+      const original = submitLabel.textContent;
+      submitLabel.textContent = 'Sending';
       try {
         const res = await fetch(form.dataset.endpoint, {
           method: 'POST',
@@ -200,19 +215,15 @@ export function initEnquiry() {
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         form.reset();
-        safeSession('remove');
-        setStatus(
-          'success',
-          '<p><strong>Thank you. Your enquiry has been sent to the studio.</strong></p>',
-        );
+        syncEventFields();
+        session('remove');
+        setStatus('success', '<p><strong>Thank you. Your enquiry has been sent to the studio.</strong></p>');
       } catch {
-        const fallback = email
-          ? ` You can also <a href="${escape(emailHref(email))}">send it by email instead</a>.`
-          : '';
+        const fallback = email ? ` You can also <a href="${escape(emailHref(email))}">send it by email instead</a>.` : '';
         setStatus('error', `<p>Sorry, your enquiry could not be sent just now. Please try again.${fallback}</p>`);
       } finally {
         submit.disabled = false;
-        label.textContent = original;
+        submitLabel.textContent = original;
       }
       return;
     }
@@ -227,6 +238,6 @@ export function initEnquiry() {
       return;
     }
 
-    setStatus('error', '<p>Online enquiries are not connected yet.</p>');
+    setStatus('error', '<p>Online enquiries are not connected yet. Please call or email the studio.</p>');
   });
 }

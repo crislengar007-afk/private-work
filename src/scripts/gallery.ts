@@ -14,10 +14,10 @@ interface ViewerItem {
   caption: string;
   collection: string;
   collectionLabel: string;
-  ratio: number;
-  src?: string;
-  srcset?: string;
-  placeholder: boolean;
+  width: number;
+  height: number;
+  src: string;
+  srcset: string;
 }
 
 const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
@@ -147,7 +147,6 @@ export function initGallery() {
   const viewer = document.querySelector<HTMLDialogElement>('[data-viewer]');
   if (!viewer) return;
   const img = viewer.querySelector<HTMLImageElement>('[data-img]')!;
-  const pending = viewer.querySelector<HTMLElement>('[data-pending]')!;
   const figure = viewer.querySelector<HTMLElement>('[data-figure]')!;
   const caption = viewer.querySelector<HTMLElement>('[data-caption]')!;
   const count = viewer.querySelector<HTMLElement>('[data-count]')!;
@@ -167,10 +166,10 @@ export function initGallery() {
 
   function preload(id?: string) {
     const item = id ? byId.get(id) : undefined;
-    if (!item?.src) return;
+    if (!item) return;
     const pre = new Image();
-    pre.sizes = '100vw';
-    if (item.srcset) pre.srcset = item.srcset;
+    pre.sizes = `${item.width}px`;
+    pre.srcset = item.srcset;
     pre.src = item.src;
   }
 
@@ -189,29 +188,23 @@ export function initGallery() {
       if (my !== token) return;
     }
 
-    if (item.src) {
-      pending.hidden = true;
-      img.hidden = false;
-      img.removeAttribute('srcset');
-      img.sizes = '100vw';
-      if (item.srcset) img.srcset = item.srcset;
-      img.src = item.src;
-      img.alt = item.alt;
-      try {
-        await img.decode();
-      } catch {
-        /* Show whatever arrived. */
-      }
-      if (my !== token) return;
-    } else {
-      img.hidden = true;
-      img.removeAttribute('src');
-      img.removeAttribute('srcset');
-      pending.hidden = false;
-      pending.style.aspectRatio = String(item.ratio);
-      pending.setAttribute('role', 'img');
-      pending.setAttribute('aria-label', 'Portfolio photograph pending import');
+    img.hidden = false;
+    img.removeAttribute('srcset');
+    img.sizes = `${item.width}px`;
+    img.srcset = item.srcset;
+    img.src = item.src;
+    img.alt = item.alt;
+    img.width = item.width;
+    img.height = item.height;
+    // Never show a photograph larger than its original pixels.
+    img.style.maxWidth = `min(100%, ${item.width}px)`;
+    img.style.maxHeight = `min(100%, ${item.height}px)`;
+    try {
+      await img.decode();
+    } catch {
+      /* Show whatever arrived. */
     }
+    if (my !== token) return;
 
     caption.textContent = describe(item);
     count.textContent = `${index + 1} of ${ids.length}`;

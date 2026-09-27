@@ -1,53 +1,92 @@
 /**
- * Services. The studio's published description names two areas of work,
- * events and personal celebrations, and describes a studio supplying fresh
- * blooms to residents and visitors. Those three are presented here.
- *
- * Descriptions restate the published positioning and do not add offerings,
- * prices or venues. Replace or extend them with the exact wording from the
- * live Services page once it can be copied (see README, "Content to verify").
+ * The five service groups published on theflowerstudiotci.com/our-services/
+ * (read 2026-09-27; full text in reference/our-services.txt). Copy is
+ * condensed from the studio's own wording; no packages, prices, delivery
+ * zones or turnaround times are added.
  */
 
 export interface Service {
   id: string;
   title: string;
+  /** The studio's own tagline, where the live page has one. */
+  tagline?: string;
   /** One line for index lists. */
   summary: string;
-  /** Two or three sentences for the Services page. */
+  /** Short paragraph for the Services page. */
   description: string;
-  /** Gallery collection that illustrates this service, if one exists. */
-  collection?: string;
+  /** Who it is for, stated plainly. */
+  audience: string;
   /** Occasion value pre-selected in the enquiry form. */
   occasion: string;
+  /** Event-type enquiries may show optional venue and guest fields. */
+  isEvent: boolean;
+  /** Key into the campaign imagery (generated concepts, not portfolio). */
+  campaign?: string;
 }
 
 export const services: Service[] = [
   {
-    id: 'events',
-    title: 'Events',
-    summary: 'Floral design for gatherings, from intimate dinners to full celebrations.',
+    id: 'arrangements',
+    title: 'Arrangements',
+    tagline: 'Celebrate every moment.',
+    summary: 'Crafted arrangements for ordinary days and grand celebrations alike.',
     description:
-      'Floral design created for your event and tailored to its setting, scale and mood. The studio works to your brief so the flowers feel considered in every room they occupy.',
-    collection: 'events',
-    occasion: 'Event',
+      'Every occasion, big or small, deserves a bloom. The studio composes arrangements that bring beauty and elegance to your moments, from a simple gesture to a milestone celebration.',
+    audience: 'For residents and visitors marking a moment, or simply brightening a day.',
+    occasion: 'Arrangement',
+    isEvent: false,
+    campaign: 'arrangements',
   },
   {
-    id: 'celebrations',
-    title: 'Personal celebrations',
-    summary: 'Arrangements for the moments that matter to you and the people you love.',
+    id: 'weddings',
+    title: 'Wedding decoration',
+    tagline: 'Forever blooms for your special day.',
+    summary: 'Floral decor that tells your love story on the day itself.',
     description:
-      'For the personal moments worth marking. Each arrangement is composed for the person receiving it, with the same attention to detail the studio brings to its events.',
-    collection: 'celebrations',
-    occasion: 'Personal celebration',
+      'Flowers that bear witness to your wedding day. The studio designs floral decor around your story, so the celebration feels unmistakably yours and is remembered long after.',
+    audience: 'For couples and wedding planners celebrating in the Turks and Caicos Islands.',
+    occasion: 'Wedding',
+    isEvent: true,
+    campaign: 'weddings',
   },
   {
-    id: 'studio',
-    title: 'The studio at Ports of Call',
-    summary: 'Fresh, exquisite blooms for residents of the islands and visitors alike.',
+    id: 'corporate',
+    title: 'Corporate flowers',
+    summary: 'Arrangements that give meetings and workplaces a considered presence.',
     description:
-      'The Flower Studio opened at Ports of Call in March 2023 to bring fresh, exquisite blooms to the community of the Turks and Caicos Islands and to the visitors it welcomes.',
-    occasion: 'Flowers from the studio',
+      'Thoughtfully crafted arrangements for corporate meetings and environments. The designs are a quiet statement of professionalism and elegance, made to reflect the character of your business.',
+    audience: 'For offices, meetings and corporate events.',
+    occasion: 'Corporate',
+    isEvent: true,
+    campaign: 'corporate',
+  },
+  {
+    id: 'house-guests',
+    title: 'House guest flowers',
+    summary: 'A warm, blossoming welcome waiting for your guests.',
+    description:
+      'Flowers that set the tone for a stay. The studio prepares welcoming arrangements for your home, so visitors arrive to beauty and a sense of hospitality.',
+    audience: 'For homeowners and villa hosts preparing for guests.',
+    occasion: 'House guests',
+    isEvent: false,
+    campaign: 'house-guests',
+  },
+  {
+    id: 'hotels',
+    title: 'Luxury hotel flowers',
+    tagline: 'Tailored elegance for every corner.',
+    summary: 'Island-inspired arrangements from grand lobbies to intimate suites.',
+    description:
+      'Floral designs curated for every corner of a hotel, from the lobby to the suites, creating a warm island welcome and elevating each guest’s stay.',
+    audience: 'For hotels, resorts and hospitality teams.',
+    occasion: 'Hotel or resort',
+    isEvent: true,
+    campaign: 'hotels',
   },
 ];
 
 export const occasions = [...services.map((s) => s.occasion), 'Something else'];
+
+/** The studio's own mission statement (site footer). */
+export const mission =
+  'We believe in the power of personalization, where every bloom and every interaction is carefully tailored to reflect your individual style, emotions and occasions.';

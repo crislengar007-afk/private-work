@@ -1,9 +1,125 @@
 {
-  "note": "Decorative media generated with Higgsfield for The Floral Atelier concept. Not the studio's work; never used as portfolio items. Download with `npm run fetch:media`.",
+  "note": "Generated with Higgsfield for the Island Atelier preview. Concept and decorative use only; never portfolio. Masters are re-encoded (JPEG q86, H.264/VP9) from the original outputs listed in url. Download originals with `npm run fetch:media`.",
   "assets": [
     {
+      "key": "h1-desktop",
+      "id": "H1",
+      "file": "src/assets/generated/h1-desktop.jpg",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "383b174a-adb7-437b-9cb5-3266fb0cba60",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060114_383b174a-adb7-437b-9cb5-3266fb0cba60.png",
+      "size": [
+        2688,
+        1520
+      ],
+      "placement": "Home hero (desktop), video poster, social preview image",
+      "alt": "A generous arrangement of white roses, lilies, green hydrangea and snapdragons on a limestone console in soft island light.",
+      "status": "accepted"
+    },
+    {
+      "key": "h2-mobile",
+      "id": "H2",
+      "file": "src/assets/generated/h2-mobile.jpg",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "d8fd2c95-d44c-4ebe-9063-97ffc2eb0844",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060845_d8fd2c95-d44c-4ebe-9063-97ffc2eb0844.png",
+      "size": [
+        1744,
+        2336
+      ],
+      "placement": "Home hero (mobile), recomposed for portrait rather than cropped",
+      "alt": "A tall arrangement of white roses, lilies, hydrangea and snapdragons in a stone bowl on a limestone console.",
+      "status": "accepted"
+    },
+    {
+      "key": "v1-loop",
+      "id": "V1",
+      "file": "public/media/v1-loop.mp4",
+      "sources": [
+        "public/media/v1-loop.webm",
+        "public/media/v1-loop.mp4"
+      ],
+      "kind": "video",
+      "tool": "Higgsfield generate_video, model kling3_0 (pro, 8 s, silent), start and end frame = H1 for a seamless loop",
+      "jobId": "6ab44b29-e8f7-4fe8-9d0a-b036a6597511",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060319_6ab44b29-e8f7-4fe8-9d0a-b036a6597511.mp4",
+      "size": [
+        1600,
+        904
+      ],
+      "placement": "Home hero loop, desktop only; still image under reduced motion, small screens and Save-Data",
+      "alt": "",
+      "status": "accepted"
+    },
+    {
+      "key": "s-arrangements",
+      "id": "S1",
+      "file": "src/assets/generated/s-arrangements.jpg",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "5e8a94e1-698b-466b-b898-faf58e29ece4",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060845_5e8a94e1-698b-466b-b898-faf58e29ece4.png",
+      "size": [
+        1744,
+        2336
+      ],
+      "placement": "Our services: Arrangements (concept image)",
+      "alt": "A concept image of pink and white roses, purple calla lilies and lilies in a clear glass vase on a limestone ledge.",
+      "status": "accepted"
+    },
+    {
+      "key": "s-weddings",
+      "id": "S2",
+      "file": "src/assets/generated/s-weddings.jpg",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "4d7fc915-6de3-4e16-ad54-6e81e7c2abd0",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060845_4d7fc915-6de3-4e16-ad54-6e81e7c2abd0.png",
+      "size": [
+        1744,
+        2336
+      ],
+      "placement": "Our services: Wedding decoration (concept image)",
+      "alt": "A concept image of a long linen-dressed wedding table with low white floral centrepieces, candles and glassware.",
+      "status": "accepted"
+    },
+    {
+      "key": "s-corporate",
+      "id": "S3",
+      "file": "src/assets/generated/s-corporate.jpg",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "4f4e53c1-724a-4708-bd37-d7257b91855e",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060845_4f4e53c1-724a-4708-bd37-d7257b91855e.png",
+      "size": [
+        1744,
+        2336
+      ],
+      "placement": "Our services: Corporate flowers (concept image)",
+      "alt": "A concept image of a tall arrangement of calla lilies, bird of paradise, lilies and monstera leaves on a limestone reception console.",
+      "status": "accepted"
+    },
+    {
+      "key": "s-hotels",
+      "id": "S4",
+      "file": "src/assets/generated/s-hotels.jpg",
+      "kind": "image",
+      "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
+      "jobId": "45682474-58f4-4c63-9d66-329c4e1f6da0",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JA3HUMIaslskyPRgWby3H6Bqwz/hf_20260927_060845_45682474-58f4-4c63-9d66-329c4e1f6da0.png",
+      "size": [
+        1744,
+        2336
+      ],
+      "placement": "Our services: Luxury hotel flowers (concept image)",
+      "alt": "A concept image of a low arrangement of white roses, lilies and hydrangea on a limestone side table in a hotel suite.",
+      "status": "accepted"
+    },
+    {
       "key": "hero-petals",
-      "file": "src/assets/generated/hero-petals.png",
+      "file": "src/assets/generated/hero-petals.jpg",
       "kind": "image",
       "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
       "jobId": "3da328df-6a20-4ad3-b910-53958b2c02ce",
@@ -13,11 +129,12 @@
         1520
       ],
       "placement": "Home hero still and video poster",
-      "alt": "Close view of blush and ivory rose petals and a white orchid, crossed by soft palm-frond shadows."
+      "alt": "Close view of blush and ivory rose petals and a white orchid, crossed by soft palm-frond shadows.",
+      "status": "earlier exploration; used only on the /directions/ comparison pages"
     },
     {
       "key": "atelier-table",
-      "file": "src/assets/generated/atelier-table.png",
+      "file": "src/assets/generated/atelier-table.jpg",
       "kind": "image",
       "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
       "jobId": "c6ef3e14-f0db-4937-a995-5ef985e27c7e",
@@ -27,11 +144,12 @@
         2336
       ],
       "placement": "Home studio introduction, Services header",
-      "alt": "Loose rose stems, blush silk ribbon and floristry shears on a linen worktable in soft daylight."
+      "alt": "Loose rose stems, blush silk ribbon and floristry shears on a linen worktable in soft daylight.",
+      "status": "earlier exploration; not used"
     },
     {
       "key": "orchid-wall",
-      "file": "src/assets/generated/orchid-wall.png",
+      "file": "src/assets/generated/orchid-wall.jpg",
       "kind": "image",
       "tool": "Higgsfield generate_image, model gpt_image_2 (2k, high)",
       "jobId": "baa992c8-1868-4095-ae82-2caf025f20a9",
@@ -41,7 +159,8 @@
         2048
       ],
       "placement": "Contact page",
-      "alt": "A single white orchid stem in a bud vase against an ivory plaster wall with palm shadows."
+      "alt": "A single white orchid stem in a bud vase against an ivory plaster wall with palm shadows.",
+      "status": "earlier exploration; not used"
     },
     {
       "key": "hero-loop",
@@ -55,7 +174,12 @@
         1080
       ],
       "placement": "Home hero loop (still image under reduced motion)",
-      "alt": ""
+      "alt": "",
+      "status": "earlier exploration; used only on the /directions/ comparison pages",
+      "sources": [
+        "public/media/hero-loop.webm",
+        "public/media/hero-loop.mp4"
+      ]
     }
   ]
 }

@@ -1,183 +1,161 @@
 ---
-import Icon from '../components/Icon.astro';
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Media from '../components/Media.astro';
+import Icon from '../components/Icon.astro';
 import InquiryBand from '../components/InquiryBand.astro';
-import { site } from '../data/site';
 import { services } from '../data/services';
-import { selectedWork, collectionLabel } from '../data/gallery';
-import { decor, heroVideo } from '../data/decor';
+import { galleryItems, selectedWork } from '../data/gallery';
+import { decor, decorVideo } from '../data/decor';
 
-const hero = decor('hero-petals');
-const atelier = decor('atelier-table');
-const video = heroVideo();
-const poster = hero ? await getImage({ src: hero.image, width: 1920, format: 'webp' }) : undefined;
-const og = hero ? await getImage({ src: hero.image, width: 1200, height: 630, fit: 'cover', format: 'jpg' }) : undefined;
+// Hero: H1 (landscape, desktop) and H2 (portrait, recomposed for mobile).
+const h1 = decor('h1-desktop') ?? decor('hero-petals');
+const h2 = decor('h2-mobile') ?? h1;
+const loop = decorVideo('v1-loop');
 
-const work = selectedWork(4);
-const [a, b, c, d] = work;
-const caption = (item?: (typeof work)[number]) => item?.caption ?? collectionLabel(item?.collection);
+const desk = h1 && (await getImage({ src: h1.image, width: 1600, format: 'webp' }));
+const deskSet = h1 && (await Promise.all([900, 1300, 1800].map((w) => getImage({ src: h1.image, width: w, format: 'webp' }))));
+const mob = h2 && (await Promise.all([480, 720, 1000].map((w) => getImage({ src: h2.image, width: w, format: 'webp' }))));
+const og = h1 && (await getImage({ src: h1.image, width: 1200, height: 630, fit: 'cover', format: 'jpg' }));
+const srcset = (list?: { src: string; attributes: Record<string, unknown> }[]) =>
+  list?.map((v) => `${v.src} ${v.attributes.width}w`).join(', ');
+
+const work = selectedWork(5);
+const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[galleryItems.length - 1];
 ---
 
 <Base
-  title={site.name}
-  description="The Flower Studio at Ports of Call creates floral design for events and personal celebrations across the Turks and Caicos Islands."
+  title="The Flower Studio TCI"
+  description="Floral arrangements, wedding decoration, and corporate, house guest and luxury hotel flowers from The Flower Studio at Ports of Call, Grace Bay, Turks and Caicos."
   image={og?.src}
+  business
 >
-  {poster && <link slot="head" rel="preload" as="image" href={poster.src} type="image/webp" fetchpriority="high" />}
+  {desk && <link slot="head" rel="preload" as="image" type="image/webp" imagesrcset={srcset(deskSet)} imagesizes="(min-width: 861px) 46vw, 100vw" fetchpriority="high" />}
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <h1 id="hero-title"><span class="line"><span>Flowers,</span></span> <span class="line"><em>composed.</em></span></h1>
+      <h1 id="hero-title">
+        <span class="line"><span>Bringing flower elegance</span></span>
+        <span class="line"><span>to your <em>island</em> experience</span></span>
+      </h1>
       <p class="lede">
-        Floral design for events and personal celebrations across the Turks and Caicos Islands.
+        Arrangements, wedding decoration and hospitality florals from our studio at Ports of Call, Grace Bay.
       </p>
       <div class="hero-actions">
-        <a class="button" href="/gallery/">View the gallery <Icon name="arrow-right" class="arrow" /></a>
-        <a class="link" href="/services/">Services</a>
+        <a class="button" href="/gallery/">Explore the Gallery <Icon name="arrow-right" class="arrow" /></a>
+        <a class="button button--ghost" href="/contact/">Request Flowers</a>
       </div>
     </div>
 
-    <div class="hero-media frame" data-hero-media>
-      {
-        poster ? (
-          <>
-            <img
-              class="hero-still"
-              src={poster.src}
-              alt={hero!.alt}
-              width={poster.attributes.width}
-              height={poster.attributes.height}
-              fetchpriority="high"
-              decoding="async"
-            />
-            {video && (
-              <video
-                class="hero-video"
-                data-hero-video
-                data-src={video}
-                muted
-                loop
-                playsinline
-                preload="none"
-                poster={poster.src}
-                aria-hidden="true"
-                tabindex="-1"
+    <figure class="hero-media">
+      <div class="frame frame--arch arch" data-hero-media>
+        {
+          desk ? (
+            <picture>
+              {mob && <source media="(max-width: 860px)" srcset={srcset(mob)} sizes="100vw" />}
+              <img
+                src={desk.src}
+                srcset={srcset(deskSet)}
+                sizes="(min-width: 861px) 46vw, 100vw"
+                alt={h1!.alt}
+                width={desk.attributes.width as number}
+                height={desk.attributes.height as number}
+                fetchpriority="high"
+                decoding="async"
               />
-            )}
-          </>
-        ) : (
-          <div class="pending" role="img" aria-label="Hero image pending download">
-            <span>Hero image pending download</span>
-          </div>
-        )
-      }
-      {
-        video && (
-          <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false" hidden>
-            Pause motion
-          </button>
-        )
-      }
-    </div>
+            </picture>
+          ) : (
+            <div class="pending" role="img" aria-label="Hero image pending">
+              <span>Hero image pending</span>
+            </div>
+          )
+        }
+        {
+          loop.length > 0 && (
+            <video class="hero-video" data-hero-video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1">
+              {loop.map((s) => (
+                <source data-src={s.src} type={s.type} />
+              ))}
+            </video>
+          )
+        }
+      </div>
+      <figcaption>
+        <span class="concept-tag">Concept image, generated for this design</span>
+        {
+          loop.length > 0 && (
+            <button class="motion-toggle" type="button" data-motion-toggle aria-pressed="false" hidden>
+              Pause motion
+            </button>
+          )
+        }
+      </figcaption>
+    </figure>
   </section>
 
-  <section class="section selected" aria-labelledby="selected-title">
-    <div class="wrap grid-12">
-      <div class="col-left">
-        <div class="selected-intro" data-reveal>
-          <h2 id="selected-title">Selected work</h2>
-          <p class="lede">A few recent arrangements from the studio. The full gallery holds many more.</p>
-        </div>
-        {
-          a && (
-            <a class="work work--a" href={`/gallery/?view=${a.id}`} data-reveal>
-              <Media image={a.image} alt={a.alt} ratio={3 / 2} sizes="(min-width: 1024px) 55vw, 100vw" zoom pendingLabel={a.caption} />
-              {caption(a) && !a.placeholder && <span class="caption">{caption(a)}</span>}
-            </a>
-          )
-        }
-        {
-          c && (
-            <a class="work work--c" href={`/gallery/?view=${c.id}`} data-reveal>
-              <Media image={c.image} alt={c.alt} ratio={4 / 5} sizes="(min-width: 1024px) 26vw, 70vw" zoom pendingLabel={c.caption} />
-              {caption(c) && !c.placeholder && <span class="caption">{caption(c)}</span>}
-            </a>
-          )
-        }
-      </div>
-      <div class="col-right">
-        {
-          b && (
-            <a class="work work--b" href={`/gallery/?view=${b.id}`} data-reveal style="--reveal-delay: 120">
-              <Media image={b.image} alt={b.alt} ratio={4 / 5} sizes="(min-width: 1024px) 34vw, 100vw" zoom pendingLabel={b.caption} />
-              {caption(b) && !b.placeholder && <span class="caption">{caption(b)}</span>}
-            </a>
-          )
-        }
-        {
-          d && (
-            <a class="work work--d" href={`/gallery/?view=${d.id}`} data-reveal>
-              <Media image={d.image} alt={d.alt} ratio={1} sizes="(min-width: 1024px) 26vw, 80vw" zoom pendingLabel={d.caption} />
-              {caption(d) && !d.placeholder && <span class="caption">{caption(d)}</span>}
-            </a>
-          )
-        }
-        <a class="link to-gallery" href="/gallery/">View the gallery <Icon name="arrow-right" class="arrow" /></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section studio" aria-labelledby="studio-title">
-    <div class="wrap grid-12">
-      <h2 id="studio-title" class="visually-hidden">About the studio</h2>
-      <p class="statement display" data-reveal>
-        Opened at Ports of Call in March&nbsp;2023, The Flower Studio brings fresh, exquisite blooms to the islands'
-        community and to the visitors <em>it welcomes.</em>
-      </p>
-      <figure class="studio-image" data-reveal>
-        <Media
-          image={atelier?.image}
-          alt={atelier?.alt ?? ''}
-          ratio={3 / 4}
-          sizes="(min-width: 1024px) 34vw, 100vw"
-          pendingLabel="Studio image pending download"
-        />
-        {atelier && <figcaption class="caption">Atmospheric image, generated for this site.</figcaption>}
-      </figure>
-      <div class="studio-copy prose" data-reveal style="--reveal-delay: 120">
-        <p>
-          The studio was founded by a young entrepreneur with a background in luxury services, and grew from a passion
-          for elegance and refined service.
-        </p>
-        <p>
-          Whether the flowers are for an event or a personal celebration, the aim is the same. A luxurious experience,
-          tailored to what you need, finished with exquisite floral design.
-        </p>
-        <a class="link" href="/services/">How the studio can help <Icon name="arrow-right" class="arrow" /></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section offer" aria-labelledby="offer-title">
-    <div class="wrap grid-12">
-      <div class="offer-head" data-reveal>
-        <h2 id="offer-title">Services</h2>
-      </div>
-      <ul class="offer-list">
+  <section class="section entries" aria-labelledby="entries-title">
+    <div class="wrap">
+      <h2 id="entries-title" data-reveal>For every occasion on the island</h2>
+      <ul class="entry-list">
         {
           services.map((s, i) => (
-            <li data-reveal style={`--reveal-delay: ${i * 90}`}>
-              <a href={`/services/#${s.id}`}>
-                <span class="offer-title">{s.title}</span>
-                <span class="offer-summary">{s.summary}</span>
-                <Icon name="arrow-right" class="offer-arrow" />
+            <li data-reveal style={`--reveal-delay: ${i * 70}`}>
+              <a href={`/our-services/#${s.id}`}>
+                <span class="entry-title">{s.title}</span>
+                <span class="entry-summary">{s.summary}</span>
+                <span class="entry-go">
+                  Discover <Icon name="arrow-right" class="arrow" />
+                </span>
               </a>
             </li>
           ))
         }
       </ul>
+    </div>
+  </section>
+
+  <section class="section work" aria-labelledby="work-title">
+    <div class="wrap">
+      <div class="work-head" data-reveal>
+        <h2 id="work-title">From the studio</h2>
+        <p class="lede">Arrangements composed at Ports of Call, photographed in the studio.</p>
+      </div>
+      <ul class="strip">
+        {
+          work.map((p, i) => (
+            <li data-reveal style={`--reveal-delay: ${i * 80}`}>
+              <a href={`/gallery/?view=${p.id}`} class="strip-link">
+                <Media image={p.image} alt={p.alt} ratio={i === 0 ? 4 / 5 : 3 / 4} arch zoom sizes="(min-width: 1024px) 24vw, (min-width: 640px) 45vw, 75vw" />
+                <span class="caption">{p.caption}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="link to-gallery" href="/gallery/">Explore the Gallery <Icon name="arrow-right" class="arrow" /></a>
+    </div>
+  </section>
+
+  <section class="section story" aria-labelledby="story-title">
+    <div class="wrap story-grid">
+      <figure class="story-photo" data-reveal>
+        <Media image={storyPhoto?.image} alt={storyPhoto?.alt ?? ''} ratio={4 / 5} arch native sizes="(min-width: 1024px) 30vw, 90vw" />
+        <figcaption class="caption">From the studio’s portfolio</figcaption>
+      </figure>
+      <div class="story-copy" data-reveal style="--reveal-delay: 120">
+        <h2 id="story-title">Our story</h2>
+        <div class="prose">
+          <p>
+            In March 2023, The Flower Studio at Ports of Call blossomed into existence, with a vision of exceptional floral
+            creations for the Turks and Caicos Islands, for the community who live here and the visitors they welcome.
+          </p>
+          <p>
+            Founded by a young entrepreneur with a background in luxury services, the studio brings a passion for elegance
+            and refined service to every order, shaped by years of island life and its particular tastes.
+          </p>
+        </div>
+        <a class="link" href="/our-services/">Explore our services <Icon name="arrow-right" class="arrow" /></a>
+      </div>
     </div>
   </section>
 
@@ -188,8 +166,8 @@ const caption = (item?: (typeof work)[number]) => item?.caption ?? collectionLab
   /* Hero ------------------------------------------------------------------ */
   .hero {
     display: grid;
-    gap: 2.5rem;
-    padding: clamp(2rem, 5vw, 3rem) 0 0;
+    gap: 2rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem) 0 0;
   }
 
   .hero-copy {
@@ -201,39 +179,116 @@ const caption = (item?: (typeof work)[number]) => item?.caption ?? collectionLab
   }
 
   .hero h1 {
-    font-size: var(--step-6);
-    line-height: 1;
+    font-size: clamp(2.6rem, 1.5rem + 3.6vw, 4.6rem);
+    line-height: 1.04;
   }
 
   .hero h1 .line {
     display: block;
     overflow: hidden;
-    padding-bottom: 0.08em;
+    padding-bottom: 0.06em;
   }
 
-  .hero h1 .line > * {
+  .hero h1 .line > span {
     display: inline-block;
   }
 
-  /* Focal moment: the photograph is unveiled from below while the headline
-     rises into place. Pure CSS, so content never depends on script. */
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .hero-media {
+    padding-inline: var(--gutter);
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .arch {
+    aspect-ratio: 3 / 4;
+  }
+
+  .arch > picture,
+  .arch > picture > img,
+  .arch > video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 64% 50%;
+  }
+
+  .hero-video {
+    opacity: 0;
+    transition: opacity 1.6s var(--ease-out);
+  }
+
+  .hero-video.is-playing {
+    opacity: 1;
+  }
+
+  .hero-media figcaption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    min-height: 44px;
+  }
+
+  .motion-toggle {
+    min-height: 44px;
+    padding: 0 1rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--pill);
+    background: transparent;
+    font-size: 0.8125rem;
+  }
+
+  @media (min-width: 861px) {
+    .hero {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: clamp(2rem, 4vw, 4.5rem);
+      align-items: end;
+      min-height: calc(100svh - 5rem);
+      padding: 1rem 0 0;
+    }
+
+    .hero-copy {
+      padding-inline: max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter))) 0;
+      padding-bottom: clamp(3rem, 8vh, 6rem);
+    }
+
+    .hero-media {
+      padding-inline: 0 max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter)));
+    }
+
+    .arch {
+      aspect-ratio: auto;
+      height: min(78svh, 58rem);
+      min-height: 30rem;
+    }
+  }
+
+  /* Focal moment: the arch opens upward while the headline rises. */
   @media (prefers-reduced-motion: no-preference) {
-    .hero h1 .line > * {
+    .hero h1 .line > span {
       animation: rise 1.1s var(--ease-out) both;
     }
-    .hero h1 .line + .line > * {
+    .hero h1 .line + .line > span {
       animation-delay: 0.12s;
     }
     .hero .lede,
     .hero-actions {
       animation: fade 0.9s var(--ease-out) 0.45s both;
     }
-    .hero-media {
-      animation: unveil 1.5s cubic-bezier(0.76, 0, 0.24, 1) 0.1s both;
+    .arch {
+      animation: unveil 1.6s var(--ease-arch) 0.05s both;
     }
-    .hero-media > img,
-    .hero-media > video {
-      animation: settle 2.4s var(--ease-out) 0.1s both;
+    .arch > picture {
+      animation: settle 2.6s var(--ease-out) 0.05s both;
     }
   }
 
@@ -242,297 +297,208 @@ const caption = (item?: (typeof work)[number]) => item?.caption ?? collectionLab
       transform: translateY(105%);
     }
   }
-
   @keyframes fade {
     from {
       opacity: 0;
     }
   }
-
   @keyframes unveil {
     from {
-      clip-path: inset(100% 0 0 0);
+      clip-path: inset(100% 0 0 0 round 999px 999px 0 0);
     }
     to {
-      clip-path: inset(0 0 0 0);
+      clip-path: inset(0 0 0 0 round 999px 999px 0 0);
     }
   }
-
   @keyframes settle {
     from {
       transform: scale(1.08);
     }
   }
 
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem 2rem;
-    margin-top: 0.75rem;
-  }
-
-  .hero-media {
-    position: relative;
-    aspect-ratio: 4 / 5;
-  }
-
-  .hero-media > img,
-  .hero-media > video {
-    position: absolute;
-    inset: 0;
-    object-position: 68% 50%;
-  }
-
-  .hero-video {
-    opacity: 0;
-    transition: opacity 1.4s var(--ease-out);
-  }
-
-  .hero-video.is-playing {
-    opacity: 1;
-  }
-
-  .motion-toggle {
-    position: absolute;
-    right: 1rem;
-    bottom: 1rem;
-    min-height: 44px;
-    padding: 0 1rem;
-    border: 1px solid rgb(243 241 234 / 0.5);
-    background: rgb(16 22 18 / 0.45);
-    color: #f3f1ea;
-    font-size: 0.8125rem;
-    letter-spacing: 0.02em;
-  }
-
-  .motion-toggle:hover {
-    background: rgb(16 22 18 / 0.65);
-  }
-
-  @media (min-width: 900px) {
-    .hero {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      gap: clamp(2rem, 4vw, 4rem);
-      min-height: calc(100svh - 4.5rem);
-      padding: 0;
-    }
-
-    .hero-copy {
-      padding-inline: max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter))) 0;
-      padding-block: 3rem 5rem;
-    }
-
-    .hero-media {
-      aspect-ratio: auto;
-      min-height: 32rem;
-    }
-  }
-
-  /* Selected work ------------------------------------------------------------ */
-  .col-left,
-  .col-right {
-    grid-column: 1 / -1;
-    display: grid;
-    gap: clamp(3rem, 7vw, 6rem);
-    align-content: start;
-  }
-
-  .selected-intro {
-    display: grid;
-    gap: 1.25rem;
-  }
-
-  .work {
-    display: grid;
-    gap: 0.85rem;
-    text-decoration: none;
-  }
-
-  .work:hover .caption {
-    color: var(--ink);
-  }
-
-  .work--c {
-    width: 72%;
-    justify-self: end;
-  }
-
-  .work--d {
-    width: 82%;
-  }
-
-  .to-gallery {
-    justify-self: start;
-  }
-
-  .col-right {
+  /* Service entry points -------------------------------------------------- */
+  .entries {
+    background: var(--sand);
     margin-top: clamp(3rem, 7vw, 6rem);
   }
 
-  @media (min-width: 1024px) {
-    .col-left {
-      grid-column: 1 / span 7;
-    }
-
-    .col-right {
-      grid-column: 9 / span 4;
-      margin-top: clamp(10rem, 18vw, 16rem);
-    }
-
-    .work--c {
-      width: 56%;
-    }
-
-    .work--d {
-      width: 78%;
-      justify-self: end;
-    }
-  }
-
-  /* Studio ------------------------------------------------------------------ */
-  .studio {
-    padding-top: 0;
-  }
-
-  .statement {
-    grid-column: 1 / -1;
+  .entries h2 {
     font-size: var(--step-4);
-    line-height: 1.16;
-    letter-spacing: -0.015em;
-    max-width: 22ch;
-    margin-bottom: clamp(3rem, 7vw, 6rem);
+    max-width: 16ch;
+    margin-bottom: clamp(2rem, 4vw, 3.5rem);
   }
 
-  .studio-image {
-    grid-column: 1 / -1;
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .studio-copy {
-    grid-column: 1 / -1;
-    margin-top: 2.5rem;
-    align-self: end;
-  }
-
-  @media (min-width: 768px) {
-    .statement {
-      grid-column: 2 / span 10;
-    }
-    .studio-image {
-      grid-column: 1 / span 6;
-    }
-    .studio-copy {
-      grid-column: 8 / span 5;
-      margin-top: 0;
-      padding-bottom: 2rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .studio-image {
-      grid-column: 2 / span 4;
-    }
-    .studio-copy {
-      grid-column: 7 / span 5;
-    }
-  }
-
-  /* Services index ------------------------------------------------------------ */
-  .offer {
-    padding-top: 0;
-  }
-
-  .offer-head {
-    grid-column: 1 / -1;
-    display: grid;
-    gap: 1rem;
-    align-content: start;
-    margin-bottom: 2.5rem;
-  }
-
-  .offer-list {
-    grid-column: 1 / -1;
+  .entry-list {
     list-style: none;
     padding: 0;
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .offer-list a {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.5rem 1.5rem;
-    padding-block: clamp(1.5rem, 3vw, 2.25rem);
     border-top: 1px solid var(--rule);
-    text-decoration: none;
   }
 
-  .offer-title {
+  .entry-list a {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.4rem 0.25rem;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none;
+    height: 100%;
+  }
+
+  .entry-title {
     font-family: var(--font-display);
-    font-size: var(--step-4);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
+    font-size: var(--step-3);
+    line-height: 1.1;
     transition: color var(--dur-1) var(--ease-out);
   }
 
-  .offer-summary {
-    grid-column: 1;
+  .entry-summary {
     color: var(--ink-soft);
-    max-width: 36rem;
+    font-size: 0.9688rem;
+    max-width: 30rem;
   }
 
-  .offer-list :global(.offer-arrow) {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
-    font-size: var(--step-2);
-    transition: transform var(--dur-2) var(--ease-out);
+  .entry-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--lagoon);
+    font-weight: 500;
+    font-size: 0.9375rem;
   }
 
-  .offer-list a:hover .offer-title,
-  .offer-list a:focus-visible .offer-title {
-    color: var(--rose);
+  .entry-list a:hover .entry-title,
+  .entry-list a:focus-visible .entry-title {
+    color: var(--lagoon);
     font-style: italic;
   }
 
-  .offer-list a:hover :global(.offer-arrow) {
-    transform: translateX(0.4rem);
+  .entry-list a:hover :global(.arrow) {
+    transform: translateX(0.25em);
   }
 
   @media (min-width: 1024px) {
-    .offer-head {
-      grid-column: 1 / span 4;
-      position: sticky;
-      top: 7rem;
-      margin-bottom: 0;
+    .entry-list {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      border-top: 0;
     }
-    .offer-list {
-      grid-column: 5 / span 8;
+    .entry-list li + li a {
+      border-left: 1px solid var(--rule);
     }
-    .offer-list a {
-      grid-template-columns: 5fr 4fr auto;
-      align-items: baseline;
+    .entry-list a {
+      grid-template-rows: auto 1fr auto;
+      padding: 1.5rem 1.25rem 1.25rem;
+      border-bottom: 0;
+      min-height: 15rem;
     }
-    .offer-summary {
-      grid-column: 2;
+  }
+
+  /* Portfolio preview ----------------------------------------------------- */
+  .work-head {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  .work-head h2 {
+    font-size: var(--step-5);
+  }
+
+  .strip {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 72%;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.75rem;
+    align-items: end;
+  }
+
+  .strip li {
+    scroll-snap-align: start;
+  }
+
+  .strip-link {
+    display: grid;
+    gap: 0.6rem;
+    text-decoration: none;
+  }
+
+  .to-gallery {
+    margin-top: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .strip {
+      grid-auto-columns: 42%;
     }
-    .offer-list :global(.offer-arrow) {
-      grid-column: 3;
-      grid-row: 1;
+  }
+
+  @media (min-width: 1024px) {
+    .work-head {
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+    }
+    .strip {
+      grid-auto-flow: row;
+      grid-template-columns: 1.35fr repeat(4, minmax(0, 1fr));
+      overflow: visible;
+    }
+  }
+
+  /* Story ----------------------------------------------------------------- */
+  .story {
+    padding-top: 0;
+  }
+
+  .story-grid {
+    display: grid;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+
+  .story-photo {
+    display: grid;
+    gap: 0.6rem;
+    width: min(100%, 26rem);
+  }
+
+  .story-copy {
+    display: grid;
+    gap: 1.5rem;
+    justify-items: start;
+  }
+
+  .story-copy h2 {
+    font-size: var(--step-5);
+  }
+
+
+  @media (min-width: 900px) {
+    .story-grid {
+      grid-template-columns: 5fr 6fr;
+    }
+    .story-photo {
+      justify-self: center;
     }
   }
 </style>
 
 <script>
-  // Hero loop: plays only when motion is welcome and data is not constrained.
+  // Desktop hero loop: plays only on wide screens, with motion welcome and data unconstrained.
   const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-motion-toggle]');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const wide = matchMedia('(min-width: 861px)');
   const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
 
-  if (video && !reduce.matches && !saveData) {
-    video.src = video.dataset.src!;
+  function start() {
+    if (!video || reduce.matches || !wide.matches || saveData || video.dataset.loaded) return;
+    video.dataset.loaded = '1';
+    video.querySelectorAll('source').forEach((s) => (s.src = s.dataset.src!));
+    video.load();
     video.addEventListener('playing', () => video.classList.add('is-playing'), { once: true });
     video.play().then(
       () => {
@@ -542,20 +508,27 @@ const caption = (item?: (typeof work)[number]) => item?.caption ?? collectionLab
         /* Autoplay refused: the still image remains. */
       },
     );
-
-    toggle?.addEventListener('click', () => {
-      const pause = !video.paused;
-      if (pause) video.pause();
-      else video.play();
-      toggle.setAttribute('aria-pressed', String(pause));
-      toggle.textContent = pause ? 'Play motion' : 'Pause motion';
-    });
-
-    reduce.addEventListener('change', (e) => {
-      if (e.matches) {
-        video.pause();
-        video.classList.remove('is-playing');
-      }
-    });
   }
+
+  // Start after the page has painted so the still stays the LCP element.
+  if (document.readyState === 'complete') setTimeout(start, 400);
+  else addEventListener('load', () => setTimeout(start, 400), { once: true });
+  wide.addEventListener('change', start);
+
+  toggle?.addEventListener('click', () => {
+    if (!video) return;
+    const pause = !video.paused;
+    if (pause) video.pause();
+    else void video.play();
+    toggle.setAttribute('aria-pressed', String(pause));
+    toggle.textContent = pause ? 'Play motion' : 'Pause motion';
+  });
+
+  reduce.addEventListener('change', (e) => {
+    if (e.matches && video) {
+      video.pause();
+      video.classList.remove('is-playing');
+      if (toggle) toggle.hidden = true;
+    }
+  });
 </script>

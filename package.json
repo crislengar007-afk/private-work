@@ -10,12 +10,16 @@
     "preview": "astro preview --host 127.0.0.1 --port 4321",
     "check": "astro check",
     "test": "playwright test",
-    "import:gallery": "node scripts/import-gallery.mjs",
-    "fetch:media": "node scripts/fetch-media.mjs"
+    "import:gallery": "NODE_USE_ENV_PROXY=1 node scripts/import-gallery.mjs",
+    "fetch:media": "NODE_USE_ENV_PROXY=1 node scripts/fetch-media.mjs"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
     "@fontsource-variable/bodoni-moda": "^5.3.0",
+    "@fontsource-variable/cormorant-garamond": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/hanken-grotesk": "^5.3.0",
+    "@fontsource-variable/schibsted-grotesk": "^5.3.0",
     "@phosphor-icons/core": "^2.1.1",
     "astro": "^7.3.5"
   },

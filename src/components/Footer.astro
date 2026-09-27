@@ -1,74 +1,69 @@
 ---
-import Wordmark from './Wordmark.astro';
-import { nav, site } from '../data/site';
-import { isPlaceholderGallery } from '../data/gallery';
+import Logo from './Logo.astro';
+import { nav, site, hours } from '../data/site';
+import { mission } from '../data/services';
 
 const { contact } = site;
 const year = new Date().getFullYear();
+const tel = (n: string) => `tel:${n.replace(/[^+\d]/g, '')}`;
 ---
 
 <footer class="footer">
   <div class="wrap">
     <div class="top">
       <div class="identity">
-        <a href="/" class="home" aria-label="The Flower Studio TCI, home"><Wordmark size="large" /></a>
-        <p class="where">{contact.address ?? `${site.location}, ${site.region}`}</p>
-        {contact.hours && <p class="hours">{contact.hours}</p>}
+        <a href="/" class="home" aria-label="The Flower Studio TCI, home"><Logo width={220} /></a>
+        <p class="mission">{mission}</p>
+        <ul class="social" aria-label="Social">
+          {contact.instagram && <li><a href={`https://www.instagram.com/${contact.instagram}/`} rel="noopener">Instagram</a></li>}
+          {contact.facebook && <li><a href={contact.facebook} rel="noopener">Facebook</a></li>}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="col-title">Visit us</h2>
+        <address>
+          {contact.address}
+          {contact.mapUrl && (
+            <>
+              <br />
+              <a href={contact.mapUrl} rel="noopener">Get directions</a>
+            </>
+          )}
+        </address>
+        <ul class="direct">
+          {contact.phone && <li><a href={tel(contact.phone)}>{contact.phone}</a></li>}
+          {contact.landline && <li><a href={tel(contact.landline)}>{contact.landline}</a> <span class="caption">(landline)</span></li>}
+          {contact.email && <li><a href={`mailto:${contact.email}`}>{contact.email}</a></li>}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="col-title">Opening hours</h2>
+        <dl class="hours">
+          {hours.map((h) => (
+            <div>
+              <dt>{h.days}</dt>
+              <dd>{h.time}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <nav aria-label="Footer">
+        <h2 class="col-title">Explore</h2>
         <ul>
           <li><a href="/">Home</a></li>
-          {
-            nav.map((item) => (
-              <li>
-                <a href={item.href}>{item.label}</a>
-              </li>
-            ))
-          }
+          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
         </ul>
       </nav>
-
-      {
-        (contact.email || contact.phone || contact.instagram || contact.facebook) && (
-          <ul class="direct" aria-label="Contact details">
-            {contact.phone && (
-              <li>
-                <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}>{contact.phone}</a>
-              </li>
-            )}
-            {contact.email && (
-              <li>
-                <a href={`mailto:${contact.email}`}>{contact.email}</a>
-              </li>
-            )}
-            {contact.instagram && (
-              <li>
-                <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`} rel="noopener">
-                  Instagram
-                </a>
-              </li>
-            )}
-            {contact.facebook && (
-              <li>
-                <a href={contact.facebook} rel="noopener">
-                  Facebook
-                </a>
-              </li>
-            )}
-          </ul>
-        )
-      }
     </div>
 
     <div class="bottom">
-      <p>&copy; {year} {site.name}</p>
+      <p>&copy; {year} {site.name}. All rights reserved.</p>
       <p class="credit">
-        {
-          isPlaceholderGallery
-            ? 'Atmospheric images on this site are generated decoration. Portfolio photographs are awaiting import.'
-            : 'Gallery photographs show the studio’s own work. Atmospheric images elsewhere are generated decoration.'
-        }
+        Gallery photographs are the studio’s own work. Images marked “Concept image” were generated for this design and
+        do not show client projects.
       </p>
     </div>
   </div>
@@ -76,61 +71,93 @@ const year = new Date().getFullYear();
 
 <style>
   .footer {
-    padding-block: clamp(4rem, 8vw, 7rem) 2rem;
+    padding-block: clamp(4rem, 8vw, 6.5rem) 2rem;
+    background: var(--stone-2);
     border-top: 1px solid var(--rule);
   }
   .top {
     display: grid;
-    gap: 3rem;
+    gap: 2.5rem;
   }
   .home {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    text-decoration: none;
   }
-  .where {
-    margin-top: 1rem;
-    color: var(--ink-soft);
+  .mission {
+    margin-top: 1.25rem;
+    max-width: 30rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-2);
+    line-height: 1.3;
   }
-  .hours {
-    margin-top: 0.25rem;
+  .col-title {
+    font-family: var(--font-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     color: var(--ink-soft);
-    font-size: var(--step--1);
+    margin-bottom: 1rem;
+  }
+  address {
+    font-style: normal;
+    max-width: 22rem;
   }
   ul {
     list-style: none;
     padding: 0;
-    display: grid;
-    gap: 0.25rem;
   }
-  li a {
+  .direct {
+    margin-top: 0.75rem;
+  }
+  li a,
+  address a {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    text-decoration: none;
+    text-decoration-color: var(--rule-strong);
   }
-  li a:hover {
-    color: var(--rose);
+  a:hover {
+    color: var(--lagoon);
+  }
+  .social {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .hours div {
+    display: grid;
+    gap: 0.1rem;
+    margin-bottom: 0.9rem;
+  }
+  dd {
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
   }
   .bottom {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 0.75rem 2rem;
-    margin-top: clamp(3rem, 6vw, 5rem);
+    margin-top: clamp(3rem, 6vw, 4.5rem);
     padding-top: 1.5rem;
     border-top: 1px solid var(--rule);
     font-size: var(--step--1);
     color: var(--ink-soft);
   }
   .credit {
-    max-width: 44rem;
+    max-width: 46rem;
   }
-  @media (min-width: 900px) {
+  @media (min-width: 720px) {
     .top {
-      grid-template-columns: 6fr 3fr 3fr;
-      align-items: start;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (min-width: 1100px) {
+    .top {
+      grid-template-columns: 5fr 3fr 2.5fr 1.5fr;
     }
   }
 </style>

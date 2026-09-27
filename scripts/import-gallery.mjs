@@ -20,7 +20,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const outDir = path.join(root, 'src/assets/gallery');
 const manifestPath = path.join(root, 'src/data/gallery.json');
 const dry = process.argv.includes('--dry');
-const MIN_WIDTH = 600;
+const MIN_WIDTH = 400; // the studio publishes some originals at 512px square
 
 const slug = (s) =>
   s
@@ -66,8 +66,10 @@ function bestUrl(img) {
 
 function isChrome(img) {
   // Skip logos, icons and anything in the header, footer or navigation.
+  // Stop at <main>/<body>: themes put words like "menu" in body classes.
   for (let el = img; el; el = el.parentNode) {
     const tag = el.rawTagName?.toLowerCase();
+    if (tag === 'main' || tag === 'body') break;
     if (['header', 'footer', 'nav'].includes(tag)) return true;
     const cls = (el.getAttribute?.('class') || '').toLowerCase();
     if (/\b(logo|site-branding|menu|widget_nav|icon)\b/.test(cls)) return true;
@@ -201,4 +203,4 @@ console.log(`\nWrote ${items.length} photographs and ${collections.length} colle
 const review = items.filter((i) => i.altNeedsReview).length;
 if (review) console.log(`${review} photograph(s) had no alt text on the source; review "altNeedsReview" entries.`);
 
-for (const page of ['', 'services/', 'contact/', 'gallery/']) await snapshot(page);
+for (const page of ['', 'our-services/', 'contact/', 'gallery/']) await snapshot(page);

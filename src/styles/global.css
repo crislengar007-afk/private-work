@@ -1,77 +1,85 @@
-/* The Floral Atelier: tokens and base styles. See DESIGN.md. */
+/* Island Atelier: tokens and base styles. See DESIGN.md. */
 
-@import '@fontsource-variable/bodoni-moda/opsz.css';
-@import '@fontsource-variable/bodoni-moda/opsz-italic.css';
-@import '@fontsource-variable/geist';
+@import '@fontsource-variable/cormorant-garamond';
+@import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+@import '@fontsource-variable/hanken-grotesk';
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
-  --paper: #f3f1ea;
-  --paper-2: #e8e6dc;
-  --ink: #17221c;
-  --ink-soft: #48574e;
-  --green: #1e3a2d;
-  --green-deep: #172e23;
-  --on-green: #f3f1ea;
-  --rose: #8a4753;
-  --rule: rgb(23 34 28 / 0.16);
-  --rule-strong: rgb(23 34 28 / 0.4);
-  --scrim: rgb(16 22 18 / 0.94);
+  --stone: #ece7de; /* page ground, limestone */
+  --stone-2: #e4ded3; /* quiet band */
+  --sand: #ddd5c7; /* media placeholder, service band */
+  --ink: #1d2627;
+  --ink-soft: #4d5856;
+  --lagoon: #0f6366; /* the one interactive accent: the studio's turquoise, deepened */
+  --lagoon-deep: #0b4c4f;
+  --on-lagoon: #f6f3ee;
+  --lotus: #a93f66; /* from the logo mark; small details only */
+  --rule: rgb(29 38 39 / 0.14);
+  --rule-strong: rgb(29 38 39 / 0.38);
+  --scrim: rgb(14 20 19 / 0.95);
 
-  --font-display: 'Bodoni Moda Variable', 'Bodoni 72', 'Didot', Georgia, serif;
-  --font-text: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Garamond, 'Times New Roman', serif;
+  --font-text: 'Hanken Grotesk Variable', 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --step--1: 0.8125rem;
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
   --step-1: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
-  --step-2: clamp(1.3rem, 1.15rem + 0.7vw, 1.75rem);
-  --step-3: clamp(1.5rem, 1.25rem + 1.2vw, 2.25rem);
-  --step-4: clamp(2rem, 1.5rem + 2.3vw, 3.4rem);
-  --step-5: clamp(2.6rem, 1.8rem + 3.7vw, 5rem);
-  --step-6: clamp(3.1rem, 1.9rem + 5.4vw, 7rem);
+  --step-2: clamp(1.4rem, 1.2rem + 0.8vw, 1.9rem);
+  --step-3: clamp(1.7rem, 1.35rem + 1.4vw, 2.5rem);
+  --step-4: clamp(2.2rem, 1.6rem + 2.5vw, 3.7rem);
+  --step-5: clamp(2.7rem, 1.8rem + 3.9vw, 5.2rem);
+  --step-6: clamp(3rem, 1.8rem + 5.2vw, 6.6rem);
 
   --gutter: clamp(1.25rem, 4vw, 3.5rem);
-  --section: clamp(6rem, 12vw, 11rem);
+  --section: clamp(5.5rem, 11vw, 10rem);
   --max: 1440px;
   --measure: 38rem;
+  --arch: 999px 999px 0 0; /* the signature frame */
+  --pill: 999px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-1: 240ms;
-  --dur-2: 600ms;
+  --ease-arch: cubic-bezier(0.76, 0, 0.24, 1);
+  --dur-1: 220ms;
+  --dur-2: 560ms;
   --dur-3: 900ms;
 
-  /* Layers */
   --z-header: 20;
+  --z-dock: 30;
   --z-menu: 40;
-  --z-grain: 60;
 }
 
-/* Dark tokens follow the system setting unless a host page pins a theme
-   with data-theme on the root element. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --paper: #101612;
-    --paper-2: #18201b;
-    --ink: #ece9e0;
-    --ink-soft: #aeb8af;
-    --rose: #e0a7af;
-    --rule: rgb(236 233 224 / 0.18);
-    --rule-strong: rgb(236 233 224 / 0.42);
+    --stone: #121817;
+    --stone-2: #181f1e;
+    --sand: #1f2726;
+    --ink: #ece7de;
+    --ink-soft: #a9b3b0;
+    --lagoon: #6cc3c4;
+    --lagoon-deep: #8fd3d4;
+    --on-lagoon: #0e1413;
+    --lotus: #e58fae;
+    --rule: rgb(236 231 222 / 0.16);
+    --rule-strong: rgb(236 231 222 / 0.4);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --paper: #101612;
-  --paper-2: #18201b;
-  --ink: #ece9e0;
-  --ink-soft: #aeb8af;
-  --rose: #e0a7af;
-  --rule: rgb(236 233 224 / 0.18);
-  --rule-strong: rgb(236 233 224 / 0.42);
+  --stone: #121817;
+  --stone-2: #181f1e;
+  --sand: #1f2726;
+  --ink: #ece7de;
+  --ink-soft: #a9b3b0;
+  --lagoon: #6cc3c4;
+  --lagoon-deep: #8fd3d4;
+  --on-lagoon: #0e1413;
+  --lotus: #e58fae;
+  --rule: rgb(236 231 222 / 0.16);
+  --rule-strong: rgb(236 231 222 / 0.4);
 }
 
 /* Reset ------------------------------------------------------------------ */
@@ -90,6 +98,8 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-padding-top: 6rem;
+  scrollbar-color: color-mix(in srgb, var(--ink) 35%, transparent) var(--stone);
+  accent-color: var(--lagoon);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -100,7 +110,7 @@ html {
 
 body {
   min-height: 100svh;
-  background: var(--paper);
+  background: var(--stone);
   color: var(--ink);
   font-family: var(--font-text);
   font-size: var(--step-0);
@@ -112,7 +122,8 @@ body {
 
 img,
 video,
-svg {
+svg,
+picture {
   display: block;
   max-width: 100%;
 }
@@ -130,46 +141,24 @@ select {
   color: inherit;
 }
 
+input,
+textarea {
+  caret-color: var(--lagoon);
+}
+
 button {
   cursor: pointer;
 }
 
-html {
-  scrollbar-color: color-mix(in srgb, var(--ink) 35%, transparent) var(--paper);
-  accent-color: var(--green);
-}
-
-input,
-textarea {
-  caret-color: var(--rose);
-}
-
 ::selection {
-  background: var(--rose);
-  color: var(--paper);
-}
-
-/* A still, fixed grain keeps the paper from feeling digital. It never scrolls. */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-grain);
-  pointer-events: none;
-  opacity: 0.045;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-@media (prefers-color-scheme: dark) {
-  body::after {
-    opacity: 0.06;
-  }
+  background: var(--lagoon);
+  color: var(--on-lagoon);
 }
 
 /* Focus ------------------------------------------------------------------ */
 
 :focus-visible {
-  outline: 2px solid var(--rose);
+  outline: 2px solid var(--lagoon);
   outline-offset: 3px;
 }
 
@@ -180,7 +169,7 @@ body::after {
   z-index: calc(var(--z-menu) + 1);
   padding: 0.75rem 1rem;
   background: var(--ink);
-  color: var(--paper);
+  color: var(--stone);
   text-decoration: none;
   transform: translateY(-200%);
 }
@@ -203,29 +192,30 @@ body::after {
 
 /* Typography -------------------------------------------------------------- */
 
-.display,
 h1,
 h2,
-h3 {
+h3,
+.display {
   font-family: var(--font-display);
   font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.04;
+  letter-spacing: -0.01em;
+  line-height: 1.06;
   text-wrap: balance;
 }
 
 h1 {
   font-size: var(--step-6);
+  font-weight: 300;
 }
 
 h2 {
   font-size: var(--step-5);
+  font-weight: 300;
 }
 
 h3 {
   font-size: var(--step-3);
   line-height: 1.12;
-  letter-spacing: -0.01em;
 }
 
 h1 em,
@@ -233,10 +223,7 @@ h2 em,
 h3 em,
 .display em {
   font-style: italic;
-  /* Descender clearance for italics in tight display leading. */
-  display: inline-block;
-  line-height: 1.12;
-  padding-bottom: 0.06em;
+  color: var(--lagoon);
 }
 
 p {
@@ -259,11 +246,12 @@ p {
   margin-top: 1.1em;
 }
 
+/* Small uppercase labels mark place names and form terms, never a heading's eyebrow. */
 .label {
   font-family: var(--font-text);
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
@@ -287,18 +275,7 @@ p {
   padding-block: var(--section);
 }
 
-.grid-12 {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: clamp(1rem, 2vw, 2rem);
-}
-
-.rule {
-  border: 0;
-  border-top: 1px solid var(--rule);
-}
-
-/* Links and buttons -------------------------------------------------------- */
+/* Links and buttons: interactive shapes are pills; media frames are arches. */
 
 a {
   color: inherit;
@@ -309,65 +286,62 @@ a {
 .link {
   display: inline-flex;
   align-items: center;
-  gap: 0.6em;
+  gap: 0.55em;
   min-height: 44px;
   font-weight: 500;
   text-decoration: none;
-  background: linear-gradient(currentColor, currentColor) left calc(100% - 0.55rem) / 100% 1px no-repeat;
+  background: linear-gradient(currentColor, currentColor) left calc(100% - 0.6rem) / 100% 1px no-repeat;
   transition:
     background-size var(--dur-2) var(--ease-out),
     color var(--dur-1) var(--ease-out);
 }
 
 .link:hover {
-  color: var(--rose);
+  color: var(--lagoon);
   background-size: 0% 1px;
-  background-position: right calc(100% - 0.55rem);
+  background-position: right calc(100% - 0.6rem);
 }
 
-.link .arrow {
+.link .arrow,
+.button .arrow {
   transition: transform var(--dur-2) var(--ease-out);
 }
 
-.link:hover .arrow {
-  transform: translateX(0.3em);
+.link:hover .arrow,
+.button:hover .arrow {
+  transform: translateX(0.25em);
 }
 
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.9rem;
+  gap: 0.75rem;
   min-height: 3.25rem;
-  padding: 0.85rem 1.6rem;
-  border: 1px solid var(--green);
-  background: var(--green);
-  color: var(--on-green);
+  padding: 0.85rem 1.65rem;
+  border: 1px solid var(--lagoon);
+  border-radius: var(--pill);
+  background: var(--lagoon);
+  color: var(--on-lagoon);
   font-weight: 500;
-  font-size: 0.9375rem;
-  letter-spacing: 0.02em;
+  font-size: 0.9688rem;
+  letter-spacing: 0.01em;
   text-decoration: none;
   white-space: nowrap;
   transition:
     background-color var(--dur-1) var(--ease-out),
+    border-color var(--dur-1) var(--ease-out),
     color var(--dur-1) var(--ease-out),
     transform var(--dur-1) var(--ease-out);
 }
 
 .button:hover {
-  background: var(--green-deep);
+  background: var(--lagoon-deep);
+  border-color: var(--lagoon-deep);
 }
 
 .button:active {
-  transform: translateY(1px) scale(0.99);
-}
-
-.button .arrow {
-  transition: transform var(--dur-2) var(--ease-out);
-}
-
-.button:hover .arrow {
-  transform: translateX(0.25rem);
+  transform: scale(0.98);
 }
 
 .button--ghost {
@@ -382,13 +356,14 @@ a {
 }
 
 .button--light {
-  background: var(--on-green);
-  border-color: var(--on-green);
-  color: var(--green);
+  background: var(--on-lagoon);
+  border-color: var(--on-lagoon);
+  color: var(--lagoon);
 }
 
 .button--light:hover {
-  background: #fff9ee;
+  background: #fff;
+  border-color: #fff;
 }
 
 .button[disabled],
@@ -397,22 +372,21 @@ a {
   cursor: not-allowed;
 }
 
-@media (prefers-color-scheme: dark) {
-  .button:not(.button--ghost):not(.button--light) {
-    border-color: #2c5241;
-  }
-}
-
 /* Media frames -------------------------------------------------------------- */
 
 .frame {
   position: relative;
   overflow: hidden;
-  background: var(--paper-2);
+  background: var(--sand);
+}
+
+.frame--arch {
+  border-radius: var(--arch);
 }
 
 .frame > img,
 .frame > video,
+.frame > picture,
 .frame > picture > img {
   width: 100%;
   height: 100%;
@@ -428,45 +402,46 @@ a {
   .frame--zoom:hover > img,
   .frame--zoom:hover > picture > img,
   a:hover > .frame--zoom > img,
-  button:hover > .frame--zoom > img {
-    transform: scale(1.03);
+  a:hover > .frame--zoom > picture > img,
+  button:hover > .frame--zoom > picture > img {
+    transform: scale(1.035);
   }
 }
 
-a:focus-visible > .frame--zoom > img,
-button:focus-visible > .frame--zoom > img {
-  transform: scale(1.03);
+a:focus-visible > .frame--zoom > picture > img,
+button:focus-visible > .frame--zoom > picture > img {
+  transform: scale(1.035);
 }
 
-/* A clearly labelled empty slot for a photograph that has not arrived yet. */
 .pending {
+  position: relative;
   display: grid;
   place-items: center;
   width: 100%;
   height: 100%;
   padding: 1rem;
-  background: var(--paper-2);
+  background: var(--sand);
   color: var(--ink-soft);
   text-align: center;
-  position: relative;
-}
-
-/* A single hairline diagonal marks the slot as intentionally empty. */
-.pending::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cline x1='0' y1='100' x2='100' y2='0' stroke='%23889188' stroke-width='1' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
-    center / 100% 100% no-repeat;
-  opacity: 0.6;
-}
-
-.pending span {
-  position: relative;
-  padding: 0.35rem 0.6rem;
-  background: var(--paper-2);
   font-size: var(--step--1);
+}
+
+/* Provenance tag for generated campaign imagery (SPEC portfolio integrity). */
+.concept-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
   letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+.concept-tag::before {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  border: 1px solid currentColor;
 }
 
 /* Reveal on enter ----------------------------------------------------------- */
@@ -474,10 +449,10 @@ button:focus-visible > .frame--zoom > img {
 @media (prefers-reduced-motion: no-preference) {
   .js [data-reveal] {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(16px);
     transition:
-      opacity 700ms var(--ease-out),
-      transform 700ms var(--ease-out);
+      opacity 800ms var(--ease-out),
+      transform 800ms var(--ease-out);
     transition-delay: calc(var(--reveal-delay, 0) * 1ms);
   }
 
@@ -486,15 +461,17 @@ button:focus-visible > .frame--zoom > img {
     transform: none;
   }
 
-  /* Photographs repeat the hero's motif: unveiled from below. */
-  .js [data-reveal] .frame {
-    clip-path: inset(14% 0 0 0);
-    transition: clip-path 1.2s cubic-bezier(0.76, 0, 0.24, 1);
+  /* Arched photographs rise into their frame, echoing the hero. */
+  .js [data-reveal] .frame--arch > picture,
+  .js [data-reveal] .frame--arch > img {
+    transform: translateY(8%) scale(1.04);
+    transition: transform 1.3s var(--ease-arch);
     transition-delay: calc(var(--reveal-delay, 0) * 1ms);
   }
 
-  .js [data-reveal].is-revealed .frame {
-    clip-path: inset(0 0 0 0);
+  .js [data-reveal].is-revealed .frame--arch > picture,
+  .js [data-reveal].is-revealed .frame--arch > img {
+    transform: none;
   }
 }
 
