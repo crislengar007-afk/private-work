@@ -15,6 +15,8 @@
   --lagoon: #0f6366; /* the one interactive accent: the studio's turquoise, deepened */
   --lagoon-deep: #0b4c4f;
   --on-lagoon: #f6f3ee;
+  --band: #0f6366; /* the enquiry band */
+  --on-band: #f6f3ee;
   --lotus: #a93f66; /* from the logo mark; small details only */
   --rule: rgb(29 38 39 / 0.14);
   --rule-strong: rgb(29 38 39 / 0.38);
@@ -61,6 +63,8 @@
     --lagoon: #6cc3c4;
     --lagoon-deep: #8fd3d4;
     --on-lagoon: #0e1413;
+    --band: #0e3a3c;
+    --on-band: #ece7de;
     --lotus: #e58fae;
     --rule: rgb(236 231 222 / 0.16);
     --rule-strong: rgb(236 231 222 / 0.4);
@@ -77,6 +81,8 @@
   --lagoon: #6cc3c4;
   --lagoon-deep: #8fd3d4;
   --on-lagoon: #0e1413;
+  --band: #0e3a3c;
+  --on-band: #ece7de;
   --lotus: #e58fae;
   --rule: rgb(236 231 222 / 0.16);
   --rule-strong: rgb(236 231 222 / 0.4);

@@ -15,7 +15,7 @@ interface Piece {
 interface ServiceOption {
   id: string;
   label: string;
-  isEvent: boolean;
+  questions: 'wedding' | 'hospitality' | null;
 }
 
 type Field = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -79,8 +79,9 @@ export function initEnquiry() {
   const serviceSelect = form.querySelector<HTMLSelectElement>('select[name="service"]')!;
   const eventFields = form.querySelector<HTMLElement>('[data-event-fields]')!;
   const syncEventFields = () => {
-    const isEvent = serviceOptions.find((s) => s.id === serviceSelect.value)?.isEvent ?? false;
-    eventFields.hidden = !isEvent;
+    const kind = serviceOptions.find((s) => s.id === serviceSelect.value)?.questions ?? null;
+    eventFields.hidden = !kind;
+    eventFields.querySelectorAll<HTMLElement>('[data-q]').forEach((q) => (q.hidden = q.dataset.q !== kind));
   };
   const preset = url.searchParams.get('service');
   if (preset && Array.from(serviceSelect.options).some((o) => o.value === preset)) serviceSelect.value = preset;
@@ -90,6 +91,9 @@ export function initEnquiry() {
   // Gallery selection handoff ------------------------------------------------
   const selection = form.querySelector<HTMLElement>('[data-selection]')!;
   const selectionInput = form.querySelector<HTMLInputElement>('[data-selection-input]')!;
+  // A service link without a photograph starts a fresh enquiry: forget any
+  // photograph chosen earlier in the session.
+  if (preset && !url.searchParams.has('piece')) session('remove');
   const requested = url.searchParams.get('piece') ?? session('get');
   let selected = pieces.find((p) => p.id === requested);
 
@@ -105,6 +109,12 @@ export function initEnquiry() {
     session('set', selected.id);
     if (!preset && !serviceSelect.value) serviceSelect.value = 'arrangements';
     syncEventFields();
+  }
+
+  // Arriving from a service or a photograph: bring the form into view on
+  // small screens, where the contact details come first.
+  if ((preset || url.searchParams.has('piece')) && matchMedia('(max-width: 1023px)').matches) {
+    requestAnimationFrame(() => form.scrollIntoView({ block: 'start' }));
   }
 
   form.querySelector('[data-selection-remove]')?.addEventListener('click', () => {
@@ -148,6 +158,12 @@ export function initEnquiry() {
     status.focus();
   }
 
+  // Only report follow-up answers that are visible for the chosen service.
+  function fieldValue(data: FormData, name: string) {
+    const el = form!.querySelector<HTMLElement>(`[name="${name}"]`);
+    return el && !el.closest('[hidden]') ? String(data.get(name) ?? '').trim() : '';
+  }
+
   function payload() {
     const data = new FormData(form!);
     const service = String(data.get('service') ?? '');
@@ -159,6 +175,8 @@ export function initEnquiry() {
       service: serviceLabel,
       date: String(data.get('date') ?? ''),
       venue: eventFields.hidden ? '' : String(data.get('venue') ?? '').trim(),
+      guests: fieldValue(data, 'guests'),
+      frequency: fieldValue(data, 'frequency'),
       message: String(data.get('message') ?? '').trim(),
       piece: selected ? `${selected.id} (${[selected.label, selected.collection].filter(Boolean).join(', ')})` : '',
       pieceUrl: selected ? new URL(`/gallery/?view=${encodeURIComponent(selected.id)}`, location.origin).href : '',
@@ -174,6 +192,8 @@ export function initEnquiry() {
       `Service: ${p.service}`,
       p.date && `Date needed: ${p.date}`,
       p.venue && `Venue: ${p.venue}`,
+      p.guests && `Approximate guests: ${p.guests}`,
+      p.frequency && `One-off or ongoing: ${p.frequency}`,
       p.piece && `Gallery selection: ${p.piece}`,
       p.pieceUrl && `Link: ${p.pieceUrl}`,
     ].filter(Boolean);

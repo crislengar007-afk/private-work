@@ -1,6 +1,6 @@
 ---
 import Logo from './Logo.astro';
-import { nav } from '../data/site';
+import { nav, site, hours } from '../data/site';
 
 const path = Astro.url.pathname;
 const isCurrent = (href: string) => path === href || path.startsWith(href);
@@ -23,7 +23,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
           ))
         }
       </ul>
-      <a class="button header-cta" href="/contact/">Request flowers</a>
+      <a class="button header-cta" href="/contact/">Request Flowers</a>
     </nav>
 
     <button class="menu-toggle" type="button" aria-haspopup="dialog" aria-controls="site-menu" aria-expanded="false" data-menu-open>
@@ -55,7 +55,11 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
       }
     </ul>
   </nav>
-  <a class="button menu-cta" href="/contact/">Request flowers</a>
+  <a class="button menu-cta" href="/contact/">Request Flowers</a>
+  <div class="menu-facts">
+    {site.contact.phone && <a href={`tel:${site.contact.phone.replace(/[^+\d]/g, '')}`}>{site.contact.phone}</a>}
+    <p>{hours.map((h) => <span>{h.days}, {h.time}</span>)}</p>
+  </div>
 </dialog>
 
 <style>
@@ -279,6 +283,25 @@ const isCurrent = (href: string) => path === href || path.startsWith(href);
   .menu-cta {
     margin-top: 2rem;
     align-self: stretch;
+  }
+
+  .menu-facts {
+    display: grid;
+    gap: 0.25rem;
+    margin-top: 1.25rem;
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+  }
+
+  .menu-facts a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+  }
+
+  .menu-facts span {
+    display: block;
   }
 
   @media (prefers-reduced-motion: no-preference) {

@@ -12,7 +12,7 @@ const phone = site.contact.phone;
   phone && (
     <div class="dock" data-dock>
       <a class="call" href={`tel:${phone.replace(/[^+\d]/g, '')}`}>Call the studio</a>
-      <a class="button request" href="/contact/">Request flowers</a>
+      <a class="button request" href="/contact/">Request Flowers</a>
     </div>
   )
 }
@@ -53,5 +53,27 @@ const phone = site.contact.phone;
       min-height: 3.1rem;
       padding-inline: 1rem;
     }
+    .dock {
+      transition:
+        transform var(--dur-2) var(--ease-out),
+        visibility 0s linear 0s;
+    }
+    .dock.is-tucked {
+      transform: translateY(110%);
+      visibility: hidden;
+      transition:
+        transform var(--dur-2) var(--ease-out),
+        visibility 0s linear var(--dur-2);
+    }
   }
 </style>
+
+<script>
+  // Stay out of the way while the page's own primary actions are on screen.
+  const dock = document.querySelector<HTMLElement>('[data-dock]');
+  const primary = document.querySelector('[data-dock-hide]');
+  if (dock && primary && 'IntersectionObserver' in window) {
+    dock.classList.add('is-tucked');
+    new IntersectionObserver(([entry]) => dock.classList.toggle('is-tucked', entry.isIntersecting)).observe(primary);
+  }
+</script>

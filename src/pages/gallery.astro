@@ -49,11 +49,11 @@ const orient = (r: number) => (r > 1.08 ? 'landscape' : r < 0.92 ? 'portrait' : 
       collections.length > 0 && (
         <div class="filters" data-filters>
           <div class="filter-group" role="group" aria-label="Filter by colour">
-            <button type="button" class="filter" data-filter="" aria-pressed="true">
+            <button type="button" class="filter" data-filter="" data-label="All" aria-pressed="true">
               All <span class="count">{galleryItems.length}</span>
             </button>
             {collections.map((c) => (
-              <button type="button" class="filter" data-filter={c.id} aria-pressed="false">
+              <button type="button" class="filter" data-filter={c.id} data-label={c.label} aria-pressed="false">
                 {c.label} <span class="count">{c.count}</span>
               </button>
             ))}

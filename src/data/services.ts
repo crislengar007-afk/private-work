@@ -20,6 +20,8 @@ export interface Service {
   occasion: string;
   /** Event-type enquiries may show optional venue and guest fields. */
   isEvent: boolean;
+  /** Optional follow-up questions shown in the enquiry form (SPEC §5). */
+  questions?: 'wedding' | 'hospitality';
   /** Key into the campaign imagery (generated concepts, not portfolio). */
   campaign?: string;
 }
@@ -47,6 +49,7 @@ export const services: Service[] = [
     audience: 'For couples and wedding planners celebrating in the Turks and Caicos Islands.',
     occasion: 'Wedding',
     isEvent: true,
+    questions: 'wedding',
     campaign: 'weddings',
   },
   {
@@ -58,6 +61,7 @@ export const services: Service[] = [
     audience: 'For offices, meetings and corporate events.',
     occasion: 'Corporate',
     isEvent: true,
+    questions: 'hospitality',
     campaign: 'corporate',
   },
   {
@@ -81,6 +85,7 @@ export const services: Service[] = [
     audience: 'For hotels, resorts and hospitality teams.',
     occasion: 'Hotel or resort',
     isEvent: true,
+    questions: 'hospitality',
     campaign: 'hotels',
   },
 ];

@@ -41,8 +41,7 @@ export function initGallery() {
   let current = '';
   let busy: Promise<void> = Promise.resolve();
 
-  const labelFor = (id: string) =>
-    filterButtons.find((b) => b.dataset.filter === id)?.textContent?.trim() ?? '';
+  const labelFor = (id: string) => filterButtons.find((b) => b.dataset.filter === id)?.dataset.label ?? '';
 
   const visibleItems = () => items.filter((el) => !el.hidden);
 
@@ -137,7 +136,9 @@ export function initGallery() {
   for (const button of filterButtons) {
     button.addEventListener('click', () => {
       const id = button.dataset.filter ?? '';
-      setUrl({ collection: id || null });
+      if (id === current) return;
+      // Each filter is a history step, so Back returns to the previous view.
+      setUrl({ collection: id || null, view: null }, true);
       busy = busy.then(() => filterTo(id));
     });
   }

@@ -25,7 +25,7 @@ const pieces = await Promise.all(
   })),
 );
 
-const serviceOptions = services.map((s) => ({ id: s.id, label: s.title, isEvent: s.isEvent }));
+const serviceOptions = services.map((s) => ({ id: s.id, label: s.title, questions: s.questions ?? null }));
 const today = new Date().toISOString().slice(0, 10);
 ---
 
@@ -36,7 +36,7 @@ const today = new Date().toISOString().slice(0, 10);
 >
   <section class="contact wrap" aria-labelledby="contact-title">
     <div class="aside">
-      <h1 id="contact-title">Request <em>flowers</em></h1>
+      <h1 id="contact-title">Request <em>Flowers</em></h1>
       <p class="lede">
         For any enquiries or floral needs, get in touch with our floral artisans. Share the occasion and the feeling you
         have in mind, and we will take it from there.
@@ -120,6 +120,7 @@ const today = new Date().toISOString().slice(0, 10);
     </div>
 
     <form
+      id="enquiry"
       class="form"
       novalidate
       data-enquiry
@@ -194,10 +195,22 @@ const today = new Date().toISOString().slice(0, 10);
       </div>
 
       <fieldset class="event-fields" data-event-fields hidden>
-        <legend>For events <span class="optional">(optional)</span></legend>
+        <legend>A little more detail <span class="optional">(optional)</span></legend>
         <div class="field">
           <label for="f-venue">Venue or location</label>
           <input id="f-venue" name="venue" type="text" autocomplete="off" />
+        </div>
+        <div class="field" data-q="wedding" hidden>
+          <label for="f-guests">Approximate number of guests</label>
+          <input id="f-guests" name="guests" type="number" min="1" max="2000" inputmode="numeric" />
+        </div>
+        <div class="field" data-q="hospitality" hidden>
+          <label for="f-frequency">One-off or ongoing?</label>
+          <select id="f-frequency" name="frequency">
+            <option value="">Not sure yet</option>
+            <option value="One-off">One-off</option>
+            <option value="Ongoing">Ongoing (regular arrangements)</option>
+          </select>
         </div>
       </fieldset>
 
@@ -229,6 +242,10 @@ const today = new Date().toISOString().slice(0, 10);
 </Base>
 
 <style>
+  .form {
+    scroll-margin-top: 5.5rem;
+  }
+
   .contact {
     display: grid;
     gap: clamp(3rem, 7vw, 5rem);
@@ -339,6 +356,10 @@ const today = new Date().toISOString().slice(0, 10);
     align-content: start;
   }
 
+  .field[hidden] {
+    display: none;
+  }
+
   label,
   legend {
     font-weight: 500;
@@ -400,8 +421,10 @@ const today = new Date().toISOString().slice(0, 10);
     border-color: var(--lagoon);
   }
 
-  [aria-invalid='true'] {
+  [aria-invalid='true'],
+  [aria-invalid='true']:focus-visible {
     border-color: var(--lotus);
+    outline-color: var(--lotus);
   }
 
   .hint {

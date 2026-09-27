@@ -35,8 +35,8 @@ const tel = (n: string) => `tel:${n.replace(/[^+\d]/g, '')}`;
 
 <style>
   .band {
-    background: var(--lagoon);
-    color: var(--on-lagoon);
+    background: var(--band);
+    color: var(--on-band);
     padding-block: clamp(4.5rem, 10vw, 8.5rem);
   }
   .band-inner {
@@ -72,10 +72,15 @@ const tel = (n: string) => `tel:${n.replace(/[^+\d]/g, '')}`;
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    text-decoration-color: color-mix(in srgb, var(--on-lagoon) 45%, transparent);
+    text-decoration-color: color-mix(in srgb, var(--on-band) 45%, transparent);
   }
   .band :focus-visible {
-    outline-color: var(--on-lagoon);
+    outline-color: var(--on-band);
+  }
+  .band :global(.button--light) {
+    background: var(--on-band);
+    border-color: var(--on-band);
+    color: var(--band);
   }
   @media (min-width: 900px) {
     .band-inner {

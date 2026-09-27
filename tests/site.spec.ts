@@ -92,8 +92,12 @@ test.describe('gallery', () => {
     await expect(page.locator(`[data-filter="${id}"]`)).toHaveAttribute('aria-pressed', 'true');
     expect(await page.locator('.grid .item:not([hidden])').count()).toBe(collections.length);
 
-    await filters.getByRole('button', { name: 'All' }).click();
+    await filters.getByRole('button', { name: /^All/ }).click();
     await expect(page).not.toHaveURL(/collection=/);
+    // Filters are history steps: Back restores the previous filter.
+    await page.goBack();
+    await expect(page.locator(`[data-filter="${id}"]`)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-filter-status]')).toHaveText(new RegExp(`in ${await target.getAttribute('data-label')}$`));
   });
 
   test('viewer: opens, navigates by keyboard, closes on Escape and restores focus', async ({ page }) => {
@@ -221,6 +225,24 @@ test.describe('enquiry', () => {
     await expect(page.getByLabel('Venue or location')).toBeVisible();
     await page.getByLabel('Service', { exact: true }).selectOption('arrangements');
     await expect(page.getByLabel('Venue or location')).toBeHidden();
+  });
+
+  test('hospitality services ask one-off or ongoing; weddings ask guest numbers', async ({ page }) => {
+    await page.goto('/contact/?service=hotels');
+    await expect(page.getByLabel('One-off or ongoing?')).toBeVisible();
+    await expect(page.getByLabel('Approximate number of guests')).toBeHidden();
+    await page.getByLabel('Service', { exact: true }).selectOption('weddings');
+    await expect(page.getByLabel('Approximate number of guests')).toBeVisible();
+    await expect(page.getByLabel('One-off or ongoing?')).toBeHidden();
+  });
+
+  test('a photograph chosen earlier does not leak into a later service enquiry', async ({ page }) => {
+    await page.goto('/gallery/');
+    await page.locator('.grid [data-open]').first().click();
+    await page.getByRole('link', { name: /Enquire about this arrangement/ }).click();
+    await expect(page.locator('[data-selection]')).toBeVisible();
+    await page.goto('/contact/?service=weddings');
+    await expect(page.locator('[data-selection]')).toBeHidden();
   });
 
   test('the old /services/ route redirects to /our-services/', async ({ page }) => {

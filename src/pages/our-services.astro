@@ -3,11 +3,14 @@ import Base from '../layouts/Base.astro';
 import Media from '../components/Media.astro';
 import Icon from '../components/Icon.astro';
 import InquiryBand from '../components/InquiryBand.astro';
-import { services, mission } from '../data/services';
+import { services } from '../data/services';
 import { galleryItems } from '../data/gallery';
 import { decor } from '../data/decor';
 
 // Generated campaign stills (concepts) where they exist; otherwise real work.
+// Real work for the one service the portfolio documents.
+const realArrangements = galleryItems.filter((g) => ['img002', 'img015', 'img006'].includes(g.id));
+
 const imageFor = (id: string, campaign?: string) => {
   const concept = campaign ? decor(`s-${campaign}`) : undefined;
   if (concept) return { image: concept.image, alt: concept.alt, concept: true };
@@ -68,8 +71,25 @@ const imageFor = (id: string, campaign?: string) => {
                   Enquire about {s.title.toLowerCase()} <Icon name="arrow-right" class="arrow" />
                 </a>
               </div>
-              {s.isEvent && (
-                <p class="caption note">The enquiry form asks a few optional event questions, such as the venue.</p>
+              {s.id === 'arrangements' && realArrangements.length > 0 && (
+                <div class="real-work">
+                  <p class="caption">From the studio’s portfolio</p>
+                  <ul>
+                    {realArrangements.map((g) => (
+                      <li>
+                        <a href={`/gallery/?view=${g.id}`} aria-label={`View in gallery: ${g.alt}`}>
+                          <Media image={g.image} alt="" ratio={1} zoom sizes="120px" widths={[240]} />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {s.questions === 'wedding' && (
+                <p class="caption note">The enquiry form also asks, optionally, for the venue and approximate guest numbers.</p>
+              )}
+              {s.questions === 'hospitality' && (
+                <p class="caption note">The enquiry form also asks, optionally, for the location and whether you need flowers once or on an ongoing basis.</p>
               )}
             </div>
           </div>
@@ -78,9 +98,6 @@ const imageFor = (id: string, campaign?: string) => {
     })
   }
 
-  <section class="section promise wrap" aria-label="Our mission">
-    <p class="promise-quote">{mission}</p>
-  </section>
 
   <InquiryBand />
 </Base>
@@ -190,6 +207,26 @@ const imageFor = (id: string, campaign?: string) => {
     max-width: 30rem;
   }
 
+  .real-work {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+  }
+
+  .real-work ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .real-work a {
+    display: block;
+    width: 6.5rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
   @media (min-width: 900px) {
     .service-grid {
       grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
@@ -201,15 +238,4 @@ const imageFor = (id: string, campaign?: string) => {
     }
   }
 
-  .promise-quote {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-weight: 300;
-    font-size: var(--step-4);
-    line-height: 1.2;
-    max-width: 30ch;
-    margin-inline: auto;
-    text-align: center;
-    text-wrap: balance;
-  }
 </style>
