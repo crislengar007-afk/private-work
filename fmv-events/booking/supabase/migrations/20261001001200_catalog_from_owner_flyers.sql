@@ -9,8 +9,8 @@
 -- ---------------------------------------------------------------- contact
 -- 506-471-4367 is the number on the general "Contact us", coordination, booth and
 -- proposal flyers (and the WhatsApp "Message" line); the Schedulista 506-471-6367
--- appears on none of them. The photography flyers also list 506-262-0810
--- (owner to confirm whether that should be shown too).
+-- appears on none of them. Owner decision (2026-10-01): 506-471-4367 is the one
+-- public number; the 506-262-0810 on the photography flyers is not shown.
 update public.settings set
   phone_e164 = coalesce(phone_e164, '+15064714367'),
   whatsapp_e164 = coalesce(whatsapp_e164, '+15064714367'),

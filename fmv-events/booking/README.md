@@ -149,34 +149,33 @@ environment had no Supabase API/Auth server). Before launch, run the full flow o
 a staging Supabase project: builder → quote → accept → pay page → record payment →
 confirmed, a mini booking, the portal magic link and admin MFA enrolment.
 
+## Decided
+
+- **Phone:** 506-471-4367 is the single public number (phone and WhatsApp), shown on
+  both sites. 506-262-0810 (photography flyers) and 506-471-6367 (Schedulista) are not used.
+- **Deposit:** 50% of the quote total confirms every booking, coordination included (the
+  coordination flyer's "$100 non-refundable at booking" no longer applies).
+
 ## Open items (from spec §12)
 
 The owner's price flyers (Oct 2026) answered several of these; migration
 `20261001001200_catalog_from_owner_flyers.sql` loads them. Still open:
 
-1. **Phone number:** set to **506-471-4367** (on the general, coordination, booth and
-   proposal flyers, and the WhatsApp line). The photography flyers list **506-262-0810**;
-   Schedulista's 506-471-6367 appears on none of the flyers. Confirm which to show
-   (Admin → Settings).
-2. **Domain:** the flyers use **fmveventsandphotography.com**, so the booking app would be
+1. **Domain:** the flyers use **fmveventsandphotography.com**, so the booking app would be
    `book.fmveventsandphotography.com` on Vercel. It's still open whether Higgsfield can
    serve the marketing site on the main domain.
-3. **[BLOCKER] Real media:** ≥30 portfolio photos, booth reels, before/after pairs, logo (SVG/PNG).
+2. **[BLOCKER] Real media:** ≥30 portfolio photos, booth reels, before/after pairs, logo (SVG/PNG).
    The header uses a text "FMV" monogram until the logo is supplied. Note: several flyer
    images look AI-generated (couples, proposal setups); keep those out of the portfolio.
-4. **Deposit rule:** the coordination flyer says "non-refundable $100 required at booking",
-   while the spec (and this app) use a 50% deposit for every quote. Decide which applies
-   (the deposit % is per quote and editable in the quote editor; a per-service $100 rule
-   would need a small change).
-5. e-Transfer receiving email + whether Autodeposit is on.
-6. HST registered? If yes, enable tax and add the HST number.
-7. Items with no price yet: proposal setups, flower-arch/table décor rentals beyond the
+3. e-Transfer receiving email + whether Autodeposit is on.
+4. HST registered? If yes, enable tax and add the HST number.
+5. Items with no price yet: proposal setups, flower-arch/table décor rentals beyond the
    arch, prints/albums, rush delivery. Inventory unit counts are seeded as 1 each.
    Conflicting flyer prices to confirm: video guest book add-on $75 (mirror flyer) vs
    +$100 combo (photobox flyer); 360 booth $400 (Schedulista) vs "booths from $350".
-8. Cancellation, damage and reschedule policy text; About text; FAQ answers.
-9. Real Christmas 2026 mini dates/times (the two old sources disagree).
-10. Google Business Profile with the same name/address/phone.
+6. Cancellation, damage and reschedule policy text; About text; FAQ answers.
+7. Real Christmas 2026 mini dates/times (the two old sources disagree).
+8. Google Business Profile with the same name/address/phone.
 
 ### Owner action items (not code, spec §14)
 - **Remove the Schedulista link from the Facebook About page: it contains a login
