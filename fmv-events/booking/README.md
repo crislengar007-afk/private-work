@@ -157,6 +157,8 @@ confirmed, a mini booking, the portal magic link and admin MFA enrolment.
   coordination flyer's "$100 non-refundable at booking" no longer applies).
 - **Video guest book add-on:** $75 with any photobooth rental (mirror, 360 or Magazine
   Photobox); the photobox flyer's "+$100 combo" no longer applies.
+- **360 photobooth:** $400 for 2 hours; the photobox flyer's "booths starting at $350"
+  refers to the mirror booth's Garnet tier.
 
 ## Open items (from spec §12)
 
@@ -173,8 +175,6 @@ The owner's price flyers (Oct 2026) answered several of these; migration
 4. HST registered? If yes, enable tax and add the HST number.
 5. Items with no price yet: proposal setups, flower-arch/table décor rentals beyond the
    arch, prints/albums, rush delivery. Inventory unit counts are seeded as 1 each.
-   Conflicting prices to confirm: 360 booth $400 (Schedulista) vs "booths from $350"
-   (photobox flyer).
 6. Cancellation, damage and reschedule policy text; About text; FAQ answers.
 7. Real Christmas 2026 mini dates/times (the two old sources disagree).
 8. Google Business Profile with the same name/address/phone.
