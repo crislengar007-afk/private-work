@@ -155,6 +155,8 @@ confirmed, a mini booking, the portal magic link and admin MFA enrolment.
   both sites. 506-262-0810 (photography flyers) and 506-471-6367 (Schedulista) are not used.
 - **Deposit:** 50% of the quote total confirms every booking, coordination included (the
   coordination flyer's "$100 non-refundable at booking" no longer applies).
+- **Video guest book add-on:** $75 with any photobooth rental (mirror, 360 or Magazine
+  Photobox); the photobox flyer's "+$100 combo" no longer applies.
 
 ## Open items (from spec §12)
 
@@ -171,8 +173,8 @@ The owner's price flyers (Oct 2026) answered several of these; migration
 4. HST registered? If yes, enable tax and add the HST number.
 5. Items with no price yet: proposal setups, flower-arch/table décor rentals beyond the
    arch, prints/albums, rush delivery. Inventory unit counts are seeded as 1 each.
-   Conflicting flyer prices to confirm: video guest book add-on $75 (mirror flyer) vs
-   +$100 combo (photobox flyer); 360 booth $400 (Schedulista) vs "booths from $350".
+   Conflicting prices to confirm: 360 booth $400 (Schedulista) vs "booths from $350"
+   (photobox flyer).
 6. Cancellation, damage and reschedule policy text; About text; FAQ answers.
 7. Real Christmas 2026 mini dates/times (the two old sources disagree).
 8. Google Business Profile with the same name/address/phone.
