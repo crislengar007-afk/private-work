@@ -70,7 +70,7 @@ export interface InvoiceDoc {
   mini_booking_id: string | null;
   booking_status: string | null;
   quote: { number: string | null; total_cents: number; lines: DocLine[]; policies: DocPolicy[] } | null;
-  mini: { campaign_name: string; slot_label: string; location: string; total_cents: number; starts_at: string; ends_at: string } | null;
+  mini: { campaign_name: string; slot_label: string; location: string; total_cents: number; starts_at: string; ends_at: string; payment_mode: 'deposit' | 'full' } | null;
   business: DocBusiness;
   pay_url: string;
 }
@@ -160,7 +160,7 @@ export async function loadInvoiceDoc(where: { id?: string; token?: string }): Pr
       client:clients(full_name, email, phone_e164),
       payments(amount_cents),
       booking:bookings(id, title, status, event_date, period, venue_name, venue_address, quote_id),
-      mini:mini_bookings(id, status, slot:mini_slots(starts_at, ends_at, campaign:mini_campaigns(name, location_name, location_address, price_cents)))`);
+      mini:mini_bookings(id, status, slot:mini_slots(starts_at, ends_at, campaign:mini_campaigns(name, location_name, location_address, price_cents, payment_mode)))`);
   if (where.id) q = q.eq('id', where.id);
   else if (where.token) q = q.eq('public_token', where.token);
   else return null;
@@ -172,7 +172,7 @@ export async function loadInvoiceDoc(where: { id?: string; token?: string }): Pr
   const booking = data.booking as unknown as { id: string; title: string; status: string; event_date: string; venue_name: string | null; venue_address: string | null; quote_id: string } | null;
   const mini = data.mini as unknown as {
     id: string; status: string;
-    slot: { starts_at: string; ends_at: string; campaign: { name: string; location_name: string | null; location_address: string | null; price_cents: number | null } };
+    slot: { starts_at: string; ends_at: string; campaign: { name: string; location_name: string | null; location_address: string | null; price_cents: number | null; payment_mode: 'deposit' | 'full' } };
   } | null;
   const paid = (data.payments ?? []).reduce((a, p) => a + Number(p.amount_cents), 0);
 
@@ -195,6 +195,7 @@ export async function loadInvoiceDoc(where: { id?: string; token?: string }): Pr
       total_cents: total,
       starts_at: mini.slot.starts_at,
       ends_at: mini.slot.ends_at,
+      payment_mode: mini.slot.campaign.payment_mode,
     };
   }
 

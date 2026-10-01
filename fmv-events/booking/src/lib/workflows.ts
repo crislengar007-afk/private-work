@@ -23,6 +23,21 @@ type InquiryData = z.output<typeof inquirySchema>;
 
 const eventLabel = (t: string) => eventTypeLabels[t as keyof typeof eventTypeLabels] ?? t;
 
+/**
+ * Runs follow-up work (PDFs, emails) after the database change has committed.
+ * Failures are logged, never thrown: the booking/hold/payment already exists and
+ * an error here must not make the client retry something that succeeded.
+ */
+async function afterCommit(label: string, fn: () => Promise<unknown>): Promise<boolean> {
+  try {
+    await fn();
+    return true;
+  } catch (e) {
+    console.error(`[${label}] follow-up failed`, e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
 // ---------------------------------------------------------------- clients
 export async function upsertClient(
   admin: AdminClient,
@@ -104,9 +119,11 @@ export async function createInquiry(input: InquiryData): Promise<{ inquiryId: st
     estimate: estimate.hasVariablePricing ? `from ${formatCAD(estimate.totals.totalCents)}` : formatCAD(estimate.totals.totalCents),
     admin_url: appUrl(`/admin/inquiries/${inq.id}`),
   };
-  await sendTemplatedEmail({ template: 'inquiry_received_client', to: input.contact.email, vars, entity: { type: 'inquiry', id: inq.id } });
-  const owner = await ownerAlertEmail();
-  if (owner) await sendTemplatedEmail({ template: 'inquiry_received_owner', to: owner, vars, entity: { type: 'inquiry', id: inq.id } });
+  await afterCommit('inquiry', async () => {
+    await sendTemplatedEmail({ template: 'inquiry_received_client', to: input.contact.email, vars, entity: { type: 'inquiry', id: inq.id } });
+    const owner = await ownerAlertEmail();
+    if (owner) await sendTemplatedEmail({ template: 'inquiry_received_owner', to: owner, vars, entity: { type: 'inquiry', id: inq.id } });
+  });
 
   return { inquiryId: inq.id, estimateCents: estimate.totals.totalCents };
 }
@@ -132,7 +149,7 @@ export async function invoicePdfAttachment(invoiceId: string) {
 }
 
 // ---------------------------------------------------------------- send quote
-export async function sendQuote(quoteId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function sendQuote(quoteId: string): Promise<{ ok: true; warning?: string } | { ok: false; error: string }> {
   const admin = createAdminClient();
   const { data: q } = await admin.from('quotes').select('id, status, number, valid_until, inquiry_id, total_cents').eq('id', quoteId).single();
   if (!q) return { ok: false, error: 'Quote not found.' };
@@ -158,11 +175,13 @@ export async function sendQuote(quoteId: string): Promise<{ ok: true } | { ok: f
   await admin.from('quotes').update({ status: 'superseded' }).eq('inquiry_id', q.inquiry_id).neq('id', quoteId).in('status', ['draft', 'sent']);
   await admin.from('inquiries').update({ status: 'quoted' }).eq('id', q.inquiry_id).in('status', ['new', 'quoted']);
 
+  let emailed = false;
+  const delivered = await afterCommit('sendQuote', async () => {
   const doc = await loadQuoteDoc({ id: quoteId });
-  if (!doc) return { ok: false, error: 'Quote not found after sending.' };
+  if (!doc) throw new Error('quote not found after sending');
   const pdf = await renderQuotePdf(doc);
   await storePdf(admin, `quotes/${doc.number}.pdf`, pdf);
-  await sendTemplatedEmail({
+  const res = await sendTemplatedEmail({
     template: 'quote_sent',
     to: doc.client.email,
     vars: {
@@ -177,6 +196,11 @@ export async function sendQuote(quoteId: string): Promise<{ ok: true } | { ok: f
     attachments: [{ filename: `${doc.number}.pdf`, content: pdf, contentType: 'application/pdf' }],
     entity: { type: 'quote', id: quoteId },
   });
+  emailed = res.ok;
+  });
+  if (!delivered || !emailed) {
+    return { ok: true, warning: 'The quote is marked as sent, but the email could not be delivered. Copy the client link and send it yourself, or try Resend.' };
+  }
   return { ok: true };
 }
 
@@ -197,7 +221,7 @@ export async function acceptQuote(token: string, name: string, ip: string): Prom
   if (error) return { ok: false, code: errorCode(error), error: friendlyDbError(error) };
   const r = data as { booking_id: string; invoice_id: string; invoice_token: string; already_accepted: boolean };
 
-  if (!r.already_accepted && r.invoice_id) {
+  if (!r.already_accepted && r.invoice_id) await afterCommit('acceptQuote', async () => {
     const att = await invoicePdfAttachment(r.invoice_id);
     if (att) {
       const { doc } = att;
@@ -220,7 +244,7 @@ export async function acceptQuote(token: string, name: string, ip: string): Prom
         entity: { type: 'invoice', id: doc.id },
       });
     }
-  }
+  });
   return { ok: true, invoiceToken: r.invoice_token, alreadyAccepted: r.already_accepted };
 }
 
@@ -230,7 +254,7 @@ export async function reportPayment(token: string): Promise<{ ok: boolean; error
   const { data, error } = await admin.rpc('report_invoice_payment', { p_token: token });
   if (error) return { ok: false, error: friendlyDbError(error) };
   const r = data as { invoice_id: string; changed: boolean };
-  if (r.changed) {
+  if (r.changed) await afterCommit('reportPayment', async () => {
     const doc = await loadInvoiceDoc({ id: r.invoice_id });
     const owner = await ownerAlertEmail();
     if (doc && owner) {
@@ -247,7 +271,7 @@ export async function reportPayment(token: string): Promise<{ ok: boolean; error
         entity: { type: 'invoice', id: doc.id },
       });
     }
-  }
+  });
   return { ok: true };
 }
 
@@ -272,7 +296,7 @@ export async function recordPayment(opts: {
   if (error) return { ok: false, error: friendlyDbError(error) };
   const r = data as { booking_confirmed: boolean; mini_confirmed: boolean; invoice_paid: boolean; balance_invoice_id: string | null; paid_cents: number };
 
-  if (r.booking_confirmed) {
+  if (r.booking_confirmed) await afterCommit('recordPayment', async () => {
     const paid = await loadInvoiceDoc({ id: opts.invoiceId });
     let balanceLine = 'Your booking is paid in full. Thank you!';
     const attachments = [];
@@ -299,9 +323,9 @@ export async function recordPayment(opts: {
         entity: { type: 'booking', id: paid.booking_id! },
       });
     }
-  }
+  });
 
-  if (r.mini_confirmed) await sendMiniConfirmation(opts.invoiceId);
+  if (r.mini_confirmed) await afterCommit('miniConfirmation', () => sendMiniConfirmation(opts.invoiceId));
   return { ok: true, bookingConfirmed: r.booking_confirmed, miniConfirmed: r.mini_confirmed, invoicePaid: r.invoice_paid };
 }
 
@@ -338,6 +362,7 @@ export async function holdMiniSlot(opts: {
   const { data, error } = await admin.rpc('hold_mini_slot', { p_slot_id: opts.slotId, p_client_id: clientId, p_notes: opts.notes });
   if (error) return { ok: false, code: errorCode(error), error: friendlyDbError(error) };
   const r = data as { invoice_id: string; invoice_token: string };
+  await afterCommit('holdMiniSlot', async () => {
   const att = await invoicePdfAttachment(r.invoice_id);
   if (att?.doc.mini) {
     await sendTemplatedEmail({
@@ -357,6 +382,7 @@ export async function holdMiniSlot(opts: {
       entity: { type: 'invoice', id: att.doc.id },
     });
   }
+  });
   return { ok: true, invoiceToken: r.invoice_token };
 }
 

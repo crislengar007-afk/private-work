@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from './supabase/server';
 
@@ -14,7 +15,8 @@ export interface SessionInfo {
   aal: 'aal1' | 'aal2' | null;
 }
 
-export async function getSession(): Promise<SessionInfo> {
+/** Cached per request: the admin layout and each page both ask. */
+export const getSession = cache(async function getSession(): Promise<SessionInfo> {
   const sb = await createClient();
   const { data: userData } = await sb.auth.getUser();
   const user = userData.user;
@@ -32,7 +34,7 @@ export async function getSession(): Promise<SessionInfo> {
     storedRole: (roleRow?.role as 'owner' | 'staff' | undefined) ?? null,
     aal: (aalData?.currentLevel as 'aal1' | 'aal2' | null) ?? null,
   };
-}
+});
 
 /** Owner or staff with MFA. Sends others to the admin sign-in / MFA step. */
 export async function requireTeam(): Promise<SessionInfo> {

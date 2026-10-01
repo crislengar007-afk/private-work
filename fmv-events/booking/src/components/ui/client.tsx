@@ -54,9 +54,13 @@ export function Countdown({ to, className }: { to: string; className?: string })
   const target = React.useMemo(() => new Date(to).getTime(), [to]);
   const [now, setNow] = React.useState<number | null>(null);
   React.useEffect(() => {
-    setNow(Date.now());
+    // First tick after mount (not during render) so server and client HTML match.
+    const first = setTimeout(() => setNow(Date.now()), 0);
     const t = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(t);
+    return () => {
+      clearTimeout(first);
+      clearInterval(t);
+    };
   }, []);
   if (now === null) return null;
   const ms = target - now;

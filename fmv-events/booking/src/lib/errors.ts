@@ -36,9 +36,13 @@ export function friendlyDbError(err: PgLikeError | null | undefined, fallback = 
       return 'That already exists.';
     case '23514': // check_violation
       if (err.message?.includes('media_ai_never_portfolio')) return 'AI-generated media can never be shown in the portfolio.';
+      if (err.message?.includes('media_ai_never_featured')) return 'AI-generated media can never be featured.';
+      if (err.message?.includes('media_mood_board_is_ai')) return 'Only AI-generated concept boards can have a mood theme.';
       if (err.message?.includes('active_needs_price') || err.message?.includes('live_needs_price')) return 'Set a price before making this public.';
       if (err.message?.includes('testimonials_publish_needs_consent')) return 'A testimonial needs the client’s consent before it can be published.';
       return 'Some values are not allowed. Please check the form.';
+    case '23503': // foreign_key_violation
+      return 'This is still used elsewhere, so it can’t be removed.';
     case '42501':
       return 'You do not have permission to do that.';
     default:

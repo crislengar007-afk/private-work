@@ -204,6 +204,31 @@ d('booking flows', () => {
     expect(r.rows[0].r.mini_confirmed).toBe(true);
   });
 
+  it('a client still sees their own mini slot after the campaign closes, but not others', async () => {
+    const camp = await c.query(
+      `insert into public.mini_campaigns (slug, name, price_cents, duration_min, status)
+       values ('closed-minis-' || floor(random()*1e9)::text, 'Closed Minis', 6000, 15, 'live') returning id`);
+    const s1 = await c.query(`insert into public.mini_slots (campaign_id, starts_at, ends_at)
+       values ($1, now() + interval '40 days', now() + interval '40 days 15 minutes') returning id`, [camp.rows[0].id]);
+    await c.query(`insert into public.mini_slots (campaign_id, starts_at, ends_at)
+       values ($1, now() + interval '41 days', now() + interval '41 days 15 minutes')`, [camp.rows[0].id]);
+    const cl = await c.query(`insert into public.clients (full_name, email) values ('Closed', 'closed-mini@example.com') returning id`);
+    await c.query(`select public.hold_mini_slot($1, $2, null)`, [s1.rows[0].id, cl.rows[0].id]);
+    await c.query(`update public.mini_campaigns set status = 'closed' where id = $1`, [camp.rows[0].id]);
+    const u = await c.query(`insert into auth.users (email) values ('closed-mini@example.com') returning id`);
+    await asRole(c, 'authenticated', { sub: u.rows[0].id, email: 'closed-mini@example.com', aal: 'aal1' }, async () => {
+      await c.query('select public.link_my_client_account()');
+      const slots = await c.query('select id from public.mini_slots where campaign_id = $1', [camp.rows[0].id]);
+      expect(slots.rows).toEqual([{ id: s1.rows[0].id }]);
+      const camps = await c.query('select id from public.mini_campaigns where id = $1', [camp.rows[0].id]);
+      expect(camps.rows).toHaveLength(1);
+    });
+    await asRole(c, 'anon', {}, async () => {
+      const slots = await c.query('select id from public.mini_slots where campaign_id = $1', [camp.rows[0].id]);
+      expect(slots.rows).toEqual([]);
+    });
+  });
+
   it('a client only sees their own bookings and invoices', async () => {
     const date = futureDate(270);
     const mine = await makeSentQuote(c, { email: 'portal-me@example.com', date, start: '10:00', end: '11:00', serviceSlug: 'wedding-arch' });

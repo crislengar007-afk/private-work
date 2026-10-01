@@ -1524,6 +1524,14 @@ export type Database = {
         Args: never
         Returns: string[]
       }
+      my_mini_campaign_ids: {
+        Args: never
+        Returns: string[]
+      }
+      my_mini_slot_ids: {
+        Args: never
+        Returns: string[]
+      }
       next_doc_number: {
         Args: { p_kind: string }
         Returns: string

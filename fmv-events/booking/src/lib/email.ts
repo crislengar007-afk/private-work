@@ -25,12 +25,12 @@ export function mergeTags(text: string, vars: Record<string, string | number | n
   });
 }
 
-function wrapHtml(bodyHtml: string, businessName: string): string {
+function wrapHtml(bodyHtml: string, businessName: string, location: string): string {
   return `<!doctype html><html><body style="margin:0;background:#fbf7f2;font-family:Inter,Segoe UI,Arial,sans-serif;color:#2b2527">
 <div style="max-width:560px;margin:0 auto;padding:32px 20px">
 <p style="font-family:Georgia,serif;font-size:22px;color:#8e4f57;margin:0 0 20px">${businessName}</p>
 <div style="background:#ffffff;border:1px solid #e7dcd3;border-radius:14px;padding:24px;font-size:15px;line-height:1.6">${bodyHtml}</div>
-<p style="font-size:12px;color:#5a5054;margin-top:16px">Fredericton, New Brunswick</p>
+<p style="font-size:12px;color:#5a5054;margin-top:16px">${location}</p>
 </div></body></html>`;
 }
 
@@ -49,7 +49,7 @@ export async function sendTemplatedEmail(opts: {
   const admin = createAdminClient();
   const [{ data: tpl }, { data: settings }] = await Promise.all([
     admin.from('email_templates').select('subject, body_md').eq('key', opts.template).maybeSingle(),
-    admin.from('settings').select('business_name, owner_name, email, reply_to_email').eq('id', 1).single(),
+    admin.from('settings').select('business_name, owner_name, email, reply_to_email, city, province').eq('id', 1).single(),
   ]);
   const businessName = settings?.business_name ?? 'FMV Events & Photography';
   const vars = { business_name: businessName, owner_name: settings?.owner_name ?? '', ...opts.vars };
@@ -72,7 +72,8 @@ export async function sendTemplatedEmail(opts: {
   }
 
   const subject = mergeTags(tpl.subject, vars);
-  const html = wrapHtml(renderMarkdown(mergeTags(tpl.body_md, vars, true)), businessName);
+  const location = [settings?.city, settings?.province].filter(Boolean).join(', ');
+  const html = wrapHtml(renderMarkdown(mergeTags(tpl.body_md, vars, true)), businessName, location);
 
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM; // e.g. "FMV Events & Photography <bookings@yourdomain.ca>"

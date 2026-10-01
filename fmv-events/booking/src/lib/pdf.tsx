@@ -200,6 +200,8 @@ function InvoicePdf({ inv, qr }: { inv: InvoiceDoc; qr: string }) {
         </View>
         <View style={s.box}>
           <View style={s.payRow}>
+            {/* react-pdf Image has no alt attribute; the text beside it carries the same link. */}
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
             <Image src={qr} style={{ width: 96, height: 96 }} />
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: 'Helvetica-Bold', marginBottom: 4 }}>Pay by Interac e-Transfer</Text>
