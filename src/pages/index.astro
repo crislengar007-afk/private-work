@@ -2,7 +2,7 @@
 import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import MotionHero from '../components/MotionHero.astro';
-import MotionPhoto from '../components/MotionPhoto.astro';
+import Favourites from '../components/Favourites.astro';
 import ServiceCard from '../components/ServiceCard.astro';
 import Media from '../components/Media.astro';
 import Icon from '../components/Icon.astro';
@@ -17,7 +17,7 @@ const h1 = decor('h1-desktop')!;
 const h2 = decor('h2-tall') ?? decor('h2-mobile');
 const og = await getImage({ src: h1.image, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 
-const work = selectedWork(5);
+const favourites = selectedWork(10);
 const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[galleryItems.length - 1];
 ---
 
@@ -35,8 +35,9 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
     wideVideo={decorVideo('v1-loop')}
     narrowVideo={decorVideo('m-home-tall')}
     labelledby="hero-title"
-    next="#work"
+    next="#favourites"
     narrowAlign="top"
+    scroll
   >
     <h1 id="hero-title">
       <span class="line"><span>Bringing flower elegance</span></span>
@@ -49,38 +50,15 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
       <a class="button" href="/gallery/">Explore the Gallery <Icon name="arrow-right" class="arrow" /></a>
       <a class="button button--on-media" href="/contact/">Request Flowers</a>
     </div>
+    <p slot="after">Flowers for the island since March 2023, from our studio at <em>Ports of Call</em>.</p>
   </MotionHero>
 
-  <section class="section work" id="work" aria-labelledby="work-title">
-    <div class="wrap">
-      <div class="work-head" data-reveal>
-        <h2 id="work-title">From the studio</h2>
-        <p class="lede">
-          Arrangements composed at Ports of Call, photographed in the studio. Where a photograph moves, the motion was
-          added digitally and is labelled.
-        </p>
-      </div>
-      <ul class="strip">
-        {
-          work.map((p, i) => (
-            <li data-reveal style={`--reveal-delay: ${i * 80}`}>
-              <a href={`/gallery/?view=${p.id}`} class="strip-link">
-                <MotionPhoto
-                  item={p}
-                  ratio={i === 0 ? 4 / 5 : 3 / 4}
-                  arch
-                  native={false}
-                  sizes="(min-width: 1024px) 24vw, (min-width: 640px) 45vw, 75vw"
-                />
-                <span class="caption">{p.caption}</span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-      <a class="link to-gallery" href="/gallery/">Explore the Gallery <Icon name="arrow-right" class="arrow" /></a>
-    </div>
-  </section>
+  <Favourites
+    id="favourites"
+    heading="Some of our favourites"
+    items={favourites}
+    note="Arrangements composed at Ports of Call, photographed in the studio. Where a photograph moves, the motion was added digitally and is labelled."
+  />
 
   <section class="section occasions" aria-labelledby="occasions-title">
     <div class="wrap">
@@ -105,7 +83,7 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
   <section class="section story" aria-labelledby="story-title">
     <div class="wrap story-grid">
       <figure class="story-photo" data-reveal>
-        <Media image={storyPhoto?.image} alt={storyPhoto?.alt ?? ''} ratio={4 / 5} arch native sizes="(min-width: 1024px) 30vw, 90vw" />
+        <Media image={storyPhoto?.image} alt={storyPhoto?.alt ?? ''} ratio={4 / 5} native sizes="(min-width: 1024px) 30vw, 90vw" />
         <figcaption class="caption">From the studio’s portfolio</figcaption>
       </figure>
       <div class="story-copy" data-reveal style="--reveal-delay: 120">
@@ -239,66 +217,6 @@ const storyPhoto = galleryItems.find((g) => g.id === 'img005') ?? galleryItems[g
   @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
     .reel > li {
       transition: none;
-    }
-  }
-
-  /* Portfolio preview ----------------------------------------------------- */
-  .work {
-    padding-top: clamp(4rem, 9vw, 8rem);
-  }
-
-  .work-head {
-    display: grid;
-    gap: 1rem;
-    margin-bottom: clamp(2rem, 4vw, 3rem);
-  }
-
-  .work-head h2 {
-    font-size: var(--step-5);
-  }
-
-  .strip {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 72%;
-    gap: 1rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 0.75rem;
-    align-items: end;
-  }
-
-  .strip li {
-    scroll-snap-align: start;
-  }
-
-  .strip-link {
-    display: grid;
-    gap: 0.6rem;
-    text-decoration: none;
-  }
-
-  .to-gallery {
-    margin-top: 1.5rem;
-  }
-
-  @media (min-width: 640px) {
-    .strip {
-      grid-auto-columns: 42%;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .work-head {
-      grid-template-columns: 1fr 1fr;
-      align-items: end;
-    }
-    .strip {
-      grid-auto-flow: row;
-      grid-template-columns: 1.35fr repeat(4, minmax(0, 1fr));
-      overflow: visible;
     }
   }
 

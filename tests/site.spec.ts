@@ -192,7 +192,7 @@ test.describe('gallery', () => {
 
   test('a deep link opens the viewer, and returning restores it', async ({ page }) => {
     await page.goto('/');
-    await page.locator('a.strip-link').first().click();
+    await page.locator('#favourites [data-favs-strip] a').first().click();
     await expect(page).toHaveURL(/\/gallery\/\?view=/);
     await expect(page.getByRole('dialog', { name: 'Photograph viewer' })).toBeVisible();
 
@@ -367,6 +367,41 @@ test.describe('motion', () => {
     await playing(page, '.mhero video');
   });
 
+  test('scrolling drives the Home film: it pins, draws back and hands over to the strip', async ({ page }) => {
+    await page.goto('/');
+    const hero = page.locator('.mhero');
+    const wrap = page.locator('[data-hero-scroll]');
+    const vh = page.viewportSize()!.height;
+    const height = (await wrap.boundingBox())!.height;
+    expect(height).toBeGreaterThan(vh * 1.5);
+
+    // Halfway through the pinned distance, the hero is still filling the screen.
+    await page.evaluate((y) => scrollTo(0, y), Math.round((height - vh) * 0.6));
+    await expect.poll(async () => Number(await hero.evaluate((el) => el.style.getPropertyValue('--p')))).toBeGreaterThan(0.5);
+    expect((await hero.boundingBox())!.y).toBeLessThanOrEqual(1);
+    await expect(hero).toHaveClass(/is-past/);
+    await expect(page.locator('.mhero-content')).toBeHidden();
+    await expect(page.getByText('Flowers for the island since March 2023')).toBeVisible();
+
+    // Past the pin, the favourites strip follows.
+    await page.locator('#favourites').scrollIntoViewIfNeeded();
+    await expect(page.getByRole('heading', { name: 'Some of our favourites' })).toBeVisible();
+  });
+
+  test('the favourites strip pages with its arrows', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'arrows are for pointer devices; touch swipes the strip');
+    await page.goto('/');
+    const strip = page.locator('#favourites [data-favs-strip]');
+    await strip.scrollIntoViewIfNeeded();
+    const prev = page.locator('#favourites [data-favs-prev]');
+    await expect(prev).toBeDisabled();
+    await page.locator('#favourites [data-favs-next]').click();
+    await expect.poll(() => strip.evaluate((el) => el.scrollLeft)).toBeGreaterThan(200);
+    await expect(prev).toBeEnabled();
+    // Every panel opens its photograph in the gallery.
+    await expect(strip.locator('a').first()).toHaveAttribute('href', /\/gallery\/\?view=img/);
+  });
+
   test('the occasions reel opens the hovered service and plays its film', async ({ page, isMobile }) => {
     test.skip(isMobile, 'hover is a desktop interaction; touch plays the centred card');
     await page.goto('/');
@@ -423,8 +458,10 @@ test.describe('reduced motion', () => {
     await page.waitForTimeout(800);
     const playing = await page.$$eval('video', (vs) => vs.filter((v) => !v.paused).length);
     expect(playing).toBe(0);
-    // No film is even downloaded.
+    // No film is even downloaded, and the hero is not pinned to scrolling.
     expect(await page.locator('video source').count()).toBe(0);
+    const wrapHeight = (await page.locator('[data-hero-scroll]').boundingBox())!.height;
+    expect(wrapHeight).toBeLessThanOrEqual(page.viewportSize()!.height + 2);
     await expect(page.getByRole('button', { name: 'Pause motion' })).toBeHidden();
 
     await page.goto('/gallery/');

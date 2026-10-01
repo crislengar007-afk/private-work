@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import MotionHero from '../../components/MotionHero.astro';
-import MotionPhoto from '../../components/MotionPhoto.astro';
+import Favourites from '../../components/Favourites.astro';
 import ServiceCard from '../../components/ServiceCard.astro';
 import InquiryBand from '../../components/InquiryBand.astro';
 import Icon from '../../components/Icon.astro';
@@ -34,9 +34,13 @@ const picks: Record<string, string[]> = {
   'house-guests': ['img010', 'img004', 'img013', 'img007'],
   hotels: ['img005', 'img001', 'img012', 'img015'],
 };
-const photos = (picks[service.id] ?? [])
-  .map((id) => galleryItems.find((g) => g.id === id))
-  .filter((g): g is NonNullable<typeof g> => !!g);
+// The chosen photographs lead; the rest of the portfolio follows in its
+// curated order, so the strip always runs edge to edge.
+const chosen = picks[service.id] ?? [];
+const photos = [
+  ...chosen.map((id) => galleryItems.find((g) => g.id === id)).filter((g): g is NonNullable<typeof g> => !!g),
+  ...galleryItems.filter((g) => !chosen.includes(g.id)),
+].slice(0, 10);
 
 const portfolioNote: Record<string, string> = {
   arrangements: 'Arrangements from the studio’s portfolio. Open any of them in the gallery and enquire about something similar.',
@@ -128,28 +132,7 @@ const [first, ...rest] = service.title.split(' ');
     </div>
   </section>
 
-  {
-    photos.length > 0 && (
-      <section class="section portfolio" aria-labelledby="portfolio-title">
-        <div class="wrap">
-          <div class="portfolio-head" data-reveal>
-            <h2 id="portfolio-title">From the studio</h2>
-            <p class="caption">{note}</p>
-          </div>
-          <ul class="photos">
-            {photos.map((p, i) => (
-              <li data-reveal style={`--reveal-delay: ${(i % 3) * 80}`}>
-                <a href={`/gallery/?view=${p.id}`} class="photo-link" aria-label={`View in gallery: ${p.alt}`}>
-                  <MotionPhoto item={p} ratio={3 / 4} native={false} alt="" sizes="(min-width: 1024px) 22vw, (min-width: 640px) 30vw, 70vw" />
-                </a>
-                <p class="caption">{p.caption}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    )
-  }
+  <Favourites id="from-the-studio" heading="From the studio" items={photos} note={note} />
 
   <section class="section more" aria-labelledby="more-title">
     <div class="wrap">
@@ -254,75 +237,6 @@ const [first, ...rest] = service.title.split(' ');
     .details-grid {
       grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
       align-items: start;
-    }
-  }
-
-  /* Portfolio ---------------------------------------------------------------- */
-  .portfolio {
-    padding-top: 0;
-  }
-
-  .portfolio-head {
-    display: grid;
-    gap: 1rem;
-    margin-bottom: clamp(2rem, 4vw, 3rem);
-  }
-
-  .portfolio-head h2 {
-    font-size: var(--step-5);
-  }
-
-  .portfolio-head .caption {
-    max-width: 36rem;
-  }
-
-  @media (min-width: 1024px) {
-    .portfolio-head {
-      grid-template-columns: 1fr 1fr;
-      align-items: end;
-    }
-  }
-
-  .photos {
-    list-style: none;
-    padding: 0 var(--gutter) 0.75rem;
-    margin-inline: calc(-1 * var(--gutter));
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: min(70vw, 20rem);
-    gap: 1rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--gutter);
-    align-items: start;
-  }
-
-  .photos > li {
-    display: grid;
-    gap: 0.6rem;
-    scroll-snap-align: start;
-  }
-
-  .photos > li:nth-child(even) {
-    margin-top: clamp(1.5rem, 4vw, 3.5rem);
-  }
-
-  .photo-link {
-    display: block;
-    border-radius: 1rem;
-    overflow: hidden;
-  }
-
-  @media (min-width: 1024px) {
-    .photos {
-      grid-auto-flow: row;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      margin-inline: 0;
-      padding: 0;
-      overflow: visible;
-    }
-    .photos:has(> li:nth-child(5)) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 

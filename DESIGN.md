@@ -12,8 +12,7 @@ Every visual choice comes from the business itself:
 - Lagoon is the turquoise backdrop from the studio's own photographs, deepened for contrast.
 - The limestone and linen neutrals let the vivid real work stand out without competing with it.
 
-**Signature:** the arch. It frames the hero and the portfolio highlights, and acts as a quiet
-architectural reference without beach clichés.
+**Signature:** the favourites strip. It is a full-bleed row of tall, square-cornered photograph panels, edge to edge on deep plum, under a gold display heading. It replaced the earlier arch frame at the owner's request (1 October 2026), from a reference screenshot. The colours are the logo's lotus deepened to plum, with gold for the heading only.
 
 ## 1. Colour
 
@@ -28,6 +27,8 @@ The page theme follows the system setting; an explicit `data-theme` on the root 
 | `--ink-soft` | `#4D5856` | `#A9B3B0` | Secondary text |
 | `--lagoon` | `#0F6366` | `#6CC3C4` | The one interactive accent: buttons, links, active states, focus |
 | `--lotus` | `#A93F66` | `#E58FAE` | Small details only: rules, errors, quotes |
+| `--plum` | `#3B0D22` | `#3B0D22` | The favourites strip and the frame around the scrolled Home film |
+| `--gold` | `#DCAE45` | `#DCAE45` | Display headings on plum only (about 8:1) |
 
 Contrast, measured with the WCAG formula:
 
@@ -55,9 +56,9 @@ Dark mode stays at 7.6:1 or above throughout.
 
 - The page gutter is `clamp(1.25rem, 4vw, 3.5rem)`, and the maximum width is 1440 px.
 - Section rhythm is `clamp(5.5rem, 11vw, 10rem)`.
-- **Shape rule:** interactive controls are pills (buttons, filters, nav bar, jump links). Featured media uses the arch (`999px 999px 0 0`). Form fields and panels use a 0.75rem or 1.25rem radius. Gallery photographs are square-cornered.
+- **Shape rule:** interactive controls are pills (buttons, filters, nav bar, jump links). Featured media is square-cornered: the strip's panels, the story photograph and the full-screen films. Service cards keep a 1.25rem radius. Form fields and panels use a 0.75rem or 1.25rem radius. Gallery photographs are square-cornered.
 - Layouts are asymmetric:
-  - **Home hero:** 7/5 split with the arch on the right.
+  - **Home hero:** a full-screen film, pinned for one more screen of scrolling (see Motion).
   - **Services:** alternating two-column rows, stacked below 900 px.
   - **Gallery:** a three-step staggered rhythm keyed to the visible items, so filtering keeps the composition.
 
@@ -69,7 +70,11 @@ Dark mode stays at 7.6:1 or above throughout.
 
 ## 5. Motion
 
-- **One authored moment:** on the Home hero, the arch opens upward (a clip-path rise over 1.6 s) while the headline lines rise from a mask. This is CSS only, so the content never depends on script.
+- **One authored moment: the scroll-driven Home film.** The hero is pinned for about one more screen of scrolling (1.1 on desktop, 0.8 on phones). Scroll progress (`--p`, 0 to 1) drives everything:
+  - **The film:** it pushes in (scale to 1.14) while drawing back into a framed panel on plum (clip-path insets to the gutter, the header and the foot).
+  - **The text:** the headline lifts and fades, and the closing line ("Flowers for the island since March 2023, from our studio at Ports of Call.") fades in. On phones it sits on the empty wall above the arrangement, with a stronger scrim.
+  - **The hand-off:** the plum frame continues straight into the favourites strip.
+  - **Reduced motion:** no pin and no transforms; the hero is an ordinary full-screen section.
 - **Full-screen films:** Home and each service page open on a full-screen concept film (100svh) under a scrim, with the header light over it until the page scrolls.
   - **Home:** V1 is the film on wider screens and V2, a tall recomposition, on phones.
   - **Loading:** films start after page load, only with motion allowed and Save-Data off.
@@ -83,11 +88,11 @@ Dark mode stays at 7.6:1 or above throughout.
 - **Full screen:** the gallery viewer has a full-screen button wherever the browser supports one.
 - **Supporting motion:**
   - Content fades up 16 px once as it enters the viewport.
-  - Arched photographs settle into their frames.
+  - The favourites strip pages with its arrows, smoothly unless reduced motion is set.
   - Gallery filters use a FLIP glide.
   - The viewer crossfades between photographs.
   - Links and buttons have a subtle hover glide.
-- **Easing:** `cubic-bezier(.22,1,.36,1)`, and `(.76,0,.24,1)` for the arch.
+- **Easing:** `cubic-bezier(.22,1,.36,1)`, and `(.76,0,.24,1)` for the scroll cue.
 - **Reduced motion:** transitions are near-instant, the video never loads, and reveals are shown immediately.
 - There is no scroll-jacking, parallax, preloader or custom cursor.
 

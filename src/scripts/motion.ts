@@ -126,6 +126,8 @@ export function initMotion() {
         card.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && off());
         card.addEventListener('focusin', on);
         card.addEventListener('focusout', off);
+        // A pointer or focus that arrived before the listeners did still counts.
+        if (card.matches(':hover') || card.contains(document.activeElement)) on();
         if (!finePointer.matches) centred.observe(video);
       }
     }

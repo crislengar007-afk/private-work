@@ -18,6 +18,9 @@
   --band: #0f6366; /* the enquiry band */
   --on-band: #f6f3ee;
   --lotus: #a93f66; /* from the logo mark; small details only */
+  --plum: #3b0d22; /* deep lotus: the favourites band and the hero's frame */
+  --on-plum: #f4ebe6;
+  --gold: #dcae45; /* display headings on plum only (8:1) */
   --rule: rgb(29 38 39 / 0.14);
   --rule-strong: rgb(29 38 39 / 0.38);
   --scrim: rgb(14 20 19 / 0.95);

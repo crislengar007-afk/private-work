@@ -1,0 +1,217 @@
+---
+/**
+ * A full-bleed strip of the studio's photographs: tall, square-cornered
+ * panels edge to edge on deep plum, with arrow controls. Each panel opens the
+ * photograph in the gallery; photographs with motion added play it, labelled.
+ */
+import MotionPhoto from './MotionPhoto.astro';
+import Icon from './Icon.astro';
+import type { GalleryItem } from '../data/gallery';
+
+interface Props {
+  id: string;
+  heading: string;
+  items: GalleryItem[];
+  note?: string;
+}
+
+const { id, heading, items, note } = Astro.props;
+---
+
+<section class="favs" id={id} aria-labelledby={`${id}-title`} data-favs>
+  <div class="wrap favs-head">
+    <h2 id={`${id}-title`} class="favs-title">{heading}</h2>
+    {note && <p class="favs-note">{note}</p>}
+  </div>
+
+  <div class="favs-stage">
+    <ul class="favs-strip" data-favs-strip tabindex="0" aria-label={`${heading}: photographs`}>
+      {
+        items.map((item) => (
+          <li>
+            <a href={`/gallery/?view=${item.id}`} class="favs-link" aria-label={`View in gallery: ${item.alt}`}>
+              <MotionPhoto
+                item={item}
+                ratio={3 / 4}
+                native={false}
+                alt=""
+                eager={false}
+                sizes="(min-width: 1024px) 17vw, (min-width: 640px) 34vw, 64vw"
+              />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <button type="button" class="favs-arrow prev" data-favs-prev aria-label="Previous photographs" disabled>
+      <Icon name="caret-left" />
+    </button>
+    <button type="button" class="favs-arrow next" data-favs-next aria-label="More photographs">
+      <Icon name="caret-right" />
+    </button>
+  </div>
+</section>
+
+<style>
+  .favs {
+    --gap: 10px;
+    padding-block: clamp(3.5rem, 7vw, 6rem);
+    background: var(--plum);
+    color: var(--on-plum);
+  }
+
+  .favs-head {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
+  }
+
+  .favs-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--step-4);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .favs-note {
+    max-width: 38rem;
+    color: rgb(244 235 230 / 0.82);
+    font-size: 0.9375rem;
+  }
+
+  @media (min-width: 1024px) {
+    .favs-head {
+      padding-left: max(var(--gutter), 22vw);
+    }
+  }
+
+  .favs-stage {
+    position: relative;
+  }
+
+  .favs-strip {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 64vw;
+    gap: var(--gap);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .favs-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .favs-strip:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 4px;
+  }
+
+  .favs-strip > li {
+    position: relative;
+    scroll-snap-align: start;
+  }
+
+  .favs-link {
+    display: block;
+  }
+
+  .favs-link :global(.frame) {
+    background: rgb(244 235 230 / 0.08);
+  }
+
+  .favs-link:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: -2px;
+  }
+
+  @media (min-width: 640px) {
+    .favs-strip {
+      grid-auto-columns: calc((100vw - 2 * var(--gap)) / 2.9);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .favs-strip {
+      grid-auto-columns: calc((100vw - 5 * var(--gap)) / 6.15);
+    }
+  }
+
+  .favs-arrow {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 5rem;
+    border: 0;
+    background: transparent;
+    color: #f6f3ee;
+    font-size: 2.6rem;
+    filter: drop-shadow(0 1px 6px rgb(0 0 0 / 0.45));
+    cursor: pointer;
+    transition: opacity var(--dur-1) var(--ease-out), translate var(--dur-1) var(--ease-out);
+  }
+
+  .favs-arrow.prev {
+    left: 0.25rem;
+  }
+
+  .favs-arrow.next {
+    right: 0.25rem;
+  }
+
+  .favs-arrow.next:hover {
+    translate: 0.2rem -50%;
+  }
+
+  .favs-arrow.prev:hover {
+    translate: -0.2rem -50%;
+  }
+
+  .favs-arrow[disabled] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .favs-arrow:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: -4px;
+  }
+
+  @media (hover: none) {
+    .favs-arrow {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Arrow controls page the strip by most of a screen and hide at the ends.
+  document.querySelectorAll<HTMLElement>('[data-favs]').forEach((root) => {
+    const strip = root.querySelector<HTMLElement>('[data-favs-strip]')!;
+    const prev = root.querySelector<HTMLButtonElement>('[data-favs-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-favs-next]')!;
+    const smooth = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+    const sync = () => {
+      const max = strip.scrollWidth - strip.clientWidth - 2;
+      prev.disabled = strip.scrollLeft <= 2;
+      next.disabled = strip.scrollLeft >= max;
+    };
+    const page = (dir: number) => strip.scrollBy({ left: dir * strip.clientWidth * 0.82, behavior: smooth() });
+    prev.addEventListener('click', () => page(-1));
+    next.addEventListener('click', () => page(1));
+    strip.addEventListener('scroll', sync, { passive: true });
+    addEventListener('resize', sync);
+    sync();
+  });
+</script>

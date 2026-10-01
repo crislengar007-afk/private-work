@@ -4,6 +4,16 @@
 **Branch:** `claude/flower-studio-tci-redesign-9qjl69`
 **Build:** `npm run build` (Astro 7, static output)
 
+## Strip and scroll round (1 October 2026)
+
+- **Change:** the arch frames are replaced by the favourites strip, as in the owner's reference. The Home hero film is now scroll-driven.
+- **Tests:** **65 passed**, 3 skipped by design. New tests cover the pin and progress, the hidden headline, the closing line, the strip's arrows and gallery links, and no pin under reduced motion.
+- **Bugs fixed in this round:**
+  - The strip's screen-reader labels caused 684 px of sideways scroll; they were removed.
+  - A hover arriving before the motion listeners attached was missed; it is now picked up when they attach.
+  - On phones, the closing line sat over white flowers; it now sits on the wall above them.
+- **Visual review:** the scroll sequence at 30%, 60% and 100%, and the strip, captured at 1440 and 390 px.
+
 ## Motion round (full-screen films, service pages, interactive motion)
 
 | Area | Result |

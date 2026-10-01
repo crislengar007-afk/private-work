@@ -5,8 +5,16 @@
 import arrowRight from '@phosphor-icons/core/assets/light/arrow-right-light.svg?raw';
 import arrowLeft from '@phosphor-icons/core/assets/light/arrow-left-light.svg?raw';
 import x from '@phosphor-icons/core/assets/light/x-light.svg?raw';
+import caretRight from '@phosphor-icons/core/assets/light/caret-right-light.svg?raw';
+import caretLeft from '@phosphor-icons/core/assets/light/caret-left-light.svg?raw';
 
-const icons = { 'arrow-right': arrowRight, 'arrow-left': arrowLeft, x } as const;
+const icons = {
+  'arrow-right': arrowRight,
+  'arrow-left': arrowLeft,
+  'caret-right': caretRight,
+  'caret-left': caretLeft,
+  x,
+} as const;
 
 interface Props {
   name: keyof typeof icons;
