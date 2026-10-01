@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/* FMV brand: warm, romantic, editorial. Blush/dusty rose + cream, deep charcoal
+   text, muted gold accent. Contrast pairs below meet WCAG AA. */
+@theme {
+  --color-cream: #fbf7f2;
+  --color-cream-deep: #f4ece3;
+  --color-blush: #f3dcd6;
+  --color-blush-soft: #f8ebe7;
+  --color-rose: #b5737a;
+  --color-rose-deep: #8e4f57; /* AA on cream for text/buttons */
+  --color-gold: #a8874c;
+  --color-gold-deep: #7a6132; /* AA on cream */
+  --color-ink: #2b2527;
+  --color-ink-soft: #5a5054;
+  --color-line: #e7dcd3;
+  --color-ok: #2f6b4f;
+  --color-ok-soft: #e3f1ea;
+  --color-warn: #8a5a12;
+  --color-warn-soft: #fbefd9;
+  --color-bad: #a3343b;
+  --color-bad-soft: #f9e1e2;
+
+  --font-display: "Cormorant Garamond Variable", "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-card: 1rem;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rose-deep);
+  outline-offset: 2px;
+}
+
+/* Rendered owner markdown (policies, descriptions) */
+.prose-fmv p { margin: 0.5rem 0; line-height: 1.65; }
+.prose-fmv ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+.prose-fmv ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0; }
+.prose-fmv a { color: var(--color-rose-deep); text-decoration: underline; }
+.prose-fmv strong { font-weight: 600; }
+.prose-fmv h2, .prose-fmv h3 { font-weight: 600; margin-top: 1rem; font-size: 1.25rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
