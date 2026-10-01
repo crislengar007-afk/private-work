@@ -19,7 +19,7 @@ function Photography() {
   return (
     <main>
       <PageHero eyebrow="Photography" title="Photos you'll want to frame" lede="Wedding and event coverage, relaxed sessions and seasonal minis, in natural light and real moments." plate="/assets/plates/still-camera.webp">
-        <BuildCta path="/build?service=wedding-photography-outdoor">Book photography</BuildCta>
+        <BuildCta>Book photography</BuildCta>
       </PageHero>
 
       <section className="fmv-section--tight">

@@ -72,10 +72,13 @@ d('schema guarantees', () => {
       const svcs = await c.query('select status, is_public from public.services');
       expect(svcs.rows.length).toBeGreaterThan(0);
       expect(svcs.rows.every((s) => s.status === 'active' && s.is_public)).toBe(true);
-      const addons = await c.query('select * from public.addons');
-      expect(addons.rows).toEqual([]); // seeded as needs_price
-      const pkgs = await c.query('select * from public.packages');
-      expect(pkgs.rows).toEqual([]); // seeded as draft
+      const addons = await c.query('select status, price_cents, slug from public.addons');
+      expect(addons.rows.length).toBeGreaterThan(0);
+      expect(addons.rows.every((a) => a.status === 'active' && a.price_cents !== null)).toBe(true);
+      expect(addons.rows.map((a) => a.slug)).not.toContain('photo-album'); // still unpriced: hidden
+      const pkgs = await c.query('select status, price_cents, slug from public.packages');
+      expect(pkgs.rows.every((p) => p.status === 'active' && p.price_cents !== null)).toBe(true);
+      expect(pkgs.rows.map((p) => p.slug)).not.toContain('wedding-essentials'); // spec draft: hidden
       const inv = await c.query('select * from public.inventory_items');
       expect(inv.rows).toEqual([]);
     });

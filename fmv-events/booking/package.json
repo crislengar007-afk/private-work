@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run",
+    "test": "vitest run tests/unit && npm run test:db",
     "test:unit": "vitest run tests/unit",
     "test:db": "bash scripts/db-reset-local.sh && vitest run tests/db",
     "db:reset": "bash scripts/db-reset-local.sh",
