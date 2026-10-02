@@ -53,16 +53,14 @@ function Index() {
       </section>
 
       <section className="fmv-section pt-0">
-        <div className="fmv-wrap">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {PILLARS.map((p) => (
-              <Link key={p.to} to={p.to} className="fmv-pillar">
-                <div className="fmv-arch"><img src={p.img} alt="" loading="lazy" /></div>
-                <p className="fmv-h3">{p.title}</p>
-                <p className="fmv-body text-sm">{p.text}</p>
-              </Link>
-            ))}
-          </div>
+        <div className="fmv-pillars">
+          {PILLARS.map((p) => (
+            <Link key={p.to} to={p.to} className="fmv-pillar">
+              <div className="fmv-box"><img src={p.img} alt="" loading="lazy" /></div>
+              <p className="fmv-h3">{p.title}</p>
+              <p className="fmv-body text-sm">{p.text}</p>
+            </Link>
+          ))}
         </div>
       </section>
 
