@@ -4,6 +4,12 @@
 **Branch:** `claude/flower-studio-tci-redesign-9qjl69`
 **Build:** `npm run build` (Astro 7, static output)
 
+## Flying flowers (2 October 2026)
+
+- **Change:** on Home, roses, lilies, petals and leaves fly in once on opening and settle into the vase. It is drawn in code; no Higgsfield credits were used, at the owner's choice.
+- **Tests:** **67 passed**, 3 skipped by design. New tests check that the flowers arrive, then clear, never repeat, and do not appear under reduced motion. Type check: 0 errors.
+- **Visual review:** frames at about 1.4, 2.4 and 3.4 s at 1440 and 390 px. The blooms were enlarged after a first pass, when they read as specks at desktop size.
+
 ## Strip and scroll round (1 October 2026)
 
 - **Change:** the arch frames are replaced by the favourites strip, as in the owner's reference. The Home hero film is now scroll-driven.

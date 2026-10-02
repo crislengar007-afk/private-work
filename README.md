@@ -131,4 +131,5 @@ Concept images and films never enter the gallery.
 - **Sources:** every film comes from Higgsfield and is listed in ASSET_MANIFEST.md.
 - **Loading:** a film loads only after the page has loaded, and never under reduced motion or Save-Data. The still poster is always there.
 - **Pause control:** one "Pause motion" control, in each full-screen hero, stops every clip and is remembered for the visit.
+- **Opening flourish:** on Home, flowers fly into the vase once per open (`src/scripts/petals.ts`). It is drawn in code, not generated.
 - **Code:** the behaviour lives in `src/scripts/motion.ts`. The components are `MotionHero.astro` (full-screen hero), `ServiceCard.astro` (film cards) and `MotionPhoto.astro` (portfolio photograph with optional labelled motion).

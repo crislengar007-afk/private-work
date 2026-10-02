@@ -70,6 +70,10 @@ Dark mode stays at 7.6:1 or above throughout.
 
 ## 5. Motion
 
+- **Opening flourish (Home):** once per page open, after load, about 48 roses, lilies, petals, florets and leaves (30 on phones) fly in from the top and sides. They swirl on curved paths and sink into the vase in the film, shrinking and fading as they enter the arrangement. The flourish takes about 5 seconds.
+  - **How it is drawn:** in code, with no generated media and no credits: inline SVG and the Web Animations API, using transforms and opacity only (`src/scripts/petals.ts`).
+  - **Aim:** the vase position is set in each poster's own coordinates and mapped through the cover crop, so the flowers land in the vase at any screen size.
+  - **When it skips:** never under reduced motion; "Pause motion" stops it at once.
 - **One authored moment: the scroll-driven Home film.** The hero is pinned for about one more screen of scrolling (1.1 on desktop, 0.8 on phones). Scroll progress (`--p`, 0 to 1) drives everything:
   - **The film:** it pushes in (scale to 1.14) while drawing back into a framed panel on plum (clip-path insets to the gutter, the header and the foot).
   - **The text:** the headline lifts and fades, and the closing line ("Flowers for the island since March 2023, from our studio at Ports of Call.") fades in. On phones it sits on the empty wall above the arrangement, with a stronger scrim.

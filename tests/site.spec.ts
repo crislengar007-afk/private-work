@@ -388,6 +388,17 @@ test.describe('motion', () => {
     await expect(page.getByRole('heading', { name: 'Some of our favourites' })).toBeVisible();
   });
 
+  test('on opening, petals fly into the vase once and then clear away', async ({ page }) => {
+    await page.goto('/');
+    const petals = page.locator('[data-petals] .petal');
+    await expect.poll(() => petals.count(), { timeout: 5000 }).toBeGreaterThan(10);
+    // Every petal heads for the vase: the last keyframe sits in the lower part of the hero.
+    await expect.poll(() => petals.count(), { timeout: 10000 }).toBe(0);
+    // Once per open: nothing more arrives.
+    await page.waitForTimeout(1000);
+    expect(await petals.count()).toBe(0);
+  });
+
   test('the favourites strip pages with its arrows', async ({ page, isMobile }) => {
     test.skip(isMobile, 'arrows are for pointer devices; touch swipes the strip');
     await page.goto('/');
@@ -458,7 +469,8 @@ test.describe('reduced motion', () => {
     await page.waitForTimeout(800);
     const playing = await page.$$eval('video', (vs) => vs.filter((v) => !v.paused).length);
     expect(playing).toBe(0);
-    // No film is even downloaded, and the hero is not pinned to scrolling.
+    // No petals fly, no film is even downloaded, and the hero is not pinned to scrolling.
+    expect(await page.locator('[data-petals] .petal').count()).toBe(0);
     expect(await page.locator('video source').count()).toBe(0);
     const wrapHeight = (await page.locator('[data-hero-scroll]').boundingBox())!.height;
     expect(wrapHeight).toBeLessThanOrEqual(page.viewportSize()!.height + 2);
