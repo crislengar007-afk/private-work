@@ -10,7 +10,7 @@ const LABEL: Record<Status, string> = { available: "Available", limited: "Limite
 
 /** Read-only lookup against the booking app's availability endpoint. Nothing is held or saved. */
 export function CheckDate() {
-  const { apiUrl, bookingUrl, catalog } = useSite();
+  const { apiUrl, bookingUrl, catalog, prototype } = useSite();
   const id = useId();
   const [date, setDate] = useState("");
   const [start, setStart] = useState("14:00");
@@ -18,7 +18,7 @@ export function CheckDate() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
 
-  if (!apiUrl) {
+  if (!apiUrl && !prototype) {
     return (
       <div className="fmv-panel fmv-panel--blush grid gap-3">
         <p className="fmv-h3">Check a date</p>
@@ -31,6 +31,13 @@ export function CheckDate() {
     e.preventDefault();
     if (!date) return;
     setState("loading");
+    if (!apiUrl) {
+      // Prototype preview: no calendar yet, so every service shows as free.
+      const free = (catalog?.services ?? []).filter((s) => s.category_slug !== "minis" && s.price_cents !== null);
+      setRows(free.map((s) => ({ service_id: s.id, slug: s.slug, status: "available" as const, reason: null })));
+      setState("idle");
+      return;
+    }
     try {
       const q = new URLSearchParams({ date, start, end });
       const res = await fetch(`${apiUrl}/api/public/availability?${q}`);

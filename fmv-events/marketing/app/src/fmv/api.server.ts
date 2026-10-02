@@ -1,6 +1,9 @@
 // Server-only reads from the booking app's public API. Env is read per request
 // (Workers bind env at request time); responses are cached in-isolate for 5 min.
 import process from "node:process";
+import demoCatalog from "./demo/catalog.json";
+import demoPolicies from "./demo/policies.json";
+import demoSettings from "./demo/settings.json";
 import type { Catalog, MiniCampaign, Policy, PortfolioItem, PublicSettings, SiteData, Testimonial } from "./types";
 
 const TTL_MS = 5 * 60 * 1000;
@@ -46,11 +49,32 @@ async function getJson<T>(apiUrl: string, path: string): Promise<T | null> {
   }
 }
 
+/** Prototype preview is on until the booking app is connected, unless FMV_PROTOTYPE=off. */
+function prototypeEnabled(): boolean {
+  return (process.env.FMV_PROTOTYPE ?? "").trim().toLowerCase() !== "off";
+}
+
 export async function loadSiteData(): Promise<SiteData> {
   const { apiUrl, bookingUrl } = bookingConfig();
+  if (!apiUrl && prototypeEnabled()) {
+    // Sample data transcribed from FMV's price flyers, so the finished site can be previewed.
+    return {
+      live: true,
+      prototype: true,
+      bookingUrl: null,
+      apiUrl: null,
+      settings: demoSettings as PublicSettings,
+      catalog: demoCatalog as Catalog,
+      minis: [],
+      portfolio: [],
+      testimonials: [],
+      policies: demoPolicies as Policy[],
+    };
+  }
   if (!apiUrl) {
     return {
       live: false,
+      prototype: false,
       bookingUrl,
       apiUrl: null,
       settings: null,
@@ -71,6 +95,7 @@ export async function loadSiteData(): Promise<SiteData> {
   ]);
   return {
     live: Boolean(settings || catalog),
+    prototype: false,
     bookingUrl,
     apiUrl,
     settings,

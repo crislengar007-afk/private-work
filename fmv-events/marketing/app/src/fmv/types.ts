@@ -143,8 +143,10 @@ export interface Policy {
 }
 
 export interface SiteData {
-  /** True when BOOKING_API_URL is set and the booking app answered. */
+  /** True when BOOKING_API_URL is set and the booking app answered (or prototype data is shown). */
   live: boolean;
+  /** Prototype preview: sample data from FMV's flyers, local booking/inquiry forms that send nothing. */
+  prototype: boolean;
   /** Booking app origin for CTAs, or null while booking isn't open yet. */
   bookingUrl: string | null;
   /** Booking API origin for the browser "check a date" widget, or null. */

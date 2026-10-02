@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BuildCta, PageHero, SectionHead, Soon } from "@/components/fmv/chrome";
+import { InquiryForm } from "@/components/fmv/inquiry-form";
 import { useSite } from "@/components/fmv/use-site";
 import { phoneLabel, provinceName, whatsappHref } from "@/fmv/format";
 
@@ -14,7 +15,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
-  const { settings: s, bookingUrl } = useSite();
+  const { settings: s, bookingUrl, prototype } = useSite();
   const address = s ? [s.address_line, s.city, provinceName(s.province), s.postal_code].filter(Boolean).join(", ") : "";
   const channels = s
     ? [
@@ -52,7 +53,16 @@ function Contact() {
             ) : null}
           </div>
           <div id="booking-soon" className="grid content-start gap-4">
-            {bookingUrl ? (
+            {prototype ? (
+              <div id="inquiry" className="grid scroll-mt-28 gap-4">
+                <InquiryForm />
+                <div className="fmv-panel fmv-panel--blush grid gap-3">
+                  <p className="fmv-h3">Ready for a quote?</p>
+                  <p className="fmv-body">Choose your date and services, see a live estimate, and we&apos;ll send your quote.</p>
+                  <div><BuildCta /></div>
+                </div>
+              </div>
+            ) : bookingUrl ? (
               <div className="fmv-panel fmv-panel--blush grid gap-3">
                 <p className="fmv-h3">Build your event</p>
                 <p className="fmv-body">Choose your date and services, see a live estimate, and we&apos;ll send your quote.</p>

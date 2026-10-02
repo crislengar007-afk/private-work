@@ -36,11 +36,17 @@ export function BuildCta({ path = "/build", children = "Build your event", small
 }
 
 export function SiteHeader() {
-  const { settings } = useSite();
+  const { settings, prototype } = useSite();
   const [open, setOpen] = useState(false);
   const name = settings?.business_name ?? "FMV Events & Photography";
   return (
     <header className="fmv-header">
+      {prototype ? (
+        <p className="fmv-proto">
+          Prototype preview · prices from FMV&apos;s flyers · forms don&apos;t send anything yet ·{" "}
+          <Link to="/owner-preview">Owner inbox</Link>
+        </p>
+      ) : null}
       <div className="fmv-header__inner">
         <Link to="/" className="fmv-brand" aria-label={`${name} home`}>
           <Monogram />

@@ -186,3 +186,30 @@ html.fmv :focus-visible { outline: 2px solid var(--color-rose-deep); outline-off
 .fmv-box img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .8s cubic-bezier(.2,.7,.2,1); }
 .fmv-pillar:hover .fmv-box img { transform: scale(1.04); }
 @media (prefers-reduced-motion: reduce) { .fmv-box img { transition: none; } }
+
+/* prototype preview: ribbon + booking/inquiry forms (nothing is sent) */
+.fmv-proto { margin: 0; background: var(--color-ink); color: var(--color-cream); font-size: 12px; line-height: 1.4; text-align: center; padding: 6px 16px; letter-spacing: .02em; }
+.fmv-proto a { color: var(--color-cream); text-decoration: underline; }
+.fmv-field select, .fmv-field textarea { border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-paper); font: inherit; font-weight: 500; color: var(--color-ink); }
+.fmv-field select { height: 44px; padding: 0 12px; }
+.fmv-field textarea { min-height: 120px; padding: 10px 12px; resize: vertical; }
+.fmv-field [aria-invalid="true"] { border-color: var(--color-rose-deep); box-shadow: 0 0 0 1px var(--color-rose-deep); }
+.fmv-hint { color: var(--color-ink-soft); font-size: 13px; font-weight: 500; }
+.fmv-err { color: var(--color-rose-deep); font-size: 13px; font-weight: 600; }
+.fmv-progress { display: flex; gap: 6px; }
+.fmv-progress span { flex: 1; height: 4px; border-radius: 99px; background: var(--color-line); transition: background .3s; }
+.fmv-progress span[data-on="true"] { background: var(--color-rose-deep); }
+.fmv-opt { display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--color-line); border-radius: 14px; background: var(--color-paper); transition: border-color .2s, background .2s; }
+.fmv-opt[data-checked="true"], .fmv-opt:has(input:checked) { border-color: var(--color-rose-deep); background: var(--color-blush-soft); }
+.fmv-opt input { margin-top: 3px; width: 18px; height: 18px; flex: none; accent-color: var(--color-rose-deep); }
+.fmv-opt[data-disabled="true"] label { cursor: default; }
+label.fmv-opt { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.fmv-stepper { display: inline-flex; align-items: center; border: 1px solid var(--color-line); border-radius: 99px; background: var(--color-paper); }
+.fmv-stepper button { width: 36px; height: 36px; font-size: 18px; color: var(--color-ink); background: none; border: 0; cursor: pointer; }
+.fmv-stepper button:disabled { opacity: .35; cursor: default; }
+.fmv-stepper span { min-width: 72px; text-align: center; font-size: 14px; font-weight: 600; }
+button.fmv-cta-build, button.fmv-cta-ghost { cursor: pointer; font-family: inherit; }
+button.fmv-cta-build { border: 0; }
+button.fmv-cta-build:disabled, button.fmv-cta-ghost:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+@media (min-width: 1024px) { .fmv-summary { position: sticky; top: 110px; align-self: start; } }
+@media (prefers-reduced-motion: reduce) { .fmv-progress span, .fmv-opt { transition: none; } }
