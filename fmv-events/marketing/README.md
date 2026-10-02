@@ -42,11 +42,28 @@ Portfolio · Service Area (zones + OpenStreetMap embed, no Google key) · FAQ & 
 About · Contact, plus `sitemap.xml`, `robots.txt`, LocalBusiness JSON-LD (built from the
 API; omitted until the API answers), per-page titles/descriptions, OG image and favicon.
 
-## Turning on live data (owner / Len)
+## Prototype preview (current state)
 
-Until these are set the site shows intentional "being finalized / opens soon" states
-instead of prices, and every "Build your event" button points to the Contact page's
-"booking opens soon" panel.
+Until the booking app is connected the site runs as a **prototype**, so the finished
+site can be previewed:
+
+- Prices, packages, add-ons, zones, contact details and policies come from sample data
+  transcribed from FMV's flyers (`src/fmv/demo/*.json`), not from the API.
+- A slim ribbon at the top says "Prototype preview · forms don't send anything yet".
+- `/book` is a working copy of the booking app's builder (event type, package and
+  services, date and venue, add-ons, details, **customer name / email / phone**,
+  review, confirmation with a live estimate and 50% deposit).
+- `/contact` has a question form (name, email, phone, event date, interest, message).
+- `/owner-preview` shows what Marie would receive (requests and questions with the
+  customer details and estimate).
+- Nothing is sent anywhere: submissions stay in the visitor's own browser
+  (`localStorage`). "Check a date" shows every service as available.
+
+Set the website secret `FMV_PROTOTYPE=off` to switch the prototype off without
+connecting the booking app (the site then shows "being finalized / opens soon" states).
+As soon as `BOOKING_API_URL` is set, live data and the real booking links take over.
+
+## Turning on live data (owner / Len)
 
 1. Deploy the booking app (`../booking`, see its README).
 2. In the Higgsfield website settings for `fmv-events`, add the secrets:
