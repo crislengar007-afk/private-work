@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { bookHref } from "@/fmv/links";
 import { phoneLabel, placeLabel, provinceName, whatsappHref } from "@/fmv/format";
@@ -43,7 +43,8 @@ export function SiteHeader() {
     <header className="fmv-header">
       {prototype ? (
         <p className="fmv-proto">
-          Prototype preview · prices from FMV&apos;s flyers · forms don&apos;t send anything yet ·{" "}
+          <span className="hidden sm:inline">Prototype preview · prices from FMV&apos;s flyers · forms don&apos;t send anything yet · </span>
+          <span className="sm:hidden">Prototype preview · </span>
           <Link to="/owner-preview">Owner inbox</Link>
         </p>
       ) : null}
@@ -128,7 +129,10 @@ export function SiteFooter() {
 /** Mobile floating WhatsApp / Messenger / Call, only for channels that are set. */
 export function ContactFab() {
   const { settings: s } = useSite();
+  const path = useRouterState({ select: (st) => st.location.pathname });
   if (!s || (!s.whatsapp_e164 && !s.messenger_url && !s.phone_e164)) return null;
+  // The booking builder has its own bottom bar; keep the floating buttons off it.
+  if (path === "/book" || path === "/owner-preview") return null;
   return (
     <div className="fmv-fab">
       {s.whatsapp_e164 ? <a href={whatsappHref(s.whatsapp_e164)} aria-label="Message us on WhatsApp">WA</a> : null}

@@ -213,3 +213,33 @@ button.fmv-cta-build { border: 0; }
 button.fmv-cta-build:disabled, button.fmv-cta-ghost:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 @media (min-width: 1024px) { .fmv-summary { position: sticky; top: 110px; align-self: start; } }
 @media (prefers-reduced-motion: reduce) { .fmv-progress span, .fmv-opt { transition: none; } }
+
+/* mobile polish: no sideways scroll, tighter rhythm, 2-up service boxes, booking total bar */
+html.fmv body { overflow-x: clip; }
+.fmv-journey { overflow-x: clip; }
+.fmv-wrap.grid > *, .fmv-wrap > .grid > * { min-width: 0; }
+.fmv-row { flex-wrap: wrap; }
+.fmv-row a { overflow-wrap: anywhere; }
+.fmv-mobilebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 55; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px calc(10px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--color-paper) 94%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--color-line); box-shadow: 0 -8px 24px -18px rgb(43 38 39 / .5); }
+.fmv-mobilebar__total { font-family: var(--font-display); font-size: 26px; font-weight: 600; line-height: 1; }
+@media (min-width: 1024px) { .fmv-mobilebar { display: none; } }
+@media (max-width: 1023px) { .fmv-wizard { padding-bottom: 72px; } }
+@media (max-width: 639px) {
+  .fmv-header__inner { padding: 8px 16px; gap: 10px; }
+  .fmv-monogram { width: 38px; height: 38px; font-size: 13px; }
+  .fmv-wrap { padding: 0 16px; }
+  .fmv-section { padding: 56px 0; }
+  .fmv-section--tight { padding: 40px 0; }
+  .fmv-pagehero { padding: 56px 0 40px; }
+  .fmv-pagehero h1 { font-size: clamp(36px, 10vw, 44px); }
+  .fmv-h2 { font-size: clamp(30px, 8.5vw, 40px); }
+  .fmv-lede { font-size: 16px; }
+  .fmv-panel { padding: 18px; }
+  .fmv-pillars { grid-template-columns: repeat(2, 1fr); padding: 0 16px; gap: 12px; }
+  .fmv-pillar { gap: 8px; }
+  .fmv-pillar .fmv-h3 { font-size: 19px; }
+  .fmv-pillar .fmv-body { font-size: 13px; line-height: 1.5; }
+  .fmv-journey .scroll-scrub__title { font-size: clamp(2rem, 9vw, 2.6rem); max-width: 16ch; }
+  .fmv-cta-build { padding: 12px 18px; }
+  .fmv-cta-build--sm { padding: 8px 12px; font-size: 13px; }
+}

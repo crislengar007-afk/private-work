@@ -270,7 +270,7 @@ export function BookWizard({ search }: { search: BookSearch }) {
   const packages = cat.packages.filter((p) => p.price_cents !== null && (draft.eventType === "wedding" || draft.eventType === "engagement"));
 
   return (
-    <div ref={topRef} className="grid scroll-mt-28 gap-10 lg:grid-cols-[1fr_340px]">
+    <div ref={topRef} className="fmv-wizard grid scroll-mt-28 gap-10 lg:grid-cols-[1fr_340px]">
       <div className="grid content-start gap-8">
         <div className="grid gap-3">
           <p className="fmv-eyebrow">Step {step + 1} of {STEPS.length} · {STEPS[step]}</p>
@@ -543,6 +543,16 @@ export function BookWizard({ search }: { search: BookSearch }) {
           {est.total ? <p className="text-sm text-ink-soft">{depositPct}% deposit ({money(deposit)}) by e-Transfer once you accept your quote. Nothing is charged today.</p> : null}
         </div>
       </aside>
+
+      {est.total ? (
+        <div className="fmv-mobilebar" aria-hidden="true">
+          <div>
+            <p className="text-xs text-ink-soft">Estimated total</p>
+            <p className="fmv-mobilebar__total">{est.isFrom ? "from " : ""}{money(est.total)}</p>
+          </div>
+          <p className="text-right text-xs text-ink-soft">{depositPct}% deposit<br />{money(deposit)}</p>
+        </div>
+      ) : null}
     </div>
   );
 }
