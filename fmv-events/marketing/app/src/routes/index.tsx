@@ -4,11 +4,18 @@ import { ScrollScrub } from "@/components/scroll-scrub/scroll-scrub";
 import { scrollScrubScenes, scrollScrubTheme } from "@/scroll-scrub-scenes";
 import { BuildCta, SectionHead } from "@/components/fmv/chrome";
 import { CheckDate } from "@/components/fmv/check-date";
-import { Gallery, HowItWorks, MiniBanner, PackagesGrid, Testimonials } from "@/components/fmv/blocks";
+import { Gallery, HowItWorks, MiniBanner, PackagesGrid, ServiceCards, Testimonials, WhyFmv } from "@/components/fmv/blocks";
 import { useSite } from "@/components/fmv/use-site";
 import { money } from "@/fmv/format";
+import { pageHead } from "@/fmv/seo";
 
 export const Route = createFileRoute("/")({
+  head: () =>
+    pageHead(
+      "/",
+      "FMV Events & Photography · Fredericton, NB",
+      "Photography, wedding coordination, décor and photo booth rentals in Fredericton and across New Brunswick. One team for your whole event.",
+    ),
   component: Index,
 });
 
@@ -24,12 +31,6 @@ function HeroActions() {
 // Module constant: the scrub controller rebuilds if this identity changes.
 const scenes = scrollScrubScenes.map((s) => ({ ...s, actions: <HeroActions /> }));
 
-const PILLARS = [
-  { to: "/photography", title: "Photography", text: "Sessions, weddings and seasonal minis. Digital photos included.", img: "/assets/plates/still-camera.webp" },
-  { to: "/weddings", title: "Weddings & Coordination", text: "Timelines, vendors and a calm day for you.", img: "/assets/plates/silk.webp" },
-  { to: "/events", title: "Décor & Styling", text: "Backdrops, florals, balloons and table styling.", img: "/assets/plates/balloons.webp" },
-  { to: "/booths", title: "Photo Booth Rentals", text: "Mirror booth, 360 booth, video guestbook and more.", img: "/assets/plates/confetti.webp" },
-] as const;
 
 function Index() {
   const { portfolio, catalog } = useSite();
@@ -52,15 +53,22 @@ function Index() {
         </div>
       </section>
 
-      <section className="fmv-section pt-0">
-        <div className="fmv-pillars">
-          {PILLARS.map((p) => (
-            <Link key={p.to} to={p.to} className="fmv-pillar">
-              <div className="fmv-box"><img src={p.img} alt="" loading="lazy" /></div>
-              <p className="fmv-h3">{p.title}</p>
-              <p className="fmv-body text-sm">{p.text}</p>
-            </Link>
-          ))}
+      <section className="fmv-section pt-0" aria-labelledby="services-title">
+        <div className="fmv-wrap flex flex-wrap items-end justify-between gap-4 pb-10">
+          <div className="grid gap-4">
+            <p className="fmv-eyebrow">Services</p>
+            <h2 id="services-title" className="fmv-h2">What we do</h2>
+          </div>
+          <Link to="/services" className="fmv-link-underline">All services</Link>
+        </div>
+        <ServiceCards />
+      </section>
+
+      <section className="fmv-section">
+        <div className="fmv-wrap">
+          <SectionHead eyebrow="Portfolio" title="Real events, real people" lede="Every photo here is from an FMV event." />
+          <Gallery items={strip} filters={false} />
+          <p className="pt-6"><Link to="/portfolio" className="fmv-link-underline">See the portfolio</Link></p>
         </div>
       </section>
 
@@ -68,17 +76,21 @@ function Index() {
         <div className="fmv-wrap">
           <SectionHead eyebrow="Packages" title="Bundles that keep it simple" lede="Each package shows its à la carte value, so you can see what's included." />
           <PackagesGrid limit={3} />
-          <p className="pt-8"><Link to="/packages" className="fmv-link-underline">All packages and prices</Link></p>
+          <p className="pt-8"><Link to="/packages" className="fmv-link-underline">Compare all packages and prices</Link></p>
         </div>
       </section>
 
-      <section className="fmv-section">
+      <section className="fmv-section" aria-labelledby="why-title">
         <div className="fmv-wrap">
-          <SectionHead eyebrow="Portfolio" title="Real events, real people" lede="Every photo here is from an FMV event." />
-          <Gallery items={strip} filters={false} />
-          {portfolio.length > strip.length ? <p className="pt-6"><Link to="/portfolio" className="fmv-link-underline">See the full portfolio</Link></p> : null}
+          <div className="grid gap-4 pb-10">
+            <p className="fmv-eyebrow">Why FMV</p>
+            <h2 id="why-title" className="fmv-h2">Why clients choose FMV</h2>
+          </div>
+          <WhyFmv />
         </div>
       </section>
+
+      <Testimonials />
 
       <section className="fmv-section bg-paper">
         <div className="fmv-wrap grid gap-12 lg:grid-cols-2">
@@ -91,8 +103,6 @@ function Index() {
           </div>
         </div>
       </section>
-
-      <Testimonials />
 
       <section className="fmv-section">
         <div className="fmv-wrap grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">

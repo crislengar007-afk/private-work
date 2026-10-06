@@ -2,14 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BuildCta, PageHero, SectionHead, Soon } from "@/components/fmv/chrome";
 import { useSite } from "@/components/fmv/use-site";
 import { mdParagraphs } from "@/fmv/format";
+import { pageHead } from "@/fmv/seo";
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({
-    meta: [
-      { title: "FAQ & policies · FMV Events & Photography" },
-      { name: "description", content: "How booking works, deposits, e-Transfer payments, rescheduling, weather, prints and travel for FMV Events & Photography." },
-    ],
-  }),
+  head: () =>
+    pageHead(
+      "/faq",
+      "FAQ & policies · FMV Events & Photography",
+      "How booking works, deposits, e-Transfer payments, rescheduling, weather, prints and travel for FMV Events & Photography.",
+    ),
   component: Faq,
 });
 
@@ -32,7 +33,7 @@ function Faq() {
   ];
   return (
     <main>
-      <PageHero eyebrow="FAQ & policies" title="Good to know before you book" lede="The short answers first, then our full policies." plate="/assets/plates/silk.webp">
+      <PageHero eyebrow="FAQ & policies" title="Good to know before you book" lede="The short answers first, then our full policies." plate="/assets/plates/silk.webp" crumbs={[{ label: "FAQ & policies" }]}>
         <BuildCta />
       </PageHero>
       <section className="fmv-section">

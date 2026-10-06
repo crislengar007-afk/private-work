@@ -1,7 +1,7 @@
 # FMV Events & Photography: marketing site (Part A)
 
 **Live:** https://fmv-events.higgsfield.app (Higgsfield website `fmv-events`,
-id `8143551c-2380-4df6-96f5-f6ec90f62f2a`, not listed on the Higgsfield community feed).
+id `8143551c-2380-4df6-96f5-f6ec90f62f2a`, published on the Higgsfield community feed so clients can open it without an account).
 
 This folder is a **reference snapshot** of the files written for the site. The
 source of truth is the site's own repository on Higgsfield (edit it through the
@@ -32,15 +32,29 @@ which live in that repo under `app/public/assets/`.
 
 Template files changed besides the ones in this folder: `src/styles.css` imports
 `./fmv/fmv.css`, and `src/lib/security-headers.server.ts` allows `blob:` in
-`media-src` (required by the scroll-scrub engine) and the OpenStreetMap embed in
-`frame-src`.
+`media-src` (required by the scroll-scrub engine), `data:` in `font-src` (fonts the
+template embeds) and the OpenStreetMap embed in `frame-src`.
 
-## Pages
+## Pages (multi-page architecture)
 
-Home · Weddings · Events & Décor · Photo Booths · Photography · Packages & Pricing ·
-Portfolio · Service Area (zones + OpenStreetMap embed, no Google key) · FAQ & Policies ·
-About · Contact, plus `sitemap.xml`, `robots.txt`, LocalBusiness JSON-LD (built from the
-API; omitted until the API answers), per-page titles/descriptions, OG image and favicon.
+Primary nav: **Home · Services ▾ · Packages · Portfolio · About · Contact**, with the
+**Book / Get a quote** button. Services opens a dropdown on desktop (hover or click,
+Escape / outside click closes) and a nested list in the mobile drawer.
+
+| Route | What it is |
+| --- | --- |
+| `/` | Scroll-scrub hero film (unchanged) → value → services → featured work → packages → why FMV → testimonials → how booking works + check a date → service area → closing CTA |
+| `/services` | Services landing (five service cards, why FMV, how booking works) |
+| `/services/weddings` · `/services/photography` · `/services/event-decor` · `/services/photo-booths` · `/services/event-coordination` | One page per service: tier cards with inclusions, add-ons, related work, CTAs into `/book?service=…` |
+| `/packages` | Tabs (`?tab=wedding|photography|coordination|booths|decor|rentals`), ARIA tablist with arrow keys, "How pricing works" |
+| `/portfolio` | Featured highlights, facet filters, lightbox, before/after |
+| `/about` · `/contact` · `/faq` · `/service-area` | Unchanged content, new heads and breadcrumbs |
+| `/book` | Book / Get a quote funnel (below) |
+| `/owner-preview` | Prototype owner inbox (`noindex`) |
+
+Old URLs `/weddings`, `/photography`, `/events`, `/booths` answer **301** to their
+`/services/...` page. Every page has its own title, description, H1, canonical and
+`og:url` (`src/fmv/seo.ts`); `sitemap.xml` lists the new routes.
 
 ## Prototype preview (current state)
 
@@ -50,9 +64,14 @@ site can be previewed:
 - Prices, packages, add-ons, zones, contact details and policies come from sample data
   transcribed from FMV's flyers (`src/fmv/demo/*.json`), not from the API.
 - A slim ribbon at the top says "Prototype preview · forms don't send anything yet".
-- `/book` is a working copy of the booking app's builder (event type, package and
-  services, date and venue, add-ons, details, **customer name / email / phone**,
-  review, confirmation with a live estimate and 50% deposit).
+- `/book` is the quote funnel: 1 event type → 2 services (picture cards) →
+  3 packages per service (tiers, wedding bundles, or "Help me choose") → 4 add-ons →
+  5 event details (date, time, venue, area, guests, theme, notes) → 6 your info →
+  7 review and **Request my quote** → confirmation with "Quote requested", "Your date is
+  not booked yet", the live estimate and the step-8 deposit instructions. A status
+  timeline shows Quote requested → Quote approved → 50% deposit required → Payment
+  verified → Booking confirmed; only the first step is ever reached here, because
+  nothing is charged or confirmed without the booking app.
 - `/contact` has a question form (name, email, phone, event date, interest, message).
 - `/owner-preview` shows what Marie would receive (requests and questions with the
   customer details and estimate).

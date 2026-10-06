@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import { money, phoneLabel } from "@/fmv/format";
 import { protoStore, type ProtoInquiry, type ProtoRequest } from "@/fmv/proto-store";
 import { useSite } from "@/components/fmv/use-site";
+import { pageHead } from "@/fmv/seo";
 
 export const Route = createFileRoute("/owner-preview")({
-  head: () => ({
-    meta: [
-      { title: "Owner inbox preview · FMV Events & Photography" },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
+  head: () =>
+    pageHead(
+      "/owner-preview",
+      "Owner inbox preview · FMV Events & Photography",
+      "Prototype preview of the owner inbox.", { noindex: true },
+    ),
   component: OwnerPreview,
 });
 
@@ -113,7 +114,7 @@ function RequestCard({ r }: { r: ProtoRequest }) {
     <article className="fmv-panel grid gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="fmv-chip fmv-chip--warn">New</span>
+          <span className="fmv-chip fmv-chip--warn">Quote requested</span>
           <p className="font-semibold">{r.event_type} · {eventDate(r.date)}</p>
         </div>
         <p className="text-sm text-ink-soft">{r.ref} · received {when(r.created_at)}</p>

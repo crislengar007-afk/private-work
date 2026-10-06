@@ -2,14 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { BuildCta, PageHero, SectionHead, Soon } from "@/components/fmv/chrome";
 import { useSite } from "@/components/fmv/use-site";
 import { money, placeLabel } from "@/fmv/format";
+import { pageHead } from "@/fmv/seo";
 
 export const Route = createFileRoute("/service-area")({
-  head: () => ({
-    meta: [
-      { title: "Service area: Fredericton & New Brunswick · FMV Events" },
-      { name: "description", content: "FMV Events & Photography is based in Fredericton and travels across New Brunswick. See travel zones and fees." },
-    ],
-  }),
+  head: () =>
+    pageHead(
+      "/service-area",
+      "Service area: Fredericton & New Brunswick · FMV Events",
+      "FMV Events & Photography is based in Fredericton and travels across New Brunswick. See travel zones and fees.",
+    ),
   component: ServiceArea,
 });
 
@@ -18,7 +19,7 @@ function ServiceArea() {
   const zones = catalog?.zones ?? [];
   return (
     <main>
-      <PageHero eyebrow="Service area" title={`Based in ${placeLabel(settings).split(",")[0]}, travelling across New Brunswick`} lede="Travel within our home area is included. Further afield, a travel fee is shown when you build your event and confirmed in your quote." plate="/assets/plates/bokeh.webp">
+      <PageHero eyebrow="Service area" title={`Based in ${placeLabel(settings).split(",")[0]}, travelling across New Brunswick`} lede="Travel within our home area is included. Further afield, a travel fee is shown when you build your event and confirmed in your quote." plate="/assets/plates/bokeh.webp" crumbs={[{ label: "Service area" }]}>
         <BuildCta />
       </PageHero>
       <section className="fmv-section">

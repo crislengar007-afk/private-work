@@ -2,11 +2,14 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { hoursLabel, money, priceLabel } from "@/fmv/format";
 import { EMAIL_RE, protoRef, protoStore, validPhone, type ProtoLine, type ProtoRequest } from "@/fmv/proto-store";
+import { CATEGORY_PLATE, families, tierFamily, tierName } from "@/fmv/services";
 import type { Addon, Catalog, Service } from "@/fmv/types";
+import { StatusTimeline } from "./blocks";
 import { useSite } from "./use-site";
 
-// Prototype of the booking app's "Build your event" flow (Part B /build).
-// Same steps and fields; the request is kept in this browser only.
+// Prototype of the booking app's quote funnel (Part B /build): event type,
+// services, packages, add-ons, event details, contact details and review,
+// then the deposit and confirmation steps. The request is kept in this browser only.
 
 const EVENT_TYPES = [
   { value: "wedding", label: "Wedding" },
@@ -18,10 +21,17 @@ const EVENT_TYPES = [
   { value: "other", label: "Something else" },
 ];
 
+const CATEGORY_BLURB: Record<string, string> = {
+  photography: "Coverage, sessions and wedding bundles",
+  coordination: "Half-day to month-of support",
+  styling: "Backdrops, florals and balloon décor",
+  rentals: "Photo booths, arch and table setups",
+};
+
 const CONTACT_PREFS = ["Email", "Phone call", "Text", "WhatsApp"];
 const HEARD = ["", "Facebook", "Instagram", "Google", "A friend or family", "Saw you at an event", "Other"];
 
-const STEPS = ["Your event", "Date & place", "Add-ons", "Details", "Your info", "Review"] as const;
+const STEPS = ["Event type", "Services", "Packages", "Add-ons", "Event details", "Your info", "Review"] as const;
 
 export interface BookSearch {
   package?: string;
@@ -32,8 +42,10 @@ export interface BookSearch {
 
 interface Draft {
   eventType: string;
+  categories: string[];
   packageSlug: string | null;
   services: Record<string, number>;
+  undecided: string[];
   date: string;
   start: string;
   end: string;
@@ -55,8 +67,6 @@ interface Draft {
 
 type Errors = Partial<Record<string, string>>;
 
-/** Sapphire / Garnet / Emerald tiers of one service are alternatives: picking one replaces the other. */
-const tierGroup = (slug: string) => slug.replace(/-(sapphire|garnet|emerald)$/, "");
 const qtyMode = (mode: string) => mode === "per_hour" || mode === "per_item";
 
 function tomorrow(): string {
@@ -82,16 +92,27 @@ function timeLabel(t: string): string {
   return new Intl.DateTimeFormat("en-CA", { hour: "numeric", minute: "2-digit" }).format(new Date(2000, 0, 1, h, m));
 }
 
+function inferEventType(slug: string | undefined): string {
+  if (!slug) return "";
+  if (slug.startsWith("engagement")) return "engagement";
+  if (slug.startsWith("birthday")) return "birthday";
+  if (slug.startsWith("wedding")) return "wedding";
+  return "";
+}
+
 function initialDraft(catalog: Catalog, search: BookSearch): Draft {
-  const pkg = catalog.packages.find((p) => p.slug === search.package);
-  const svc = catalog.services.find((s) => s.slug === search.service && s.category_slug !== "minis");
-  const eventType =
-    EVENT_TYPES.find((e) => e.value === search.event_type)?.value ??
-    (pkg ? "wedding" : svc?.slug.startsWith("engagement") ? "engagement" : svc?.slug.startsWith("birthday") ? "birthday" : svc?.slug.startsWith("wedding") ? "wedding" : "");
+  const pkg = catalog.packages.find((p) => p.slug === search.package && p.price_cents !== null);
+  const svc = catalog.services.find((s) => s.slug === search.service && s.category_slug !== "minis" && s.price_cents !== null);
+  const categories = new Set<string>();
+  if (pkg) categories.add("photography");
+  if (svc) categories.add(svc.category_slug);
+  const eventType = EVENT_TYPES.find((e) => e.value === search.event_type)?.value ?? (pkg ? "wedding" : inferEventType(svc?.slug));
   return {
     eventType,
+    categories: [...categories],
     packageSlug: pkg?.slug ?? null,
-    services: svc ? { [svc.slug]: 1 } : {},
+    services: svc ? { [svc.slug]: svc.price_mode === "per_item" ? 10 : 1 } : {},
+    undecided: [],
     date: search.date && /^\d{4}-\d{2}-\d{2}$/.test(search.date) ? search.date : "",
     start: "14:00",
     end: "18:00",
@@ -126,6 +147,10 @@ function estimate(d: Draft, c: Catalog) {
     const q = qtyMode(s.price_mode) ? qty : 1;
     const detail = s.price_mode === "per_hour" ? hoursLabel(q) : s.price_mode === "per_item" ? `${q} × ${money(s.price_cents)}` : s.included_hours ? `${hoursLabel(s.included_hours)} included` : undefined;
     lines.push({ label: s.name, detail, cents: s.price_cents === null ? null : s.price_cents * q, from: s.price_mode === "from" });
+  }
+  for (const slug of d.undecided) {
+    const cat = c.categories.find((x) => x.slug === slug);
+    lines.push({ label: `${cat?.name ?? slug}: help me choose`, detail: "Suggested in your quote", cents: null });
   }
   for (const [slug, qty] of Object.entries(d.addons)) {
     const a = c.addons.find((x) => x.slug === slug);
@@ -171,35 +196,49 @@ export function BookWizard({ search }: { search: BookSearch }) {
     moved.current = true;
   }, [step, done]);
 
+  const categories = cat.categories.filter((c) => c.slug !== "minis").sort((a, b) => a.sort - b.sort);
+  const chosenCategoryIds = new Set(cat.categories.filter((c) => draft.categories.includes(c.slug)).map((c) => c.id));
+  const addons = cat.addons.filter((a) => a.price_cents !== null && a.applies_to_category_ids.some((id) => chosenCategoryIds.has(id)));
+  const bundles = cat.packages.filter((p) => p.price_cents !== null && (draft.eventType === "wedding" || draft.eventType === "engagement"));
   const pkg = cat.packages.find((p) => p.slug === draft.packageSlug) ?? null;
   const includedIds = new Set(pkg?.items.map((i) => i.service_id) ?? []);
-  const chosenCategoryIds = new Set<string>([
-    ...cat.services.filter((s) => draft.services[s.slug] || includedIds.has(s.id)).map((s) => s.category_id),
-  ]);
-  const addons = cat.addons.filter((a) => a.price_cents !== null && a.applies_to_category_ids.some((id) => chosenCategoryIds.has(id)));
+
+  /** A chosen category is covered by a package, a service, or "help me choose". */
+  function covered(slug: string): boolean {
+    if (draft.undecided.includes(slug)) return true;
+    if (slug === "photography" && draft.packageSlug) return true;
+    return Object.keys(draft.services).some((s) => cat.services.find((x) => x.slug === s)?.category_slug === slug);
+  }
 
   function validate(i: number): Errors {
     const e: Errors = {};
-    if (i === 0) {
-      if (!draft.eventType) e.eventType = "Choose the kind of event.";
-      if (!draft.packageSlug && Object.keys(draft.services).length === 0) e.services = "Pick a package or at least one service.";
+    if (i === 0 && !draft.eventType) e.eventType = "Choose the kind of event.";
+    if (i === 1 && draft.categories.length === 0) e.categories = "Choose at least one service.";
+    if (i === 2) {
+      const missing = draft.categories.filter((c) => !covered(c));
+      if (missing.length) e.packages = `Pick a package or choose "Help me choose" for: ${missing.map((m) => cat.categories.find((c) => c.slug === m)?.name ?? m).join(", ")}.`;
     }
-    if (i === 1) {
+    if (i === 4) {
       if (!draft.date) e.date = "Choose your event date.";
       else if (draft.date < tomorrow()) e.date = "Choose a date from tomorrow onward.";
       if (!draft.start) e.start = "Add a start time.";
       if (!draft.end) e.end = "Add an end time.";
       else if (minutes(draft.end) <= minutes(draft.start)) e.end = "End time must be after the start time.";
       if (!draft.zoneId) e.zoneId = "Choose the closest area.";
+      if (draft.guests && !(Number(draft.guests) > 0)) e.guests = "Enter a number, or leave it blank.";
     }
-    if (i === 3 && draft.guests && !(Number(draft.guests) > 0)) e.guests = "Enter a number, or leave it blank.";
-    if (i === 4) {
+    if (i === 5) {
       if (draft.fullName.trim().length < 2) e.fullName = "Enter your full name.";
       if (!EMAIL_RE.test(draft.email.trim())) e.email = "Enter a valid email so we can send your quote.";
       if (!validPhone(draft.phone)) e.phone = "Enter a 10-digit phone number, for example 506-555-0123.";
     }
-    if (i === 5 && !draft.consent) e.consent = "Please confirm so we can contact you about this request.";
+    if (i === 6 && !draft.consent) e.consent = "Please confirm so we can contact you about this request.";
     return e;
+  }
+
+  function goTo(i: number) {
+    setErrors({});
+    setStep(i);
   }
 
   function next() {
@@ -209,9 +248,14 @@ export function BookWizard({ search }: { search: BookSearch }) {
   }
 
   function submit() {
-    const e = validate(5);
-    setErrors(e);
-    if (Object.keys(e).length) return;
+    for (let i = 0; i < STEPS.length; i++) {
+      const e = validate(i);
+      if (Object.keys(e).length) {
+        setErrors(e);
+        if (i !== step) setStep(i);
+        return;
+      }
+    }
     const zone = cat.zones.find((z) => z.id === draft.zoneId);
     const req: ProtoRequest = {
       ref: protoRef("Q"),
@@ -243,15 +287,37 @@ export function BookWizard({ search }: { search: BookSearch }) {
     setDone(req);
   }
 
+  function toggleCategory(slug: string) {
+    setDraft((d) => {
+      if (!d.categories.includes(slug)) return { ...d, categories: [...d.categories, slug] };
+      const services = Object.fromEntries(Object.entries(d.services).filter(([s]) => cat.services.find((x) => x.slug === s)?.category_slug !== slug));
+      return {
+        ...d,
+        categories: d.categories.filter((c) => c !== slug),
+        services,
+        undecided: d.undecided.filter((c) => c !== slug),
+        packageSlug: slug === "photography" ? null : d.packageSlug,
+      };
+    });
+  }
+
   function toggleService(s: Service) {
     setDraft((d) => {
       const services = { ...d.services };
       if (services[s.slug]) delete services[s.slug];
       else {
-        for (const other of Object.keys(services)) if (tierGroup(other) === tierGroup(s.slug)) delete services[other];
+        for (const other of Object.keys(services)) if (tierFamily(other) === tierFamily(s.slug)) delete services[other];
         services[s.slug] = s.price_mode === "per_item" ? 10 : s.price_mode === "per_hour" ? Math.max(1, s.min_hours ?? 1) : 1;
       }
-      return { ...d, services };
+      return { ...d, services, undecided: d.undecided.filter((c) => c !== s.category_slug) };
+    });
+  }
+
+  function toggleUndecided(slug: string) {
+    setDraft((d) => {
+      if (d.undecided.includes(slug)) return { ...d, undecided: d.undecided.filter((c) => c !== slug) };
+      const services = Object.fromEntries(Object.entries(d.services).filter(([s]) => cat.services.find((x) => x.slug === s)?.category_slug !== slug));
+      return { ...d, services, undecided: [...d.undecided, slug], packageSlug: slug === "photography" ? null : d.packageSlug };
     });
   }
 
@@ -264,10 +330,11 @@ export function BookWizard({ search }: { search: BookSearch }) {
     });
   }
 
-  if (done) return <Confirmation req={done} ownerName={settings?.owner_name?.split(" ")[0] ?? "Marie"} depositPct={depositPct} holdHours={settings?.hold_hours ?? 48} topRef={topRef} />;
+  if (done) {
+    return <Confirmation req={done} ownerName={settings?.owner_name?.split(" ")[0] ?? "Marie"} depositPct={depositPct} holdHours={settings?.hold_hours ?? 48} topRef={topRef} />;
+  }
 
-  const categories = cat.categories.filter((c) => c.slug !== "minis").sort((a, b) => a.sort - b.sort);
-  const packages = cat.packages.filter((p) => p.price_cents !== null && (draft.eventType === "wedding" || draft.eventType === "engagement"));
+  const eventLabel = EVENT_TYPES.find((t) => t.value === draft.eventType)?.label;
 
   return (
     <div ref={topRef} className="fmv-wizard grid scroll-mt-28 gap-10 lg:grid-cols-[1fr_340px]">
@@ -280,47 +347,82 @@ export function BookWizard({ search }: { search: BookSearch }) {
         </div>
 
         {step === 0 ? (
-          <div className="grid gap-8">
-            <Group title="What are you celebrating?" error={errors.eventType}>
-              <div className="fmv-filter" role="group" aria-label="Event type">
-                {EVENT_TYPES.map((t) => (
-                  <button key={t.value} type="button" aria-pressed={draft.eventType === t.value} onClick={() => set("eventType", t.value)}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </Group>
+          <Group title="What are you celebrating?" hint="This helps us suggest the right packages." error={errors.eventType}>
+            <div className="fmv-filter" role="group" aria-label="Event type">
+              {EVENT_TYPES.map((t) => (
+                <button key={t.value} type="button" aria-pressed={draft.eventType === t.value} onClick={() => set("eventType", t.value)}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </Group>
+        ) : null}
 
-            {packages.length ? (
-              <Group title="Start with a package" hint="Optional. Packages bundle services for less than à la carte.">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Option type="radio" name="pkg" checked={!draft.packageSlug} onChange={() => set("packageSlug", null)} title="No package" text="I'll pick services myself." />
-                  {packages.map((p) => (
-                    <Option
-                      key={p.slug}
-                      type="radio"
-                      name="pkg"
-                      checked={draft.packageSlug === p.slug}
-                      onChange={() => set("packageSlug", p.slug)}
-                      title={p.name}
-                      price={money(p.price_cents)}
-                      text={p.items.map((i) => cat.services.find((s) => s.id === i.service_id)?.name).filter(Boolean).join(" + ")}
-                    />
-                  ))}
-                </div>
-              </Group>
-            ) : null}
+        {step === 1 ? (
+          <Group title="Which services do you need?" hint="Choose as many as you like. You'll pick the exact package next." error={errors.categories}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {categories.map((c) => {
+                const prices = cat.services.filter((s) => s.category_id === c.id && s.price_cents !== null).map((s) => s.price_cents as number);
+                const checked = draft.categories.includes(c.slug);
+                return (
+                  <div key={c.id} className="fmv-opt fmv-opt--visual" data-checked={checked}>
+                    <div className="fmv-opt__img"><img src={CATEGORY_PLATE[c.slug] ?? "/assets/plates/silk.webp"} alt="" loading="lazy" /></div>
+                    <label className="flex cursor-pointer items-start gap-3">
+                      <input type="checkbox" checked={checked} onChange={() => toggleCategory(c.slug)} />
+                      <span className="grid flex-1 gap-1">
+                        <span className="flex items-baseline justify-between gap-3">
+                          <span className="font-semibold">{c.name}</span>
+                          {prices.length ? <span className="whitespace-nowrap text-sm font-semibold text-rose-deep">from {money(Math.min(...prices))}</span> : null}
+                        </span>
+                        <span className="text-sm text-ink-soft">{CATEGORY_BLURB[c.slug] ?? ""}</span>
+                      </span>
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-sm text-ink-soft">
+              Looking for a mini session? Those are booked by time slot on the <Link to="/services/photography" hash="minis" className="fmv-link-underline">Photography page</Link>.
+            </p>
+          </Group>
+        ) : null}
 
-            <Group title={pkg ? "Add more services" : "Choose your services"} error={errors.services} hint="Tiers (Sapphire, Garnet, Emerald) are alternatives: choosing one replaces the other.">
-              <div className="grid gap-6">
-                {categories.map((c) => {
-                  const list = cat.services.filter((s) => s.category_id === c.id && s.price_cents !== null).sort((a, b) => a.sort - b.sort);
-                  if (!list.length) return null;
-                  return (
-                    <fieldset key={c.id} className="grid gap-3">
-                      <legend className="fmv-eyebrow pb-2">{c.name}</legend>
+        {step === 2 ? (
+          <div className="grid gap-10">
+            <p className="fmv-body">Compare the packages for each service you chose. Not sure yet? Choose &ldquo;Help me choose&rdquo; and we&apos;ll suggest one in your quote.</p>
+            {draft.categories.map((slug) => {
+              const c = cat.categories.find((x) => x.slug === slug);
+              const fams = families(cat, [slug]).sort((a, b) => Number(b.key.startsWith(draft.eventType)) - Number(a.key.startsWith(draft.eventType)));
+              const undecided = draft.undecided.includes(slug);
+              return (
+                <section key={slug} className="grid gap-5" aria-labelledby={`pk-${slug}`}>
+                  <div className="fmv-famhead">
+                    <h2 id={`pk-${slug}`} className="fmv-h3">{c?.name ?? slug}</h2>
+                    {covered(slug) ? <span className="fmv-chip fmv-chip--ok">Chosen</span> : null}
+                  </div>
+                  {slug === "photography" && bundles.length ? (
+                    <Group title="Wedding & engagement bundles" hint="Wedding coverage plus an engagement session, for less than booking them separately.">
                       <div className="grid gap-3 sm:grid-cols-2">
-                        {list.map((s) => {
+                        <Option type="radio" name="pkg" checked={!draft.packageSlug} onChange={() => set("packageSlug", null)} title="No bundle" text="I'll pick photography packages myself." />
+                        {bundles.map((p) => (
+                          <Option
+                            key={p.slug}
+                            type="radio"
+                            name="pkg"
+                            checked={draft.packageSlug === p.slug}
+                            onChange={() => setDraft((d) => ({ ...d, packageSlug: p.slug, undecided: d.undecided.filter((u) => u !== "photography") }))}
+                            title={p.name}
+                            price={money(p.price_cents)}
+                            text={p.items.map((i) => cat.services.find((s) => s.id === i.service_id)?.name).filter(Boolean).join(" + ")}
+                          />
+                        ))}
+                      </div>
+                    </Group>
+                  ) : null}
+                  {fams.map((f) => (
+                    <Group key={f.key} title={f.name} hint={f.services.length > 1 ? "Choose one package." : undefined}>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {f.services.map((s) => {
                           const inPkg = includedIds.has(s.id);
                           const checked = inPkg || Boolean(draft.services[s.slug]);
                           return (
@@ -330,9 +432,9 @@ export function BookWizard({ search }: { search: BookSearch }) {
                               checked={checked}
                               disabled={inPkg}
                               onChange={() => toggleService(s)}
-                              title={s.name}
-                              price={inPkg ? "In package" : priceLabel(s.price_cents, s.price_mode)}
-                              text={[s.included_hours ? `${hoursLabel(s.included_hours)} included` : "", s.short_desc ?? ""].filter(Boolean).join(" · ")}
+                              title={tierName(s)}
+                              price={inPkg ? "In bundle" : priceLabel(s.price_cents, s.price_mode)}
+                              text={s.short_desc ?? ""}
                             >
                               {checked && !inPkg && qtyMode(s.price_mode) ? (
                                 <Stepper
@@ -348,18 +450,35 @@ export function BookWizard({ search }: { search: BookSearch }) {
                           );
                         })}
                       </div>
-                    </fieldset>
-                  );
-                })}
-              </div>
-            </Group>
-            <p className="text-sm text-ink-soft">
-              Looking for a mini session? Those are booked by time slot on the <Link to="/photography" hash="minis" className="fmv-link-underline">Photography page</Link>.
-            </p>
+                    </Group>
+                  ))}
+                  <Option type="checkbox" checked={undecided} onChange={() => toggleUndecided(slug)} title="Help me choose" text={`Not sure which ${(c?.name ?? "package").toLowerCase()} package fits? We'll suggest one in your quote.`} />
+                </section>
+              );
+            })}
+            {errors.packages ? <p className="fmv-err">{errors.packages}</p> : null}
           </div>
         ) : null}
 
-        {step === 1 ? (
+        {step === 3 ? (
+          <Group title="Make it extra" hint="Optional add-ons that go with the services you chose.">
+            {addons.length ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {addons.map((a) => (
+                  <Option key={a.slug} type="checkbox" checked={Boolean(draft.addons[a.slug])} onChange={() => toggleAddon(a)} title={a.name} price={priceLabel(a.price_cents, a.price_mode)} text={a.description ?? ""}>
+                    {draft.addons[a.slug] && qtyMode(a.price_mode) ? (
+                      <Stepper value={draft.addons[a.slug]} min={1} max={6} step={1} unit="hrs" onChange={(v) => setDraft((d) => ({ ...d, addons: { ...d.addons, [a.slug]: v } }))} />
+                    ) : null}
+                  </Option>
+                ))}
+              </div>
+            ) : (
+              <p className="fmv-body">No add-ons for these services right now. You can mention extras in your notes on the next step.</p>
+            )}
+          </Group>
+        ) : null}
+
+        {step === 4 ? (
           <div className="grid gap-6">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Event date" error={errors.date} required>
@@ -400,44 +519,21 @@ export function BookWizard({ search }: { search: BookSearch }) {
                 </Field>
               </div>
             ) : null}
-          </div>
-        ) : null}
-
-        {step === 2 ? (
-          <Group title="Make it extra" hint="Add-ons that go with the services you picked.">
-            {addons.length ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {addons.map((a) => (
-                  <Option key={a.slug} type="checkbox" checked={Boolean(draft.addons[a.slug])} onChange={() => toggleAddon(a)} title={a.name} price={priceLabel(a.price_cents, a.price_mode)} text={a.description ?? ""}>
-                    {draft.addons[a.slug] && qtyMode(a.price_mode) ? (
-                      <Stepper value={draft.addons[a.slug]} min={1} max={6} step={1} unit="hrs" onChange={(v) => setDraft((d) => ({ ...d, addons: { ...d.addons, [a.slug]: v } }))} />
-                    ) : null}
-                  </Option>
-                ))}
-              </div>
-            ) : (
-              <p className="fmv-body">No add-ons for these services right now. You can mention extras in your notes on the next step.</p>
-            )}
-          </Group>
-        ) : null}
-
-        {step === 3 ? (
-          <div className="grid gap-5">
-            <div className="max-w-xs">
-              <Field label="Approximate number of guests" error={errors.guests}>
+            <div className="grid gap-4 sm:grid-cols-[200px_1fr]">
+              <Field label="Number of guests" error={errors.guests}>
                 <input type="number" inputMode="numeric" min={1} value={draft.guests} aria-invalid={Boolean(errors.guests)} onChange={(e) => set("guests", e.target.value)} />
               </Field>
+              <Field label="Theme or colours" hint="For example: blush and gold, rustic fall, under the sea.">
+                <input value={draft.theme} onChange={(e) => set("theme", e.target.value)} />
+              </Field>
             </div>
-            <Field label="Theme or colours" hint="For example: blush and gold, rustic fall, under the sea.">
-              <input value={draft.theme} onChange={(e) => set("theme", e.target.value)} />
-            </Field>
             <Field label="Anything else we should know?" hint="Timeline, must-have shots, rentals for the tables, questions…">
-              <textarea rows={5} value={draft.notes} onChange={(e) => set("notes", e.target.value)} />
+              <textarea rows={4} value={draft.notes} onChange={(e) => set("notes", e.target.value)} />
             </Field>
           </div>
         ) : null}
 
-        {step === 4 ? (
+        {step === 5 ? (
           <div className="grid gap-5">
             <p className="fmv-body">Where should we send your quote?</p>
             <Field label="Full name" error={errors.fullName} required>
@@ -468,31 +564,36 @@ export function BookWizard({ search }: { search: BookSearch }) {
           </div>
         ) : null}
 
-        {step === 5 ? (
+        {step === 6 ? (
           <div className="grid gap-5">
-            <ReviewBlock title="Your event" onEdit={() => setStep(0)}>
-              <p>{EVENT_TYPES.find((t) => t.value === draft.eventType)?.label}</p>
-              <ul className="grid gap-1 pt-1">
+            <ReviewBlock title="Your event" onEdit={() => goTo(0)}>
+              <p>{eventLabel}</p>
+            </ReviewBlock>
+            <ReviewBlock title="Services & packages" onEdit={() => goTo(2)}>
+              <ul className="grid gap-1">
                 {est.lines.map((l) => <li key={l.label}>· {l.label}{l.detail ? ` (${l.detail})` : ""}</li>)}
               </ul>
             </ReviewBlock>
-            <ReviewBlock title="Date & place" onEdit={() => setStep(1)}>
+            <ReviewBlock title="Event details" onEdit={() => goTo(4)}>
               <p>{dateLabel(draft.date)} · {timeLabel(draft.start)} to {timeLabel(draft.end)}</p>
               <p>{[draft.venueName, draft.venueAddress].filter(Boolean).join(", ") || "Venue not chosen yet"} · {cat.zones.find((z) => z.id === draft.zoneId)?.name}</p>
-            </ReviewBlock>
-            <ReviewBlock title="Details" onEdit={() => setStep(3)}>
               <p>{draft.guests ? `${draft.guests} guests` : "Guest count not given"}{draft.theme ? ` · ${draft.theme}` : ""}</p>
               {draft.notes ? <p className="whitespace-pre-line">{draft.notes}</p> : null}
             </ReviewBlock>
-            <ReviewBlock title="Your info" onEdit={() => setStep(4)}>
+            <ReviewBlock title="Your info" onEdit={() => goTo(5)}>
               <p>{draft.fullName}</p>
-              <p>{draft.email} · {draft.phone}</p>
+              <p className="break-all">{draft.email} · {draft.phone}</p>
               <p>Prefers: {draft.contactPref}</p>
             </ReviewBlock>
+            <div className="fmv-panel grid gap-3">
+              <p className="fmv-eyebrow">What happens next</p>
+              <StatusTimeline current={0} />
+              <p className="text-sm text-ink-soft">Sending this request does not book your date or charge anything.</p>
+            </div>
             <label className="fmv-opt">
               <input type="checkbox" checked={draft.consent} onChange={(e) => set("consent", e.target.checked)} aria-invalid={Boolean(errors.consent)} />
               <span className="text-sm">
-                I agree that FMV Events &amp; Photography may contact me about this request. Nothing is booked or charged until I accept a quote. See the <Link to="/faq" className="fmv-link-underline">policies</Link>.
+                I agree that FMV Events &amp; Photography may contact me about this request. Nothing is booked or charged until I accept a quote and my deposit is verified. See the <Link to="/faq" className="fmv-link-underline">policies</Link>.
               </span>
             </label>
             {errors.consent ? <p className="fmv-err">{errors.consent}</p> : null}
@@ -501,7 +602,7 @@ export function BookWizard({ search }: { search: BookSearch }) {
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
           {step > 0 ? (
-            <button type="button" className="fmv-cta-ghost" onClick={() => { setErrors({}); setStep((s) => s - 1); }}>Back</button>
+            <button type="button" className="fmv-cta-ghost" onClick={() => goTo(step - 1)}>Back</button>
           ) : <span />}
           {step < STEPS.length - 1 ? (
             <button type="button" className="fmv-cta-build" onClick={next}>
@@ -511,7 +612,7 @@ export function BookWizard({ search }: { search: BookSearch }) {
           ) : (
             <button type="button" className="fmv-cta-build" onClick={submit}>
               <span aria-hidden="true" className="fmv-cta-build__dot" />
-              Send my request
+              Request my quote
             </button>
           )}
         </div>
@@ -520,8 +621,8 @@ export function BookWizard({ search }: { search: BookSearch }) {
 
       <aside className="fmv-summary" aria-label="Your estimate">
         <div className="fmv-panel grid gap-3">
-          <p className="fmv-eyebrow">Your estimate</p>
-          {est.all.length && (est.lines.length || est.travel) ? (
+          <p className="fmv-eyebrow">Your estimate{eventLabel ? ` · ${eventLabel}` : ""}</p>
+          {est.lines.length || est.travel ? (
             <ul className="grid gap-2 text-sm">
               {est.all.map((l) => (
                 <li key={l.label} className="flex justify-between gap-3 border-b border-line pb-2">
@@ -534,7 +635,7 @@ export function BookWizard({ search }: { search: BookSearch }) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-ink-soft">Pick a package or services to see your estimate.</p>
+            <p className="text-sm text-ink-soft">Choose your services and packages to see your estimate.</p>
           )}
           <div className="flex items-baseline justify-between">
             <span className="font-semibold">Estimated total</span>
@@ -559,24 +660,43 @@ export function BookWizard({ search }: { search: BookSearch }) {
 
 function Confirmation({ req, ownerName, depositPct, holdHours, topRef }: { req: ProtoRequest; ownerName: string; depositPct: number; holdHours: number; topRef: React.RefObject<HTMLDivElement | null> }) {
   return (
-    <div ref={topRef} className="mx-auto grid max-w-2xl scroll-mt-28 gap-6 text-center">
-      <span aria-hidden="true" className="fmv-soon__mark mx-auto" />
-      <p className="fmv-eyebrow">Request sent · {req.ref}</p>
-      <h2 className="fmv-h2">Thank you, {req.customer.full_name.split(" ")[0]}!</h2>
-      <p className="fmv-lede">
-        {ownerName} will review your {req.event_type.toLowerCase()} on {dateLabel(req.date)} and email your personal quote to <strong>{req.customer.email}</strong>, usually within a day.
-      </p>
-      <div className="fmv-panel grid gap-2 text-left">
-        <div className="fmv-row"><span>Estimated total</span><strong>{req.total_is_from ? "from " : ""}{money(req.total_cents)}</strong></div>
-        <div className="fmv-row"><span>Deposit when you accept ({depositPct}%)</span><strong>{money(req.deposit_cents)}</strong></div>
-        <p className="pt-2 text-sm text-ink-soft">Accept the quote online and your date is held for {holdHours} hours while you send the deposit by Interac e-Transfer.</p>
+    <div ref={topRef} className="mx-auto grid max-w-3xl scroll-mt-28 gap-8">
+      <div className="grid justify-items-center gap-4 text-center">
+        <span aria-hidden="true" className="fmv-soon__mark" />
+        <p className="fmv-eyebrow">Quote requested · {req.ref}</p>
+        <h2 className="fmv-h2">Thank you, {req.customer.full_name.split(" ")[0]}!</h2>
+        <p className="fmv-lede">
+          {ownerName} will review your {req.event_type.toLowerCase()} on {dateLabel(req.date)} and email your personal quote to <strong className="break-all">{req.customer.email}</strong>, usually within a day.
+        </p>
+        <p className="fmv-chip fmv-chip--warn">Your date is not booked yet</p>
       </div>
-      <div className="fmv-panel fmv-panel--blush grid gap-3 text-left">
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="fmv-panel grid content-start gap-3">
+          <p className="fmv-eyebrow">Booking status</p>
+          <StatusTimeline current={0} />
+        </div>
+        <div className="grid content-start gap-6">
+          <div className="fmv-panel grid gap-2">
+            <p className="fmv-eyebrow">Your estimate</p>
+            <div className="fmv-row"><span>Estimated total</span><strong>{req.total_is_from ? "from " : ""}{money(req.total_cents)}</strong></div>
+            <div className="fmv-row"><span>Deposit when you accept ({depositPct}%)</span><strong>{money(req.deposit_cents)}</strong></div>
+          </div>
+          <div className="fmv-panel grid gap-2">
+            <p className="fmv-eyebrow">Step 8 · Deposit &amp; confirmation</p>
+            <p className="text-sm">
+              Once you accept your quote, your date is held for {holdHours} hours. Send the {depositPct}% deposit by Interac
+              e-Transfer: the e-Transfer address and your reference code come with your quote. Your booking is confirmed
+              only after we verify the payment.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="fmv-panel fmv-panel--blush grid gap-3">
         <p className="fmv-h3 fmv-h3--sm">Prototype preview</p>
         <p className="text-sm">Nothing was sent: this request is saved only in this browser. See it the way {ownerName} would receive it, with the customer details and estimate.</p>
         <div><Link to="/owner-preview" className="fmv-cta-ghost">See what {ownerName} receives</Link></div>
       </div>
-      <p><Link to="/" className="fmv-link-underline">Back to the home page</Link></p>
+      <p className="text-center"><Link to="/" className="fmv-link-underline">Back to the home page</Link></p>
     </div>
   );
 }

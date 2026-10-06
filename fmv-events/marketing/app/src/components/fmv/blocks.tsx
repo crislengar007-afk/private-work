@@ -1,7 +1,9 @@
+import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { money, priceLabel, hoursLabel, dateTimeLabel, EVENT_LABELS, mdParagraphs } from "@/fmv/format";
 import { bookHref } from "@/fmv/links";
-import type { Package, PortfolioItem, Service } from "@/fmv/types";
+import { addonsFor, bullets, CATEGORY_PLATE, families, fromCents, SERVICE_PAGES, tierName, type Family, type ServicePath } from "@/fmv/services";
+import type { Addon, Package, PortfolioItem, Service } from "@/fmv/types";
 import { BuildCta, SectionHead, Soon } from "./chrome";
 import { useSite } from "./use-site";
 
@@ -69,10 +71,12 @@ function PackageCard({ pkg, services }: { pkg: Package; services: Service[] }) {
             ))}
           </ul>
         ) : null}
-        <div className="pt-2">
-          <a className="fmv-cta-ghost" href={bookHref(bookingUrl, `/build?package=${encodeURIComponent(pkg.slug)}`)}>
-            Start with this package
+        <div className="fmv-tier__cta pt-2">
+          <a className="fmv-cta-build fmv-cta-build--sm" href={bookHref(bookingUrl, `/build?package=${encodeURIComponent(pkg.slug)}`)}>
+            <span aria-hidden="true" className="fmv-cta-build__dot" />
+            Book this package
           </a>
+          <Link to="/contact" hash="inquiry" className="fmv-link-underline text-sm">Ask a question</Link>
         </div>
       </div>
     </article>
@@ -152,15 +156,23 @@ export function AddonList() {
   );
 }
 
+/** Portfolio filters: by occasion and by service. A filter only shows when it has real work in it. */
+export const PORTFOLIO_FACETS: { key: string; label: string; test: (i: PortfolioItem) => boolean }[] = [
+  { key: "weddings", label: "Weddings", test: (i) => i.event_type === "wedding" },
+  { key: "birthdays", label: "Birthdays", test: (i) => i.event_type === "birthday" },
+  { key: "corporate", label: "Corporate events", test: (i) => i.event_type === "corporate" },
+  { key: "photography", label: "Photography", test: (i) => i.category === "photography" || i.category === "minis" },
+  { key: "decor", label: "Décor", test: (i) => i.category === "styling" },
+  { key: "booths", label: "Photo booths", test: (i) => i.category === "rentals" },
+  { key: "special", label: "Special events", test: (i) => ["baby_shower", "graduation", "other"].includes(i.event_type ?? "") },
+];
+
 export function Gallery({ items, filters = true }: { items: PortfolioItem[]; filters?: boolean }) {
-  const { catalog } = useSite();
   const [cat, setCat] = useState<string | null>(null);
   const [open, setOpen] = useState<number | null>(null);
-  const cats = useMemo(() => {
-    const slugs = new Set(items.map((i) => i.category).filter(Boolean));
-    return (catalog?.categories ?? []).filter((c) => slugs.has(c.slug));
-  }, [items, catalog]);
-  const shown = items.filter((i) => !cat || i.category === cat);
+  const cats = useMemo(() => PORTFOLIO_FACETS.filter((f) => items.some(f.test)).map((f) => ({ slug: f.key, name: f.label })), [items]);
+  const facet = PORTFOLIO_FACETS.find((f) => f.key === cat);
+  const shown = items.filter((i) => !facet || facet.test(i));
   if (items.length === 0) {
     return (
       <Soon title="Portfolio coming soon">
@@ -326,5 +338,138 @@ export function MiniCampaigns() {
         </article>
       ))}
     </div>
+  );
+}
+
+/** Cards for each service page (box frames), with a "from" price when one is published. */
+export function ServiceCards({ exclude }: { exclude?: ServicePath }) {
+  const { catalog } = useSite();
+  const pages = SERVICE_PAGES.filter((p) => p.to !== exclude);
+  return (
+    <div className={pages.length === 5 ? "fmv-pillars fmv-pillars--5" : "fmv-pillars"}>
+      {pages.map((p) => {
+        const from = fromCents(catalog, p);
+        return (
+          <Link key={p.to} to={p.to} className="fmv-pillar">
+            <div className="fmv-box"><img src={p.img} alt="" loading="lazy" /></div>
+            <p className="fmv-h3">{p.label}</p>
+            <p className="fmv-body text-sm">{p.blurb}</p>
+            {from !== null ? <p className="text-sm font-semibold text-rose-deep">From {money(from)}</p> : null}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function TierCard({ s, family, addons }: { s: Service; family: Family; addons: Addon[] }) {
+  const { bookingUrl } = useSite();
+  const name = tierName(s);
+  const items = bullets(s.short_desc);
+  return (
+    <article className="fmv-tier">
+      {name !== family.name ? <p className="fmv-eyebrow">{name}</p> : null}
+      <p className="fmv-price">{priceLabel(s.price_cents, s.price_mode)}</p>
+      {items.length ? (
+        <ul className="fmv-tier__list">
+          {items.map((t) => <li key={t}>{t}</li>)}
+        </ul>
+      ) : null}
+      {addons.length ? (
+        <p className="text-sm text-ink-soft">
+          <span className="font-semibold text-ink">Optional add-ons: </span>
+          {addons.map((a) => `${a.name} (${priceLabel(a.price_cents, a.price_mode)})`).join(" · ")}
+        </p>
+      ) : null}
+      <div className="fmv-tier__cta">
+        <a className="fmv-cta-build fmv-cta-build--sm" href={bookHref(bookingUrl, `/build?service=${encodeURIComponent(s.slug)}`)}>
+          <span aria-hidden="true" className="fmv-cta-build__dot" />
+          {family.services.length > 1 ? "Book this package" : "Book this"}
+        </a>
+        <Link to="/contact" hash="inquiry" className="fmv-link-underline text-sm">Ask a question</Link>
+      </div>
+    </article>
+  );
+}
+
+/** Tiered services (Sapphire / Garnet / Emerald) grouped by family, with inclusions, add-ons and booking CTAs. */
+export function TierCards({ categories, only }: { categories: string[]; only?: (f: Family) => boolean }) {
+  const { catalog } = useSite();
+  const list = catalog ? families(catalog, categories).filter((f) => !only || only(f)) : [];
+  if (!catalog || list.length === 0) {
+    return (
+      <Soon title="Prices are on their way">
+        Build your event and you&apos;ll get an exact quote for your date.
+        <div className="pt-4"><BuildCta /></div>
+      </Soon>
+    );
+  }
+  return (
+    <div className="grid gap-14">
+      {list.map((f) => (
+        <section key={f.key} className="fmv-family" aria-labelledby={`fam-${f.key}`}>
+          <div className="fmv-family__head">
+            <div className="fmv-box fmv-box--wide"><img src={CATEGORY_PLATE[f.category] ?? "/assets/plates/silk.webp"} alt="" loading="lazy" /></div>
+            <h3 id={`fam-${f.key}`} className="fmv-h3">{f.name}</h3>
+            {f.services.length > 1 ? <p className="text-sm text-ink-soft">{f.services.length} packages to compare</p> : null}
+          </div>
+          <div className={f.services.length > 1 ? "fmv-tiers" : "fmv-tiers fmv-tiers--single"}>
+            {f.services.map((s) => (
+              <TierCard key={s.id} s={s} family={f} addons={addonsFor(catalog, s)} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+/** Why clients choose FMV: drawn only from what FMV already states (services, published prices, flyer inclusions, deposit rule). */
+export function WhyFmv() {
+  const { settings } = useSite();
+  const pct = settings?.deposit_pct ?? 50;
+  const points = [
+    { t: "One team for your whole event", d: "Photography, coordination, décor and photo booths planned together, so nothing falls between the cracks." },
+    { t: "Clear prices, no guesswork", d: "Prices are published here, and every bundle shows its à la carte value next to the package price." },
+    { t: "Unlimited shots, edited photos", d: "Photography packages include unlimited shots and edited digital photos, delivered in an online gallery." },
+    { t: "A calm, clear booking process", d: `A personal quote first, then a ${pct}% deposit by Interac e-Transfer confirms your date.` },
+  ];
+  return (
+    <div className="fmv-why">
+      {points.map((p, i) => (
+        <div key={p.t} className="fmv-why__item">
+          <span aria-hidden="true" className="fmv-why__num">{String(i + 1).padStart(2, "0")}</span>
+          <p className="fmv-h3 fmv-h3--sm">{p.t}</p>
+          <p className="fmv-body">{p.d}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Booking status, from request to confirmed date. Nothing is marked paid or confirmed by the website itself. */
+export function bookingStatuses(depositPct: number) {
+  return [
+    { label: "Quote requested", text: "We review your event and prepare a personal quote." },
+    { label: "Quote approved", text: "You review the quote and accept it online." },
+    { label: `${depositPct}% deposit required`, text: "Send the deposit by Interac e-Transfer with the reference code on your invoice." },
+    { label: "Payment verified", text: "We match your e-Transfer to your booking." },
+    { label: "Booking confirmed", text: "Your date is confirmed. The balance is due before your event." },
+  ];
+}
+
+export function StatusTimeline({ current = 0 }: { current?: number }) {
+  const { settings } = useSite();
+  const steps = bookingStatuses(settings?.deposit_pct ?? 50);
+  return (
+    <ol className="fmv-status">
+      {steps.map((st, i) => (
+        <li key={st.label} data-state={i < current ? "done" : i === current ? "current" : "todo"} aria-current={i === current ? "step" : undefined}>
+          <span aria-hidden="true" className="fmv-status__dot" />
+          <p className="font-semibold">{st.label}</p>
+          <p className="text-sm text-ink-soft">{st.text}</p>
+        </li>
+      ))}
+    </ol>
   );
 }

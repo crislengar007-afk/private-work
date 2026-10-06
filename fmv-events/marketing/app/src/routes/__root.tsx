@@ -8,6 +8,7 @@ import { reportHiggsfieldError } from "../lib/higgsfield-error-reporting";
 import appMetaJson from "../app-meta.json";
 import { getSiteData } from "../fmv/site.functions";
 import { businessJsonLd } from "../fmv/jsonld";
+import { SITE_ORIGIN } from "../fmv/seo";
 import type { SiteData } from "../fmv/types";
 import { ContactFab, SiteFooter, SiteHeader } from "../components/fmv/chrome";
 import { StructuredData } from "../components/StructuredData";
@@ -135,7 +136,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const site = Route.useLoaderData() as SiteData;
-  const jsonLd = businessJsonLd(site, "");
+  const jsonLd = businessJsonLd(site, SITE_ORIGIN);
 
   useEffect(() => {
     if (!__HF_DESIGN_INSPECTOR__) return;
