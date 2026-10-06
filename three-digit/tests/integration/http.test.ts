@@ -462,7 +462,8 @@ describe('owner-approved media (ASSETS.md)', () => {
   it('home page shows the hero image and a click-to-play, silent explainer video', async () => {
     const r = await new Client(srv.base).get('/');
     expect(r.text).toContain('src="/static/media/hero.webp"');
-    expect(r.text).toContain('alt="Three tiles showing the digits 0, 4 and 7"');
+    expect(r.text).toContain('alt="Three tiles showing the digits 8, 4 and 7"');
+    expect(r.text).toContain('sample result 847123');
     expect(r.text).toMatch(/<video controls muted playsinline preload="none"/);
     expect(r.text).not.toMatch(/<video[^>]*autoplay/);
     expect(r.text).toContain('aria-describedby="how-video-desc"');

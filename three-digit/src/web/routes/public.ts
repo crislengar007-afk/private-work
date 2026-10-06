@@ -41,7 +41,7 @@ publicRouter.get('/', (req, res) => {
       </div>
     </div>
     <figure class="hero__art">
-      <img src="/static/media/hero.webp" width="1168" height="880" alt="Three tiles showing the digits 0, 4 and 7" fetchpriority="high">
+      <img src="/static/media/hero.webp" width="1168" height="880" alt="Three tiles showing the digits 8, 4 and 7" fetchpriority="high">
     </figure>
   </section>
 
@@ -61,9 +61,9 @@ publicRouter.get('/', (req, res) => {
         <video controls muted playsinline preload="none" poster="/static/media/how-it-works-poster.webp" width="1112" height="834" aria-describedby="how-video-desc">
           <source src="/static/media/how-it-works.mp4" type='video/mp4; codecs="avc1.640020"'>
           <source src="/static/media/how-it-works.webm" type='video/webm; codecs="vp9"'>
-          <p>Your browser cannot play this video. It shows the digits 0, 4 and 7 matching the sample result 047123.</p>
+          <p>Your browser cannot play this video. It shows the digits 8, 4 and 7 matching the sample result 847123.</p>
         </video>
-        <figcaption id="how-video-desc" class="small muted">8-second silent animation: you pick 0, 4 and 7; the six-digit sample result 047123 appears and the three matching digits light up. All three are present, so the entry wins.</figcaption>
+        <figcaption id="how-video-desc" class="small muted">8-second silent animation: you pick 8, 4 and 7; the six-digit sample result 847123 appears and the three matching digits light up. All three are present, so the entry wins.</figcaption>
       </figure>
       <div class="card hero__example" aria-label="Matching example">
         <p class="eyebrow">Example</p>
