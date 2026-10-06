@@ -9,8 +9,16 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "outDir": "dist"
   },
-  "include": ["src", "tests", "vitest.config.ts", "playwright.config.ts"]
+  "include": [
+    "src",
+    "tests",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "playwright.walkthrough.config.ts"
+  ]
 }

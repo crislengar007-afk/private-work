@@ -143,3 +143,43 @@ describe('₱500 combination cap (SPEC §17)', () => {
     expect(() => env.db.run(`UPDATE combination_capacity SET reserved_minor = reserved_minor + 1000 WHERE draw_id = ?`, drawId)).toThrow(/CHECK/);
   });
 });
+
+describe('expired reservations release capacity at request time (no background job)', () => {
+  it('a full combination whose unpaid holds expired accepts a new entry immediately', () => {
+    const env = createEnv();
+    const drawId = env.draw();
+    fill(env, drawId, 49, true); // ₱490 approved
+    const holder = env.user(['player']);
+    createEntry(env.as(holder), { drawId, digits: '312', stakeMinor: 1000, idempotencyKey: idem() }); // ₱500: full, unpaid hold
+    const late = env.user(['player']);
+    expect(err(() => createEntry(env.as(late), { drawId, digits: '213', stakeMinor: 1000, idempotencyKey: idem() }))?.code).toBe('CAPACITY_FULL');
+    env.clock.advance(5 * MINUTE); // hold expires; maintenance deliberately NOT run
+    expect(err(() => createEntry(env.as(late), { drawId, digits: '213', stakeMinor: 1000, idempotencyKey: idem() }))).toBeNull();
+    expect(capacityView(env.db, drawId, '123')).toMatchObject({ approvedMinor: 49000, reservedMinor: 1000, usedMinor: 50000 });
+    expect(env.db.get(`SELECT eligibility_status AS s FROM entries WHERE user_id = ?`, holder)).toEqual({ s: 'expired' });
+    // Exactly one release: a further maintenance run changes nothing.
+    runMaintenance(env.db, env.clock);
+    expect(capacityView(env.db, drawId, '123').usedMinor).toBe(50000);
+  });
+
+  it("a player's own expired hold does not count as a duplicate active entry", () => {
+    const env = createEnv();
+    const drawId = env.draw();
+    const p = env.user(['player']);
+    const first = createEntry(env.as(p), { drawId, digits: '135', stakeMinor: 1000, idempotencyKey: idem() }).entry;
+    env.clock.advance(5 * MINUTE);
+    const second = createEntry(env.as(p), { drawId, digits: '531', stakeMinor: 1000, idempotencyKey: idem() }).entry;
+    expect(second.id).not.toBe(first.id);
+    expect(capacityView(env.db, drawId, '135').usedMinor).toBe(1000);
+  });
+
+  it('payment is refused at the exact reservation expiry instant', () => {
+    const env = createEnv();
+    const drawId = env.draw();
+    const p = env.user(['player']);
+    const e = createEntry(env.as(p), { drawId, digits: '135', stakeMinor: 1000, idempotencyKey: idem() }).entry;
+    env.clock.set(e.reservation_expires_at!);
+    expect(err(() => submitPayment(env.as(p), e.id, { reference: 'EXACTEXPIRY1', sampleProof: '', simulateReceipt: 'on' }))?.code).toBe('ENTRY_NOT_PAYABLE');
+    expect(env.db.get<{ n: number }>(`SELECT count(*) AS n FROM demo_ledger`)!.n).toBe(0);
+  });
+});

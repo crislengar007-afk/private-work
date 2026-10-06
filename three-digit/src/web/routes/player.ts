@@ -6,6 +6,7 @@ import { durationText, peso, pesoShort } from '../../lib/format.js';
 import { type SafeHtml, html, raw } from '../../lib/html.js';
 import { demoPaymentRef, randomToken } from '../../lib/ids.js';
 import { capacityView } from '../../services/capacity.js';
+import { expireDueForCombination } from '../../services/maintenance.js';
 import { type DrawRow, getDraw, listDraws, openDraws, upcomingDraws, withPhase } from '../../services/draws.js';
 import { ALL_STATUSES, type EntryRow, createEntry, entryCounts, getOwnEntry, listOwnEntries } from '../../services/entries.js';
 import { paymentForEntry, receiptFor, submitPayment } from '../../services/payments.js';
@@ -163,6 +164,7 @@ playerRouter.post('/app/entries/review', (req, res) => {
   }
   if (errors.length) return send(req, res, 'New entry', newEntryPage(req, draft, errors, lost), 422);
   const s = sel as { digits: string; canonical: string };
+  expireDueForCombination(db, t, draw!.id, s.canonical);
   const dup = db.get<{ public_ref: string }>(
     `SELECT public_ref FROM entries WHERE user_id = ? AND draw_id = ? AND canonical_key = ? AND eligibility_status IN ('awaiting_payment','pending_verification','approved')`,
     actor!.id, draw!.id, s.canonical,
@@ -607,6 +609,7 @@ playerRouter.get('/api/capacity', (req, res) => {
   const t = clock.now().toISOString();
   if (!draw || draw.status !== 'open' || t < draw.opens_at) return res.status(404).json({ ok: false, error: 'Draw not open.' });
   if (t >= draw.submission_closes_at) return res.status(409).json({ ok: false, error: 'Sarado na ang submission para sa draw na ito.' });
+  expireDueForCombination(db, t, draw.id, sel.canonical);
   const cap = capacityView(db, draw.id, sel.canonical);
   res.setHeader('Cache-Control', 'no-store');
   res.json({

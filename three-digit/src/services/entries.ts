@@ -7,7 +7,7 @@ import { audit } from './audit.js';
 import { capacityView, reserveCapacity } from './capacity.js';
 import { type Ctx, requireAny } from './context.js';
 import { assertAcceptingEntries, getDraw, getRule } from './draws.js';
-import { expireEntryIfDue } from './maintenance.js';
+import { expireDueForCombination, expireEntryIfDue } from './maintenance.js';
 
 export type EligibilityStatus = 'awaiting_payment' | 'pending_verification' | 'approved' | 'rejected' | 'expired' | 'voided';
 export const ACTIVE_STATUSES: EligibilityStatus[] = ['awaiting_payment', 'pending_verification', 'approved'];
@@ -79,6 +79,9 @@ export function createEntry(ctx: Ctx, input: CreateEntryInput): { entry: EntryRo
       const rule = getRule(ctx.db, draw.rule_version_id);
       if (rule.stake_minor !== stake) throw new DomainError('UNSUPPORTED_STAKE', 'Stake does not match this draw’s frozen rules.');
 
+      // Request-time guard: retire this combination's already-expired reservations
+      // (including the player's own) before the duplicate and capacity checks.
+      expireDueForCombination(ctx.db, at, draw.id, sel.canonical);
       const dup = ctx.db.get<{ public_ref: string }>(
         `SELECT public_ref FROM entries WHERE user_id = ? AND draw_id = ? AND canonical_key = ? AND eligibility_status IN ('awaiting_payment','pending_verification','approved')`,
         actor.id, draw.id, sel.canonical,

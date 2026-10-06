@@ -1,6 +1,6 @@
 import type { Db } from '../db/index.js';
 import { type Exposure, maxExposure } from '../domain/exposure.js';
-import { GROSS_PAYOUT_MINOR } from '../domain/rules.js';
+import { GROSS_PAYOUT_MINOR, STAKE_MINOR } from '../domain/rules.js';
 import { type DrawWithPhase, listDraws } from './draws.js';
 
 export interface DashboardFigures {
@@ -42,19 +42,71 @@ export function dashboardFigures(db: Db): DashboardFigures {
   };
 }
 
-export function drawExposure(db: Db, drawId: number): Exposure {
-  const counts = new Map<string, number>();
-  for (const r of db.all<{ k: string; c: number }>(`SELECT canonical_key AS k, count(*) AS c FROM entries WHERE draw_id = ? AND eligibility_status = 'approved' GROUP BY 1`, drawId)) {
-    counts.set(r.k, r.c);
-  }
-  return maxExposure(counts);
+/** Money picture for one draw, kept as four separate ideas (all SIMULATED):
+ *  collected payments, reserved capacity, potential payout, and a
+ *  hypothetical funding shortfall. None of these is profit or a forecast. */
+export interface DrawMoney {
+  receiptsMinor: number; // demo-ledger receipts for this draw (includes money later refunded)
+  refundObligationsMinor: number; // receipts that must go back (rejected/expired/cancelled)
+  approvedStakesMinor: number; // stakes of entries eligible to win
+  heldPaidMinor: number; // reserved capacity: paid, pending verification
+  heldUnpaidMinor: number; // reserved capacity: awaiting payment (5-min holds)
+  reservedMinor: number; // capacity table total (should equal heldPaid + heldUnpaid)
+  exposure: Exposure; // worst case over every valid result, approved entries only
+  exposureIfHeldApproved: Exposure; // worst case if every held reservation were approved
+  shortfallMinor: number; // max(0, worst-case gross payout − approved stakes)
+  published: { result: string; winners: number; obligationMinor: number; shortfallMinor: number } | null;
+}
+
+function countsFor(db: Db, drawId: number, statuses: string[]): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const r of db.all<{ k: string; c: number }>(
+    `SELECT canonical_key AS k, count(*) AS c FROM entries WHERE draw_id = ? AND eligibility_status IN (${statuses.map(() => '?').join(',')}) GROUP BY 1`,
+    drawId, ...statuses,
+  )) m.set(r.k, r.c);
+  return m;
+}
+
+export function drawMoney(db: Db, drawId: number): DrawMoney {
+  const sumStake = (status: string) => n(db, `SELECT sum(stake_minor_units) AS v FROM entries WHERE draw_id = ? AND eligibility_status = ?`, drawId, status);
+  const exposure = maxExposure(countsFor(db, drawId, ['approved']));
+  const approvedStakesMinor = sumStake('approved');
+  const pub = db.get<{ six_digit_result: string; id: number }>(`SELECT id, six_digit_result FROM result_versions WHERE draw_id = ? AND state = 'published'`, drawId);
+  const winners = pub ? n(db, `SELECT count(*) AS v FROM outcomes WHERE result_version_id = ? AND outcome = 'won'`, pub.id) : 0;
+  return {
+    receiptsMinor: n(db, `SELECT sum(l.amount_minor_units) AS v FROM demo_ledger l JOIN payments p ON p.id = l.payment_id JOIN entries e ON e.id = p.entry_id WHERE l.kind = 'receipt' AND e.draw_id = ?`, drawId),
+    refundObligationsMinor: n(db, `SELECT sum(r.amount_minor_units) AS v FROM refunds r JOIN payments p ON p.id = r.payment_id JOIN entries e ON e.id = p.entry_id WHERE e.draw_id = ?`, drawId),
+    approvedStakesMinor,
+    heldPaidMinor: sumStake('pending_verification'),
+    heldUnpaidMinor: sumStake('awaiting_payment'),
+    reservedMinor: n(db, `SELECT sum(reserved_minor) AS v FROM combination_capacity WHERE draw_id = ?`, drawId),
+    exposure,
+    exposureIfHeldApproved: maxExposure(countsFor(db, drawId, ['approved', 'pending_verification', 'awaiting_payment'])),
+    shortfallMinor: Math.max(0, exposure.maxPayoutMinor - approvedStakesMinor),
+    published: pub
+      ? { result: pub.six_digit_result, winners, obligationMinor: winners * GROSS_PAYOUT_MINOR, shortfallMinor: Math.max(0, winners * GROSS_PAYOUT_MINOR - approvedStakesMinor) }
+      : null,
+  };
+}
+
+/** Illustrative scenarios across all 120 unordered combinations (not forecasts). */
+export function capacityScenarios(): { label: string; perCombination: number; collectedMinor: number; worst: Exposure; shortfallMinor: number }[] {
+  const all: string[] = [];
+  for (let a = 0; a < 10; a++) for (let b = a + 1; b < 10; b++) for (let c = b + 1; c < 10; c++) all.push(`${a}${b}${c}`);
+  return [
+    { label: 'One ₱10 entry on every combination', perCombination: 1 },
+    { label: 'Every combination filled to the ₱500 cap', perCombination: 50 },
+  ].map((s) => {
+    const worst = maxExposure(new Map(all.map((k) => [k, s.perCombination])));
+    const collectedMinor = all.length * s.perCombination * STAKE_MINOR;
+    return { ...s, collectedMinor, worst, shortfallMinor: Math.max(0, worst.maxPayoutMinor - collectedMinor) };
+  });
 }
 
 export interface DrawHealth {
   draw: DrawWithPhase;
   counts: Record<string, number>;
-  receiptsMinor: number;
-  exposure: Exposure;
+  money: DrawMoney;
 }
 
 export function drawStatusCounts(db: Db, drawId: number): Record<string, number> {
@@ -70,7 +122,6 @@ export function drawHealth(db: Db, now: Date): DrawHealth[] {
     .map((draw) => ({
       draw,
       counts: drawStatusCounts(db, draw.id),
-      receiptsMinor: n(db, `SELECT sum(l.amount_minor_units) AS v FROM demo_ledger l JOIN payments p ON p.id = l.payment_id JOIN entries e ON e.id = p.entry_id WHERE l.kind = 'receipt' AND e.draw_id = ?`, draw.id),
-      exposure: drawExposure(db, draw.id),
+      money: drawMoney(db, draw.id),
     }));
 }

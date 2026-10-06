@@ -69,6 +69,22 @@ export function expireDueEntries(db: Db, clock: Clock, drawId?: number): number 
   return n;
 }
 
+/** Request-time guard for capacity: before a combination's capacity is read or
+ *  reserved, expire any of ITS reservations that are already past due, so a
+ *  stalled background job can never keep a dead reservation occupying the cap. */
+export function expireDueForCombination(db: Db, at: string, drawId: number, canonical: string): number {
+  const rows = db.all<{ id: number }>(
+    `SELECT e.id FROM entries e JOIN draws d ON d.id = e.draw_id
+     WHERE e.draw_id = ? AND e.canonical_key = ?
+       AND ((e.eligibility_status = 'awaiting_payment' AND (e.reservation_expires_at <= ? OR d.submission_closes_at <= ?))
+         OR (e.eligibility_status = 'pending_verification' AND d.verification_closes_at <= ?))`,
+    drawId, canonical, at, at, at,
+  );
+  let n = 0;
+  for (const r of rows) if (expireOne(db, r.id, at, null)) n++;
+  return n;
+}
+
 /** Periodic job: expiry plus resuming any interrupted matching run. */
 export function runMaintenance(db: Db, clock: Clock): { expired: number; matched: number } {
   const expired = expireDueEntries(db, clock);

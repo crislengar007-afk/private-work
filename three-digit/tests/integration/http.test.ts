@@ -57,7 +57,7 @@ describe('routes render and survive a direct refresh (acceptance 16, 36)', () =>
       expect(r.status, p).toBe(200);
     }
     const draw = await c.get(`/admin/draws/${drawId('Draw A')}`);
-    expect(draw.text).toContain('Maximum prize exposure');
+    expect(draw.text).toContain('Worst case, approved entries');
     expect(draw.text).toContain('Full');
   });
 
@@ -322,5 +322,88 @@ describe('CSV export', () => {
     expect(csvCell('@SUM')).toBe("'@SUM");
     expect(csvCell('-2')).toBe("'-2");
     expect(csvCell('012')).toBe('012');
+  });
+});
+
+describe('simultaneous submissions over HTTP (₱490 → one winner)', () => {
+  it('four players confirming the last ₱10 at once: exactly one reservation', async () => {
+    const A = drawId('Draw A');
+    const before = srv.db.get<{ r: number; a: number }>(`SELECT reserved_minor AS r, approved_minor AS a FROM combination_capacity WHERE draw_id = ? AND canonical_key = '123'`, A)!;
+    expect(before.r + before.a).toBe(49000);
+    const players = ['sample50@demo.local', 'juan@demo.local', 'maria@demo.local', 'pedro@demo.local'];
+    const clients = await Promise.all(players.map((e) => as(e)));
+    const reviews = await Promise.all(clients.map((c, i) => c.post('/app/entries/review', { draw_id: String(A), digits: ['123', '231', '312', '321'][i], stake_minor: '1000' })));
+    // Everyone was shown ₱10 available (stale by the time they confirm).
+    for (const r of reviews) expect(r.text).toContain('Available: ₱10');
+    const keys = reviews.map((r) => /name="idempotency_key" value="([^"]+)"/.exec(r.text)![1]);
+    const results = await Promise.all(
+      clients.map((c, i) => c.post('/app/entries', { draw_id: String(A), digits: ['123', '231', '312', '321'][i], stake_minor: '1000', idempotency_key: keys[i], ack: 'on' })),
+    );
+    const ok = results.filter((r) => r.status === 303);
+    const full = results.filter((r) => r.status === 409);
+    expect(ok).toHaveLength(1);
+    expect(full).toHaveLength(3);
+    for (const r of full) expect(r.text).toContain('already reached the ₱500 limit');
+    const after = srv.db.get<{ r: number; a: number }>(`SELECT reserved_minor AS r, approved_minor AS a FROM combination_capacity WHERE draw_id = ? AND canonical_key = '123'`, A)!;
+    expect(after.r + after.a).toBe(50000);
+  });
+});
+
+describe('role access: searches, API, exports, proofs', () => {
+  it("player search and result pages never show another player's entries", async () => {
+    const c = await as('juan@demo.local');
+    const mariaRef = srv.db.get<{ r: string }>(`SELECT e.public_ref AS r FROM entries e JOIN users u ON u.id = e.user_id WHERE u.email = 'maria@demo.local' LIMIT 1`)!.r;
+    const mariaEntry = id(`SELECT id FROM entries WHERE public_ref = ?`, mariaRef);
+    const search = await c.get(`/app/entries?q=${encodeURIComponent(mariaRef)}`);
+    expect(search.status).toBe(200);
+    // The query is echoed in the search box only; no result row or link leaks.
+    expect(search.text.split(mariaRef)).toHaveLength(2);
+    expect(search.text).toContain(`value="${mariaRef}"`);
+    expect(search.text).not.toContain(`/app/entries/${mariaEntry}"`);
+    expect(search.text).toContain('No matching entries');
+    const result = await c.get(`/app/results/${drawId('Draw D')}`);
+    expect(result.text).not.toContain(mariaRef);
+  });
+
+  it('non-player roles cannot use the player API; only admins can export', async () => {
+    for (const email of ['leader.a@demo.local', 'agent.a1@demo.local']) {
+      const c = await as(email);
+      const api = await c.get(`/api/capacity?draw_id=${drawId('Draw A')}&digits=123`);
+      expect(api.status, email).toBe(403);
+      expect(JSON.parse(api.text).ok).toBe(false);
+      expect((await c.get('/admin/entries.csv')).status, email).toBe(403);
+    }
+    const player = await as('pedro@demo.local');
+    expect((await player.get('/admin/entries.csv')).status).toBe(403);
+    expect((await new Client(srv.base).get('/api/capacity?draw_id=1&digits=123')).status).toBe(303);
+  });
+
+  it('team leader search cannot reach another team; agents cannot open team pages', async () => {
+    const lead = await as('leader.a@demo.local');
+    const r = await lead.get('/team/agents?q=Bert');
+    expect(r.text).not.toContain('Bert Agent B1');
+    expect(r.text).not.toContain('agent.b1@demo.local');
+    expect(r.text).toContain('No matching agents');
+    const proof = srv.db.get<{ k: string }>(`SELECT proof_object_key AS k FROM payments WHERE proof_object_key IS NOT NULL LIMIT 1`)!.k;
+    expect((await lead.get(`/proofs/${proof}`)).status).toBe(404);
+    const agent = await as('agent.a1@demo.local');
+    expect((await agent.get(`/team/agents/${userId('agent.a1@demo.local')}`)).status).toBe(403);
+    expect((await agent.get(`/proofs/${proof}`)).status).toBe(404);
+  });
+
+  it('result entry and publication stay with separate reviewers', async () => {
+    const pay = await as('payments@demo.local');
+    expect((await pay.get('/admin/results')).status).toBe(403);
+    expect((await pay.post('/admin/results/1/publish', { confirm: 'on' })).status).toBe(403);
+    const reviewer = await as('reviewer@demo.local');
+    expect((await reviewer.post('/admin/results', { draw_id: String(drawId('Draw B')), result: '123456' })).status).toBe(403);
+  });
+
+  it('admin draw page and overview show the money breakdown and scenarios', async () => {
+    const c = await as('admin@demo.local');
+    const draw = await c.get(`/admin/draws/${drawId('Draw A')}`);
+    for (const t of ['Collected payments', 'Reserved capacity (not yet approved)', 'Potential payout', 'Hypothetical funding shortfall', 'e.g. result 123456']) expect(draw.text).toContain(t);
+    const overview = await c.get('/admin');
+    for (const t of ['₱1,200.00', '₱62,000.00', '₱60,000.00', '₱3,100,000.00', 'Hypothetical shortfall']) expect(overview.text).toContain(t);
   });
 });

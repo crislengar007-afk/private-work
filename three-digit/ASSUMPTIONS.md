@@ -15,9 +15,10 @@ This file records the choices the demo made where SPEC.md v1.2 left a gap. **Con
 
 | Topic | Demo behaviour |
 | --- | --- |
-| Cap scope | The ₱500 cap applies **per draw**. A new draw starts with fresh capacity, and draws never share a lifetime cap. |
+| Cap scope | **Documented default:** the ₱500 cap applies **per draw**, shared by all players, teams and agents. A new draw starts with fresh capacity, and draws never share a lifetime cap. |
 | Cutoffs | Separate submission/payment and verification cutoffs, with `opens < submission < verification < draw`. The operation is already closed at the exact boundary. |
-| Reservation | Confirming an entry reserves its stake for **5 minutes**, or until the submission cutoff if that comes sooner. A ledger receipt holds the slot until verification closes. A proof alone does not extend the reservation. |
+| Reservation | Confirming an entry reserves its stake for **5 minutes**, or until the submission cutoff if that comes sooner. A ledger receipt holds the slot until verification closes. A proof alone does not extend the reservation. Expired holds are released at request time (when anyone reads or reserves that combination, or opens that entry) as well as by the 15-second background job. |
+| Paid before cutoff, approved later | Approval is allowed **after the submission cutoff and before the verification cutoff**. If the entry is not approved by the verification cutoff, it expires (no retroactive acceptance, even if it would have won) and the received ₱10 becomes a simulated refund obligation. |
 | Repeat entries | One **active** entry per player + draw + unordered combination. A rejected or expired entry is never revived; a new attempt gets a fresh ID and a fresh payment. |
 | Payments | One payment per entry for the exact amount. No wallet, cart or split payment. References are unique within the provider and normalised (uppercase, spaces and dashes removed). |
 | Payment receipt | Receipts come from the demo ledger, timestamped with **server** time. The player's "simulate receipt" checkbox stands in for a provider callback. |

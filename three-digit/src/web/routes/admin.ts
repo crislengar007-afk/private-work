@@ -13,7 +13,7 @@ import { ALL_STATUSES, adminListEntries } from '../../services/entries.js';
 import { approvePayment, paymentDetail, paymentQueue, rejectPayment } from '../../services/payments.js';
 import { approvePayout, completePayout, listWinners, payoutHistory, reconciliationFlags, resolveFlag } from '../../services/payouts.js';
 import { completeRefund, failRefund, listRefunds, startRefundProcessing } from '../../services/refunds.js';
-import { dashboardFigures, drawExposure, drawHealth, drawStatusCounts } from '../../services/reports.js';
+import { capacityScenarios, dashboardFigures, drawHealth, drawMoney, drawStatusCounts, type DrawMoney } from '../../services/reports.js';
 import { SAMPLE_SOURCE_LABEL, drawResultHistory, listResultVersions, publishResult, rejectResult, submitResult } from '../../services/results.js';
 import { DRAFT_SETTINGS, LAUNCH_REQUIREMENTS, advanceDemoClock, getSetting, saveDraftSettings } from '../../services/settings.js';
 import { TICKET_STATES, adminGetTicket, adminListTickets, adminUpdateTicket } from '../../services/support.js';
@@ -98,12 +98,29 @@ adminRouter.get('/admin', (req, res) => {
       { label: 'Draw', render: (h) => html`<a href="/admin/draws/${h.draw.id}">${h.draw.reference_label}</a>` },
       { label: 'Phase', render: (h) => phaseBadge(h.draw.phase) },
       { label: 'Entries', render: (h) => html`<span class="small">${Object.entries(h.counts).map(([k, v]) => `${k.replace('_', ' ')}: ${v}`).join(' · ') || 'none'}</span>` },
-      { label: 'Receipts (sim.)', render: (h) => peso(h.receiptsMinor) },
-      { label: 'Max prize exposure (sim.)', render: (h) => html`${peso(h.exposure.maxPayoutMinor)}<br><span class="small muted">upper bound ${peso(h.exposure.upperBoundMinor)}</span>` },
+      { label: 'Collected (sim.)', render: (h) => html`${peso(h.money.receiptsMinor)}${h.money.refundObligationsMinor ? html`<br><span class="small muted">${peso(h.money.refundObligationsMinor)} to refund</span>` : ''}` },
+      { label: 'Approved stakes', render: (h) => peso(h.money.approvedStakesMinor) },
+      { label: 'Reserved capacity', render: (h) => peso(h.money.heldPaidMinor + h.money.heldUnpaidMinor) },
+      { label: 'Worst-case payout', render: (h) => (h.money.published ? html`${peso(h.money.published.obligationMinor)}<br><span class="small muted">actual, result ${h.money.published.result}</span>` : peso(h.money.exposure.maxPayoutMinor)) },
+      { label: 'Hypothetical shortfall', render: (h) => peso(h.money.published ? h.money.published.shortfallMinor : h.money.shortfallMinor) },
     ],
     health,
     { caption: 'Draw health' },
-  )}</section>`;
+  )}
+  <p class="small muted">Collected = demo-ledger receipts (some may be owed back as refunds). Reserved = cap held by entries not yet approved. Worst-case payout = largest gross payout over every valid six-digit result for approved entries. Hypothetical shortfall = worst-case payout − approved stakes. Not forecasts or probabilities.</p></section>
+  <section class="section"><h2>Illustrative scenarios ${SIM}</h2>
+  ${dataTable(
+    [
+      { label: 'Scenario (all 120 combinations)', render: (sc) => sc.label },
+      { label: 'Collected', render: (sc) => peso(sc.collectedMinor) },
+      { label: 'Worst-case winners', render: (sc) => html`${sc.worst.maxWinners} <span class="small muted">(e.g. result ${sc.worst.worstDigitSet})</span>` },
+      { label: 'Worst-case payout', render: (sc) => peso(sc.worst.maxPayoutMinor) },
+      { label: 'Hypothetical shortfall', render: (sc) => peso(sc.shortfallMinor) },
+    ],
+    capacityScenarios(),
+    { caption: 'Illustrative scenarios' },
+  )}
+  <p class="small muted">Any result with six different digits (like 123456) makes 20 of the 120 combinations win. Results with repeated digits make fewer combinations win.</p></section>`;
   send(req, res, 'Overview', body);
 });
 
@@ -180,7 +197,7 @@ adminRouter.get('/admin/draws/:id', (req, res) => {
   const rule = getRule(db, d.rule_version_id);
   const counts = drawStatusCounts(db, d.id);
   const combos = combinationTable(db, d.id);
-  const exposure = drawExposure(db, d.id);
+  const money = drawMoney(db, d.id);
   const history = drawResultHistory(db, d.id, { includeDrafts: true });
   const pending = history.find((h) => h.state === 'submitted');
   const published = history.find((h) => h.state === 'published');
@@ -210,14 +227,7 @@ adminRouter.get('/admin/draws/:id', (req, res) => {
     <div class="stats">${ALL_STATUSES.map((s) => stat(s.replace('_', ' ').replace(/^./, (c) => c.toUpperCase()), String(counts[s] ?? 0)))}</div>
     ${can(req, ['admin', 'payment_reviewer']) ? html`<p><a href="/admin/entries?draw=${d.id}">View entries in this draw ${icon('arrow')}</a></p>` : ''}
   </section>
-  <section class="section"><h2>Prize exposure ${SIM}</h2>
-    <div class="stats">
-      ${stat('Maximum prize exposure', peso(exposure.maxPayoutMinor), exposure.worstDigitSet ? `${exposure.maxWinners} winners if the result contains digits ${exposure.worstDigitSet.split('').join(',')}` : 'No approved entries')}
-      ${stat('Conservative upper bound', peso(exposure.upperBoundMinor), `${exposure.approvedEntries} approved × ${pesoShort(GROSS_PAYOUT_MINOR)} (upper bound)`)}
-      ${stat('Approved stakes', peso(exposure.approvedEntries * STAKE_MINOR))}
-    </div>
-    <p class="small muted">Exposure evaluates every possible set of up to six distinct result digits against approved entries. Reserve thresholds are unconfirmed.</p>
-  </section>
+  ${moneySection(money)}
   <section class="section"><h2>Combination capacity</h2>
     ${dataTable(
       [
@@ -278,6 +288,38 @@ adminRouter.post('/admin/draws/:id/cancel', requireRoles('admin'), act((r) => `/
   const r = cancelDraw(req.td.ctx, intParam(req.params.id), str(req.body.reason));
   return `Draw cancelled. ${r.voided} entr${r.voided === 1 ? 'y' : 'ies'} voided, ${r.refunds} refund obligation(s) created.`;
 }));
+
+function moneySection(m: DrawMoney): SafeHtml {
+  const e = m.exposure;
+  const h = m.exposureIfHeldApproved;
+  return html`<section class="section"><h2>Money &amp; prize exposure ${SIM}</h2>
+    <h3 class="h4">1 · Collected payments</h3>
+    <div class="stats">
+      ${stat('Collected (demo-ledger receipts)', peso(m.receiptsMinor), 'All simulated receipts for this draw')}
+      ${stat('Owed back as refunds', peso(m.refundObligationsMinor), 'Rejected, expired or cancelled — not prizes')}
+      ${stat('Approved stakes', peso(m.approvedStakesMinor), `${e.approvedEntries} approved × ${pesoShort(STAKE_MINOR)} — the only entries that can win`)}
+    </div>
+    <h3 class="h4">2 · Reserved capacity (not yet approved)</h3>
+    <div class="stats">
+      ${stat('Paid, pending verification', peso(m.heldPaidMinor), 'Held until verification cutoff')}
+      ${stat('Unpaid 5-minute holds', peso(m.heldUnpaidMinor), 'Released automatically when they expire')}
+      ${stat('Total reserved in cap table', peso(m.reservedMinor))}
+    </div>
+    <h3 class="h4">3 · Potential payout (gross, stake included)</h3>
+    <div class="stats">
+      ${m.published ? stat(`Actual obligation — result ${m.published.result}`, peso(m.published.obligationMinor), `${m.published.winners} winning entries × ${pesoShort(GROSS_PAYOUT_MINOR)}`) : ''}
+      ${stat('Worst case, approved entries', peso(e.maxPayoutMinor), e.worstDigitSet ? `${e.maxWinners} winners, e.g. result ${e.worstDigitSet} (checked over every valid result)` : 'No approved entries')}
+      ${stat('Worst case if all reserved entries were approved', peso(h.maxPayoutMinor), h.worstDigitSet ? `${h.maxWinners} winners, e.g. result ${h.worstDigitSet}` : 'No active entries')}
+      ${stat('Conservative upper bound', peso(e.upperBoundMinor), `every approved entry wins (${e.approvedEntries} × ${pesoShort(GROSS_PAYOUT_MINOR)})`)}
+    </div>
+    <h3 class="h4">4 · Hypothetical funding shortfall</h3>
+    <div class="stats">
+      ${stat('Worst-case payout − approved stakes', peso(m.shortfallMinor), 'Money that would have to come from reserves')}
+      ${m.published ? stat(`For published result ${m.published.result}`, peso(m.published.shortfallMinor), 'Actual obligation − approved stakes') : ''}
+    </div>
+    <p class="small muted">These are deterministic what-if figures, not probabilities, forecasts or profit. Receipts that are refunded are not income. Reserve thresholds are unconfirmed; a funding and risk review is required before any real-money use.</p>
+  </section>`;
+}
 
 function resultForm(req: Request, drawId: number, correction: boolean) {
   return post(

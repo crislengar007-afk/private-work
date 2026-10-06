@@ -120,7 +120,7 @@ publicRouter.get('/rules', (req, res) => {
     <ul>
       <li><strong>Submission &amp; payment cutoff:</strong> new entries and demo payments are accepted only before this time.</li>
       <li><strong>Reservation:</strong> confirming an entry reserves its slot for up to 5 minutes (or until the submission cutoff, if sooner). Pay within that window.</li>
-      <li><strong>Verification cutoff:</strong> a reviewer must approve your payment before this time. Entries not approved by then become <em>Expired</em> — even if their digits would have matched.</li>
+      <li><strong>Verification cutoff:</strong> a reviewer may approve a payment you made before the submission cutoff at any time up to this cutoff. Entries not approved by then become <em>Expired</em> — even if their digits would have matched — and a paid entry gets a simulated refund.</li>
       <li>At the exact cutoff time, the operation is already closed. The server clock decides; your device clock and the countdowns are for information only.</li>
       <li>Delayed draws do not reopen entries.</li>
     </ul>

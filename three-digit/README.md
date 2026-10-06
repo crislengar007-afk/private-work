@@ -6,13 +6,15 @@ Players pick **three different digits** (0–9). An entry wins when **all three 
 
 The repository root holds an unrelated Astro site. This app lives entirely in `three-digit/` and shares nothing with it.
 
+**Step-by-step demo with desktop and 360px screenshots: [WALKTHROUGH.md](WALKTHROUGH.md).**
+
 ## Stack
 
 The repository had no backend, so the app uses a plain TypeScript web stack with few moving parts:
 
 | Concern | Choice | Why |
 | --- | --- | --- |
-| Runtime | Node.js **22.13+**, TypeScript (ESM) | Single language and no native build steps |
+| Runtime | Node.js **22.13+** (tested on 22.22), TypeScript (ESM) | Single language and no native build steps |
 | Database | **SQLite** via Node's built-in `node:sqlite`, SQL migrations in `migrations/` | Relational, with transactions, CHECK/UNIQUE constraints and triggers. Zero install. |
 | Web | **Express 5**, server-rendered HTML, plus a small vanilla JS file for progressive enhancement | Real routes, direct links, refresh and back button all work, and every action also works without JS |
 | Auth | `bcryptjs` password hashes, server-side sessions (only a SHA-256 of the cookie token is stored), double-submit CSRF tokens, per-IP rate limits | Established libraries; nothing is stored in `localStorage` |
@@ -67,24 +69,32 @@ Dates are generated **relative to the time you run the seed**:
 
 ## Walkthrough
 
-1. **Player** (`juan@demo.local`): go to **New entry**, choose Draw A, and pick digits with the keypad or by typing them. Try `112` (rejected), `321` (₱10 left) and `654` (full: Continue is disabled). Click **Review**, tick the acknowledgement and click **Confirm & reserve slot**. This reserves the slot for 5 minutes.
-2. **Simulated payment**: the reference is pre-filled. Leave "Simulate that the demo provider received ₱10.00" ticked to record a demo-ledger receipt; the entry becomes *Pending verification*. If you untick it, only a proof or reference is submitted. That does **not** count as payment and does not extend the reservation.
-3. **Payment reviewer** (`payments@`): **Payments → Needs review** is sorted by urgency. Open an entry, check the server-side approval checklist, then **Approve** or **Reject** with a reason. Rejecting a paid entry creates a refund obligation.
-4. **Time travel (local only)**: as `admin@`, open **Settings → Demo clock** and move the server clock forward, never backward, past the draw time. Countdowns in the browser are for information only; the server decides.
-5. **Result editor** (`editor@`): **Results → Enter a result**. The editor cannot publish their own result.
-6. **Result reviewer** (`reviewer@`): **Results → Review queue → Publish**. Outcomes are computed automatically for *approved* entries only. Everything else shows **Not eligible**.
-7. **Player**: open the entry or **Results** to see the outcome. Matched digits are highlighted (with a ✓ mark, not colour alone) and missing digits are explained.
-8. **Payouts** (`payments@` or `admin@`): **Approve payout**, then **Complete (simulated)**. This writes one ledger row; a second payout for the same entry is impossible. Real cash controls are disabled.
-9. **Corrections**: submit a new result with a reason for a published draw and have a second reviewer publish it. The prior version and its outcomes are kept. Any payout affected after it was paid is flagged under **Payouts → Reconciliation**; nothing is re-paid or debited automatically.
-10. **Teams**: log in as `leader.a@` and then `leader.b@`. Each sees only their own agents. Guessed IDs return the same 404 as a missing record.
+See **[WALKTHROUGH.md](WALKTHROUGH.md)** for the numbered player → payment approval → result publication → winner → simulated payout walkthrough, with screenshots. `npm run docs:screenshots` replays that walkthrough automatically and regenerates the screenshots.
+
+## Payment, cutoff and capacity policy (demo default)
+
+| Situation | What the server does |
+| --- | --- |
+| Entry confirmed | Reserves ₱10 of the combination's ₱500 per-draw cap atomically, then holds it for 5 minutes (or until the submission cutoff, if sooner). |
+| Unpaid hold expires | The entry becomes **Expired** and the ₱10 is released exactly once. No money was received, so there is no refund. This happens on the next request touching that combination or entry, even if the background job is not running. |
+| Payment received (ledger) **before** the submission cutoff and reservation expiry | Entry → **Pending verification**. The slot stays held until the verification cutoff. |
+| Payment attempted at or after the submission cutoff, or after the hold expired | Refused. No ledger receipt and no refund (nothing was taken). A late payment cannot restore the slot. |
+| Paid before the submission cutoff, **approved after the submission cutoff but before the verification cutoff** | **Allowed.** This is what the verification window is for. |
+| Paid before the cutoff but **not approved by the verification cutoff** | **Expired**, even if the digits would have won. The held ₱10 is released and a simulated **refund obligation** is created. Approval at or after the verification cutoff is refused. |
+| Paid, then rejected by a reviewer | **Rejected**: capacity released once and a refund obligation created. If no money was received, there is no refund. |
+| Same payment reference reused | Refused (references are unique per provider, ignoring case, spaces and dashes). |
+| Proof image or reference without a ledger receipt | Never counts as payment and never extends the hold. |
+
+All of these are checked inside the database transaction against **server** time. Browser clocks and countdowns are informational only.
 
 ## Tests
 
 ```bash
 npm run typecheck
-npm test            # Vitest: 95 unit, service, HTTP and multi-process tests
+npm test            # Vitest: 113 unit, service, HTTP and multi-process tests
 npm run test:e2e    # Playwright: resets data/e2e.sqlite, starts a server on :3200, runs the browser flows
 npm run test:all    # all of the above
+npm run docs:screenshots  # replays WALKTHROUGH.md and regenerates docs/screenshots (data/walkthrough.sqlite)
 ```
 
 If Playwright can't find a browser, install Chromium with `npx playwright install chromium`.
@@ -98,8 +108,9 @@ Mapping to the SPEC §13/§17/§18 acceptance tests:
 | 4, 5, 15 | `entries-payments.test.ts › cutoffs`. These use a fixed clock at the exact boundary with the scheduler **not** run; request-time guards still close the window. The browser time is never read. |
 | 9–14 | `results-payouts.test.ts` |
 | 16, 36 | `http.test.ts › routes render`, `tests/e2e/flow.spec.ts` (360px, keyboard, refresh) |
-| 17–18, 20–26 | `capacity.test.ts` |
-| 19 | `concurrency.test.ts`: six **separate processes** race for the last ₱10 on one SQLite file; exactly one succeeds |
+| 17–18, 20–26 | `capacity.test.ts`, including expired holds being released at request time without the background job |
+| 19 | `concurrency.test.ts`: six **separate processes** race for the last ₱10 on one SQLite file and exactly one succeeds. `http.test.ts`: four players confirm the last ₱10 over HTTP at the same moment and exactly one succeeds. |
+| Payout & exposure | `tests/unit/exposure.test.ts`: 20 of 120 combinations win on 123456; ₱1,200 → ₱62,000 and ₱60,000 → ₱3,100,000; the worst-case search matches a brute force over all 1,000,000 results. `money.test.ts`: the admin money breakdown. |
 | 27–35 | `http.test.ts › team hierarchy isolation`, `results-payouts.test.ts` (35: admin cannot self-publish; audit is immutable) |
 | Full flow | `tests/e2e/flow.spec.ts`: player → payment → approval → demo clock → editor → second reviewer → Won → payout |
 
@@ -127,7 +138,10 @@ Mapping to the SPEC §13/§17/§18 acceptance tests:
 - Money (all simulated):
   - Refund workflow: required → processing → completed or failed → retry. Completion is confirmed by a ledger entry.
   - Payout approval and completion with a unique reference, at most one payout per entry, and reconciliation flags after corrections.
-- Admin reporting: figures labelled as simulated, the worst-case prize exposure across all six-digit sets alongside a conservative upper bound, a per-combination capacity table, and a payout-risk warning.
+- Admin reporting: all figures labelled as simulated.
+  - Each draw page splits money into four parts: **collected payments** (with refunds owed shown separately), **reserved capacity** (paid-pending vs unpaid holds), **potential payout** (actual obligation once published, worst case over every valid result, worst case if all reserved entries were approved, and a conservative upper bound), and a **hypothetical funding shortfall**.
+  - The overview adds draw health per draw and illustrative all-combinations scenarios.
+  - There is also a per-combination capacity table and a payout-risk warning.
 - Teams: team and agent assignment with history; team scope is derived on the server on every request.
 - Users and records: role management (combining roles needs explicit confirmation), an append-only searchable audit log, support tickets with internal notes, and CSV export with formula escaping.
 - Accessibility: labelled inputs, visible focus, an error summary that receives focus, status shown as text plus icon, a keyboard-operable digit picker, reduced-motion support, and layout tested at 360px with no horizontal overflow.
