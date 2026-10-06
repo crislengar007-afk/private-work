@@ -98,7 +98,7 @@ function Weddings() {
             <p className="fmv-body pt-3">Build your wedding online and we send a personal quote. When you accept it your date is held{settings ? ` for ${settings.hold_hours} hours` : ""}, and it&apos;s confirmed once your {settings ? `${settings.deposit_pct}% ` : ""}deposit arrives by Interac e-Transfer.</p>
           </details>
           <details className="fmv-panel"><summary className="fmv-h3 fmv-h3--sm cursor-pointer">Can we combine photography, styling and a photo booth?</summary>
-            <p className="fmv-body pt-3">Yes. That&apos;s what we do best: one team, one timeline. Packages show their à la carte value so you can compare.</p>
+            <p className="fmv-body pt-3">Yes. That&apos;s what we do best: one team, one timeline. Each package shows what it would cost if booked separately, so you can see how much you save.</p>
           </details>
           <details className="fmv-panel"><summary className="fmv-h3 fmv-h3--sm cursor-pointer">Do you travel to our venue?</summary>
             <p className="fmv-body pt-3">{zonesNote}</p>

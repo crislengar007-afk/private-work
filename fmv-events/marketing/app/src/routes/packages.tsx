@@ -8,7 +8,7 @@ import { pageHead } from "@/fmv/seo";
 const RENTALS = new Set(["wedding-arch", "event-table-setup"]);
 
 const TABS = [
-  { key: "wedding", label: "Wedding packages", title: "Wedding & engagement bundles", lede: "Wedding coverage plus an engagement session, each showing its à la carte value.", service: "/services/weddings" },
+  { key: "wedding", label: "Wedding packages", title: "Wedding & engagement bundles", lede: "Wedding coverage plus an engagement session, for less than booking them separately.", service: "/services/weddings" },
   { key: "photography", label: "Photography", title: "Photography packages", lede: "Sapphire, Garnet and Emerald coverage for weddings, engagements and birthdays.", service: "/services/photography" },
   { key: "coordination", label: "Coordination", title: "Coordination packages", lede: "From half-day support to coordination over the weeks before your wedding.", service: "/services/event-coordination" },
   { key: "booths", label: "Photo booths", title: "Photo booth packages", lede: "Mirror booth, Magazine Photobox, 360 booth and video guestbook.", service: "/services/photo-booths" },

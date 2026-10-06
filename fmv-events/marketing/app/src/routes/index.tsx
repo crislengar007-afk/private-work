@@ -74,7 +74,7 @@ function Index() {
 
       <section className="fmv-section bg-cream-deep">
         <div className="fmv-wrap">
-          <SectionHead eyebrow="Packages" title="Bundles that keep it simple" lede="Each package shows its à la carte value, so you can see what's included." />
+          <SectionHead eyebrow="Packages" title="Bundles that keep it simple" lede="Each package shows what's included and how much you save compared with booking separately." />
           <PackagesGrid limit={3} />
           <p className="pt-8"><Link to="/packages" className="fmv-link-underline">Compare all packages and prices</Link></p>
         </div>

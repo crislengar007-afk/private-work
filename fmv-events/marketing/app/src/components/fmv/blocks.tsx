@@ -58,7 +58,11 @@ function PackageCard({ pkg, services }: { pkg: Package; services: Service[] }) {
         {pkg.price_cents !== null ? <p className="fmv-price">{money(pkg.price_cents)}</p> : null}
         {saving ? (
           <p className="fmv-was">
-            À la carte value <s>{pkg.ala_carte_is_from ? "from " : ""}{money(pkg.ala_carte_cents)}</s>
+            If booked separately: <s>{pkg.ala_carte_is_from ? "from " : ""}{money(pkg.ala_carte_cents)}</s>
+            {" · "}
+            <strong className="text-rose-deep">
+              You save {pkg.ala_carte_is_from ? "at least " : ""}{money(pkg.ala_carte_cents - (pkg.price_cents as number))}
+            </strong>
           </p>
         ) : null}
         {mdParagraphs(pkg.description_md).slice(0, 1).map((p) => (
@@ -430,7 +434,7 @@ export function WhyFmv() {
   const pct = settings?.deposit_pct ?? 50;
   const points = [
     { t: "One team for your whole event", d: "Photography, coordination, décor and photo booths planned together, so nothing falls between the cracks." },
-    { t: "Clear prices, no guesswork", d: "Prices are published here, and every bundle shows its à la carte value next to the package price." },
+    { t: "Clear prices, no guesswork", d: "Prices are published here, and every bundle shows what it would cost if booked separately and how much you save." },
     { t: "Unlimited shots, edited photos", d: "Photography packages include unlimited shots and edited digital photos, delivered in an online gallery." },
     { t: "A calm, clear booking process", d: `A personal quote first, then a ${pct}% deposit by Interac e-Transfer confirms your date.` },
   ];
