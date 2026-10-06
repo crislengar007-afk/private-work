@@ -5,7 +5,7 @@ import type { Db } from '../db/index.js';
 import type { Clock } from '../lib/clock.js';
 import { DomainError } from '../lib/errors.js';
 import { html } from '../lib/html.js';
-import { landingFor, page } from './layout.js';
+import { errorAreaFor, landingFor, page } from './layout.js';
 import { rateLimit, requestState, securityHeaders, verifyCsrf } from './middleware.js';
 import { adminRouter } from './routes/admin.js';
 import { playerRouter } from './routes/player.js';
@@ -35,7 +35,7 @@ export function createApp(db: Db, clock: Clock, config: AppConfig) {
   app.use(teamRouter);
 
   app.use((req: Request, res: Response) => {
-    res.status(404).send(page(req, { title: 'Not found', area: 'public', body: notFoundBody() }));
+    res.status(404).send(page(req, { title: 'Not found', area: errorAreaFor(req.path, req.td.actor?.roles ?? null), body: notFoundBody(undefined, homeFor(req)) }));
   });
 
   app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
@@ -45,7 +45,7 @@ export function createApp(db: Db, clock: Clock, config: AppConfig) {
     if (!req.td) return res.status(status).send('Error');
     if (req.path.startsWith('/api/')) return res.status(status).json({ ok: false, error: de?.message ?? 'Something went wrong.' });
     let body;
-    if (status === 404) body = notFoundBody(de?.message);
+    if (status === 404) body = notFoundBody(de?.message, homeFor(req));
     else if (status === 403 || status === 429) {
       const home = req.td.actor ? landingFor(req.td.actor.roles) : '/login';
       body = html`${pageHeader(status === 429 ? 'Too many attempts' : 'Access denied')}${alert('error', de?.message ?? 'You do not have access.')}
@@ -54,11 +54,13 @@ export function createApp(db: Db, clock: Clock, config: AppConfig) {
     else
       body = html`${pageHeader('Something went wrong')}${alert('error', html`The server hit an unexpected error. Nothing was half-saved: every change runs in a transaction. Reference: <code>${req.td.requestId}</code>.`)}
         <p><a class="btn btn--primary" href="${req.originalUrl}">${icon('refresh')} Retry</a></p>`;
-    res.status(status).send(page(req, { title: 'Error', area: 'public', body }));
+    res.status(status).send(page(req, { title: status === 404 ? 'Not found' : status === 403 ? 'Access denied' : 'Error', area: errorAreaFor(req.path, req.td.actor?.roles ?? null), body }));
   });
   return app;
 }
 
-function notFoundBody(message?: string) {
-  return html`${pageHeader('Not found')}${alert('info', message ?? 'That page or record does not exist, or you do not have access to it.')}<p><a class="btn btn--secondary" href="/">Go home</a></p>`;
+const homeFor = (req: Request) => (req.td?.actor ? landingFor(req.td.actor.roles) : '/');
+
+function notFoundBody(message: string | undefined, home: string) {
+  return html`${pageHeader('Not found')}${alert('info', message ?? 'That page or record does not exist, or you do not have access to it.')}<p><a class="btn btn--secondary" href="${home}">${home === '/' ? 'Go home' : 'Go to your dashboard'}</a></p>`;
 }

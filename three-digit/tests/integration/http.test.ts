@@ -407,3 +407,53 @@ describe('role access: searches, API, exports, proofs', () => {
     for (const t of ['₱1,200.00', '₱62,000.00', '₱60,000.00', '₱3,100,000.00', 'Hypothetical shortfall']) expect(overview.text).toContain(t);
   });
 });
+
+describe('error pages keep the signed-in user’s own menu', () => {
+  const nav = (html: string) => /<nav class="mainnav"[\s\S]*?<\/nav>/.exec(html)?.[0] ?? '';
+  const side = (html: string) => /<nav class="sidenav"[\s\S]*?<\/nav>/.exec(html)?.[0] ?? '';
+
+  it('team leader: /admin (403) and another team’s agent (404) show the Team menu', async () => {
+    const c = await as('leader.a@demo.local');
+    const denied = await c.get('/admin');
+    expect(denied.status).toBe(403);
+    expect(denied.text).toContain('<title>Access denied');
+    expect(nav(denied.text)).toContain('href="/team/agents"');
+    expect(nav(denied.text)).not.toContain('href="/login"');
+    const missing = await c.get(`/team/agents/${userId('agent.b1@demo.local')}`);
+    expect(missing.status).toBe(404);
+    expect(nav(missing.text)).toContain('My agents');
+    expect(missing.text).toContain('Go to your dashboard');
+    expect(missing.text).toContain('href="/team"');
+  });
+
+  it('agent: /team (403) shows the Agent menu', async () => {
+    const c = await as('agent.a1@demo.local');
+    const r = await c.get('/team');
+    expect(r.status).toBe(403);
+    expect(nav(r.text)).toContain('href="/agent"');
+    expect(nav(r.text)).not.toContain('href="/team/agents"');
+  });
+
+  it('player: unknown entry and unknown URL show the Player menu', async () => {
+    const c = await as('juan@demo.local');
+    for (const p of ['/app/entries/999999', '/no-such-page', '/admin']) {
+      const r = await c.get(p);
+      expect([403, 404], p).toContain(r.status);
+      expect(nav(r.text), p).toContain('href="/app/entries/new"');
+    }
+  });
+
+  it('staff: a page outside their role keeps their own console menu only', async () => {
+    const c = await as('payments@demo.local');
+    const r = await c.get('/admin/users');
+    expect(r.status).toBe(403);
+    expect(side(r.text)).toContain('href="/admin/payments"');
+    expect(side(r.text)).not.toContain('href="/admin/users"');
+  });
+
+  it('anonymous visitors still get the public menu', async () => {
+    const r = await new Client(srv.base).get('/no-such-page');
+    expect(r.status).toBe(404);
+    expect(nav(r.text)).toContain('href="/login"');
+  });
+});

@@ -48,6 +48,20 @@ export function landingFor(roles: ReadonlySet<Role>): string {
   return '/app';
 }
 
+/** Which navigation an error page should show: the area the user was trying to
+ *  reach if they belong there, otherwise their own home area. Anonymous
+ *  visitors get the public menu. */
+export function errorAreaFor(path: string, roles: ReadonlySet<Role> | null): Area {
+  if (!roles) return 'public';
+  const all = areas(roles);
+  const has = (a: Area) => all.some((x) => x.area === a);
+  if (/^\/admin(\/|$)/.test(path) && has('admin')) return 'admin';
+  if (/^\/team(\/|$)/.test(path) && has('team')) return 'team';
+  if (/^\/agent(\/|$)/.test(path) && has('agent')) return 'agent';
+  if (/^\/(app|api)(\/|$)/.test(path) && has('player')) return 'player';
+  return all.find((x) => x.href === landingFor(roles))?.area ?? 'public';
+}
+
 function areas(roles: ReadonlySet<Role>): { area: Area; href: string; label: string }[] {
   const out: { area: Area; href: string; label: string }[] = [];
   if (roles.has('player')) out.push({ area: 'player', href: '/app', label: 'Player' });
