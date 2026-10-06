@@ -67,7 +67,7 @@ Every seeded account uses the password **`Demo-Pass-2026`**. The accounts are sy
 - **Cap at ₱490 → ₱500:** as `pedro@`, enter `321` in Draw A, review and confirm. That takes the last ₱10. Any other player who now tries 123, 132, 213, 231, 312 or 321 gets "This number combination has already reached the ₱500 limit… / Naabot na ng combination na ito ang ₱500 limit."
 - **Unpaid hold expires:** confirm an entry and don't pay. After 5 minutes the slot is released, even if the background job has not run yet. The payment page then says the reservation expired, and a late payment is refused.
 - **Late approval:** Draw B's submission cutoff has already passed but its verification window is open, so `payments@` can still approve its pending entries. Once the verification cutoff passes (move the demo clock 3h+), approval is refused, the entries become **Expired**, and each paid one gets a simulated **refund obligation** under **Refunds**.
-- **Corrected result:** Sample Draw E was corrected from `012349` to `001234`. Maria's 349 had already been paid under v1, so **Payouts → Reconciliation** shows a flag. Nothing is re-paid or debited automatically.
+- **Corrected result:** Sample Draw E was corrected from `012349` to `012345`. Maria's 349 had already been paid under v1, so **Payouts → Reconciliation** shows a flag. Nothing is re-paid or debited automatically.
 - **Cancelled draw:** Sample Draw F shows voided entries and refunds in the *completed*, *required* and *not required* (unpaid) states.
 
 ## 4. Checks

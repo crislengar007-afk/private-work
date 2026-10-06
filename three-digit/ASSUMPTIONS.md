@@ -5,7 +5,8 @@ This file records the choices the demo made where SPEC.md v1.2 left a gap. **Con
 ## Confirmed by the owner (implemented as-is)
 
 - Each entry has exactly three distinct digits from 0–9. Entries with repeats (112, 555, 101) are rejected on both client and server.
-- An entry wins when all three of its digits appear anywhere in the six-digit result. Order, position and adjacency do not matter, and a result may repeat digits.
+- An entry wins when all three of its digits appear anywhere in the six-digit result. Order, position and adjacency do not matter.
+- **A result always has six different digits** (owner rule, 6 Oct 2026): a result with a repeated digit is rejected by the form, the server and the database. Every valid result therefore makes exactly 20 of the 120 combinations win.
 - The stake is fixed at ₱10 (1000 centavos). A win pays **₱3,100 gross (310000 centavos), including the stake**, so the net gain is ₱3,090. No proportional payout is inferred for any other stake.
 - Each unordered combination is capped at ₱500 (50000 centavos) across **all** players and teams.
 - Players have their own accounts. An admin must approve payment before an entry counts. A cutoff exists. Player and admin UIs are both complete.

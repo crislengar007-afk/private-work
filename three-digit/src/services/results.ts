@@ -1,5 +1,5 @@
 import type { Db } from '../db/index.js';
-import { isValidResult, matchEntry } from '../domain/digits.js';
+import { matchEntry, validateResult } from '../domain/digits.js';
 import { GROSS_PAYOUT_MINOR } from '../domain/rules.js';
 import type { Clock } from '../lib/clock.js';
 import { DomainError, NotFoundError } from '../lib/errors.js';
@@ -42,7 +42,8 @@ export interface SubmitResultInput {
 export function submitResult(ctx: Ctx, drawId: number, input: SubmitResultInput): number {
   const actor = requireAny(ctx, ['admin', 'result_editor']);
   const result = typeof input.result === 'string' ? input.result.trim() : '';
-  if (!isValidResult(result)) throw new DomainError('INVALID_RESULT', 'The result must be exactly six digits (0–9). Repeated digits are allowed in a result.');
+  const check = validateResult(result);
+  if (!check.ok) throw new DomainError(check.code === 'REPEATED' ? 'RESULT_REPEATED_DIGITS' : 'INVALID_RESULT', check.error);
   const label = typeof input.sourceLabel === 'string' && input.sourceLabel.trim() ? input.sourceLabel.trim() : SAMPLE_SOURCE_LABEL;
   if (label.length < 3 || label.length > 120) throw new DomainError('INVALID_SOURCE', 'Source label must be 3–120 characters.');
   const url = typeof input.sourceUrl === 'string' && input.sourceUrl.trim() ? input.sourceUrl.trim() : null;

@@ -120,7 +120,7 @@ adminRouter.get('/admin', (req, res) => {
     capacityScenarios(),
     { caption: 'Illustrative scenarios' },
   )}
-  <p class="small muted">Any result with six different digits (like 123456) makes 20 of the 120 combinations win. Results with repeated digits make fewer combinations win.</p></section>`;
+  <p class="small muted">Every result has six different digits (no repeats), so any result — like 123456 or 847123 — makes exactly 20 of the 120 combinations win.</p></section>`;
   send(req, res, 'Overview', body);
 });
 
@@ -327,7 +327,7 @@ function resultForm(req: Request, drawId: number, correction: boolean) {
     req.td.csrf,
     html`<h3>${correction ? 'Submit a correction (new version)' : 'Enter draft result'}</h3>
     <input type="hidden" name="draw_id" value="${drawId}">
-    ${field('Six-digit result', 'result', { required: true, attrs: 'inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" class="mono"', hint: 'Exactly six digits. Repeated digits are allowed in a result (e.g. 001234).' })}
+    ${field('Six-digit result', 'result', { required: true, attrs: 'inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" class="mono"', hint: 'Six different digits, no repeats (e.g. 847123). Bawal ang umuulit na numero.' })}
     ${field('Source label', 'source_label', { value: SAMPLE_SOURCE_LABEL, required: true, hint: 'Do not attribute sample results to a real official draw.' })}
     ${field('Source URL (optional)', 'source_url', { type: 'url' })}
     ${correction ? textarea('Correction reason', 'correction_reason', { required: true, rows: 2, hint: 'Required. The prior version and its outcomes are preserved.' }) : ''}
@@ -540,7 +540,7 @@ adminRouter.get('/admin/results', guard('/admin/results'), (req, res) => {
             '/admin/results',
             req.td.csrf,
             html`${select('Draw', 'draw_id', enterable.map((d) => ({ value: String(d.id), label: `${d.reference_label} — ${PHASE_LABEL[d.phase]}${d.published_result ? ' (correction)' : ''}` })), { required: true })}
-            ${field('Six-digit result', 'result', { required: true, attrs: 'inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off"', hint: 'Exactly six digits; repeats allowed.' })}
+            ${field('Six-digit result', 'result', { required: true, attrs: 'inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off"', hint: 'Six different digits, no repeats (e.g. 847123).' })}
             ${field('Source label', 'source_label', { value: SAMPLE_SOURCE_LABEL, required: true })}
             ${field('Source URL (optional)', 'source_url', { type: 'url' })}
             ${textarea('Correction reason (required only when correcting a published result)', 'correction_reason', { rows: 2 })}

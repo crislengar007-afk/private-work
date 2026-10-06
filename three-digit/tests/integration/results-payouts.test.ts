@@ -93,6 +93,19 @@ describe('result workflow', () => {
     expect(code(() => approvePayout(s.env.as(s.admin), s.pending))).toBe('NOT_A_WINNER');
   });
 
+  it('rejects results with a repeated digit in the service and in the database', () => {
+    const s = scenario();
+    s.env.clock.advance(4 * HOUR + MINUTE);
+    for (const r of ['001234', '112345', '847127']) {
+      expect(code(() => submitResult(s.env.as(s.editor), s.drawId, { result: r, sourceLabel: '', sourceUrl: '', correctionReason: '' })), r).toBe('RESULT_REPEATED_DIGITS');
+    }
+    expect(s.env.db.get<{ n: number }>('SELECT count(*) AS n FROM result_versions')!.n).toBe(0);
+    expect(() =>
+      s.env.db.run(`INSERT INTO result_versions (draw_id, version, six_digit_result, source_label, entered_by, entered_at, state) VALUES (?, 1, '001234', 'x x', ?, ?, 'submitted')`, s.drawId, s.editor, s.env.clock.now().toISOString()),
+    ).toThrow(/must all be different/);
+    expect(code(() => submitResult(s.env.as(s.editor), s.drawId, { result: '847123', sourceLabel: '', sourceUrl: '', correctionReason: '' }))).toBe('OK');
+  });
+
   it('corrections create a new version, keep history, recompute once and flag paid entries (acceptance 13)', () => {
     const s = scenario();
     s.env.clock.advance(4 * HOUR + MINUTE);

@@ -458,6 +458,21 @@ describe('error pages keep the signed-in user’s own menu', () => {
   });
 });
 
+describe('six-digit results never repeat a digit (owner rule)', () => {
+  it('the result form rejects a repeated digit and the rules page states the rule', async () => {
+    const editor = await as('editor@demo.local');
+    const before = srv.db.get<{ n: number }>('SELECT count(*) AS n FROM result_versions')!.n;
+    // The digit check runs before any draw or time check.
+    await editor.post('/admin/results', { draw_id: String(drawId('Draw C')), result: '112345', source_label: 'SAMPLE — demo', source_url: '', correction_reason: '' });
+    const page = await editor.get('/admin/results');
+    expect(page.text).toContain('Bawal ang umuulit na numero sa result');
+    expect(srv.db.get<{ n: number }>('SELECT count(*) AS n FROM result_versions')!.n).toBe(before);
+    const rules = await new Client(srv.base).get('/rules');
+    expect(rules.text).toContain('The six-digit result never repeats a digit');
+    expect(rules.text).toContain('112345');
+  });
+});
+
 describe('owner-approved media (ASSETS.md)', () => {
   it('home page shows the hero image and a click-to-play, silent explainer video', async () => {
     const r = await new Client(srv.base).get('/');

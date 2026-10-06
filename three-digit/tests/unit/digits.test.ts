@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalKey, isValidResult, matchEntry, permutations, validateSelection } from '../../src/domain/digits.js';
+import { canonicalKey, isValidResult, matchEntry, permutations, validateResult, validateSelection } from '../../src/domain/digits.js';
 import { maxExposure } from '../../src/domain/exposure.js';
 import { fromManilaInput, peso, toManilaInput } from '../../src/lib/format.js';
 
@@ -33,22 +33,31 @@ describe('matching (acceptance 2 + SPEC §4 table)', () => {
     ['135', '123456', true],
     ['531', '123456', true],
     ['507', '705129', true],
-    ['012', '001234', true],
+    ['012', '301245', true],
     ['789', '123456', false],
-    ['123', '111222', false],
+    ['123', '124567', false],
   ])('%s vs %s -> won=%s', (entry, result, won) => {
     expect(matchEntry(entry, result).won).toBe(won);
   });
   it('explains the missing digit', () => {
-    expect(matchEntry('123', '111222')).toEqual({ won: false, matched: ['1', '2'], missing: ['3'] });
+    expect(matchEntry('123', '124567')).toEqual({ won: false, matched: ['1', '2'], missing: ['3'] });
   });
   it('never matches an invalid entry', () => {
     expect(() => matchEntry('112', '123456')).toThrow();
   });
-  it('results allow repeated digits but must be six ASCII digits', () => {
-    expect(isValidResult('111222')).toBe(true);
-    expect(isValidResult('12345')).toBe(false);
-    expect(isValidResult('12345a')).toBe(false);
+  it('results must be six DIFFERENT digits (owner rule: walang inuulit na numero)', () => {
+    expect(validateResult('847123')).toEqual({ ok: true, result: '847123' });
+    expect(isValidResult('012345')).toBe(true);
+    for (const r of ['001234', '111222', '112345', '847127', '123451']) {
+      const v = validateResult(r);
+      expect(v.ok, r).toBe(false);
+      if (!v.ok) expect(v.code).toBe('REPEATED');
+    }
+    for (const r of ['12345', '12345a', '1234567', '', ' 12345']) {
+      const v = validateResult(r);
+      expect(v.ok, r).toBe(false);
+      if (!v.ok) expect(v.code).toBe('FORMAT');
+    }
   });
 });
 

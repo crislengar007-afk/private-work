@@ -2,7 +2,7 @@
 
 > **DEMO — Walang totoong bayad o cash prize.** Every payment, receipt, refund and payout here is simulated. Results are labelled samples, not official lottery draws. This is software built from [SPEC.md](SPEC.md) v1.2. It is not legal authorization, it is not ready for real money, and it must not be deployed publicly.
 
-Players pick **three different digits** (0–9). An entry wins when **all three appear anywhere** in a six-digit result. **₱10 taya → ₱3,100 total kapag panalo; kasama na ang taya** (net ₱3,090). Each unordered combination is capped at **₱500 per draw** across all players.
+Players pick **three different digits** (0–9). An entry wins when **all three appear anywhere** in a six-digit result, and **the result never repeats a digit**. **₱10 taya → ₱3,100 total kapag panalo; kasama na ang taya** (net ₱3,090). Each unordered combination is capped at **₱500 per draw** across all players.
 
 The repository root holds an unrelated Astro site. This app lives entirely in `three-digit/` and shares nothing with it.
 
@@ -63,7 +63,7 @@ Dates are generated **relative to the time you run the seed**:
 | B — verification only | Submission closed, verification open about 3h | Pending payments for the reviewer to approve |
 | C — awaiting result | Past draw time, no result | Expired entries (one paid, so a refund is required; one unpaid, so no refund), a rejected entry (refund marked *failed*), approved entries ready for a result |
 | D — published | Result `123456` | Winners and losers; one completed payout and one approved payout |
-| E — published & corrected | `012349` corrected to `001234` | Version history, recomputed outcomes and a **reconciliation flag** for a payout already completed under v1 |
+| E — published & corrected | `012349` corrected to `012345` | Version history, recomputed outcomes and a **reconciliation flag** for a payout already completed under v1 |
 | F — cancelled | Cancelled | Voided entries; a completed refund, a required refund, and an unpaid entry with no refund |
 | G — draft | Next week | Editable draft schedule |
 

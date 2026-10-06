@@ -387,3 +387,13 @@ The owner approved using Higgsfield, overriding the "Do not use paid media gener
 - one silent 8-second "how it works" animation on the home page.
 
 The other rules still apply. Assets must not show money, coins, prizes, casino or slot-machine imagery, or flashy effects (§12). They must not imitate any real lottery or brand. The demo banner and all simulated-payment rules are unchanged. The video never autoplays. Assets are served locally from `public/media/`, and Higgsfield's website-publishing features are not used. Each generated asset is recorded in `ASSETS.md`.
+
+## Owner amendment — 6 October 2026: results never repeat a digit
+
+Confirmed by the owner: **a six-digit result always has six different digits** ("walang inuulit na numero sa result"). This replaces the §4 statement that "repeated digits in the RESULT are allowed", and the §4 examples that used results with repeats (`001234`, `111222`).
+
+- A result with any repeated digit (e.g. `001234`, `112345`) is rejected. This is enforced in the result form, in the server service and by a database trigger (`migrations/002_result_distinct_digits.sql`).
+- Matching is unchanged: an entry wins when all three of its digits appear anywhere in the result.
+- Payout is unchanged: ₱10 → ₱3,100 total, stake included.
+- Because every valid result has six distinct digits, every result makes exactly 20 of the 120 unordered combinations win.
+- Updated examples: `012` vs `301245` → Won; `123` vs `124567` → Lost (3 absent).

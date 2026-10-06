@@ -104,7 +104,7 @@ export function seed(db: Db, nowMs = Date.now()): void {
   completePayout(as(PAY), approvePayout(as(PAY), eJuan.id).payoutId);
   completePayout(as(PAY), approvePayout(as(PAY), eMaria.id).payoutId);
   at(-3 * DAY);
-  const e2 = submitResult(as(EDIT), E, { result: '001234', sourceLabel: '', sourceUrl: '', correctionReason: 'Sample transcription error: the last digit was keyed as 9 and the first digits were shifted.' });
+  const e2 = submitResult(as(EDIT), E, { result: '012345', sourceLabel: '', sourceUrl: '', correctionReason: 'Sample transcription error: the last digit was keyed as 9 instead of 5.' });
   at(-3 * DAY + 10 * MINUTE);
   publishResult(as(REV), e2, 'on');
 

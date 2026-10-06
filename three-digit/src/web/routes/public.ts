@@ -104,15 +104,17 @@ publicRouter.get('/rules', (req, res) => {
     ['135', '123456', 'Won'],
     ['531', '123456', 'Won'],
     ['507', '705129', 'Won'],
-    ['012', '001234', 'Won'],
+    ['012', '301245', 'Won'],
     ['789', '123456', 'Lost'],
-    ['123', '111222', 'Lost: digit 3 is absent'],
+    ['123', '124567', 'Lost: digit 3 is absent'],
+    ['Any', '112345', 'Invalid result: digits repeat (1 appears twice)'],
     ['112', 'Any result', 'Invalid entry, never accepted'],
   ];
   const body = html`${pageHeader('Rules & demo terms', 'Everything here describes a software demo. No real money, no official lottery.')}
   <div class="prose">
     <h2 id="matching">Matching</h2>
-    <p>Each entry is exactly <strong>three different digits</strong> from 0–9. The winning reference is a <strong>six-digit result</strong>. An entry wins when <strong>all three</strong> of its digits appear <strong>anywhere</strong> in those six digits. Position and order do not matter and the digits need not be adjacent. Repeated digits in the result are allowed and never create more than one win for the same entry.</p>
+    <p>Each entry is exactly <strong>three different digits</strong> from 0–9. The winning reference is a <strong>six-digit result</strong>. An entry wins when <strong>all three</strong> of its digits appear <strong>anywhere</strong> in those six digits. Position and order do not matter and the digits need not be adjacent.</p>
+    <p><strong>The six-digit result never repeats a digit</strong> — walang inuulit na numero sa result. All six digits are different, so every result makes exactly 20 of the 120 possible combinations win.</p>
     ${dataTable(
       [
         { label: 'Entry', render: (r: [string, string, string]) => html`<strong class="mono">${r[0]}</strong>` },
