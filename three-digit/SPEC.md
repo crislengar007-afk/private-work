@@ -377,3 +377,13 @@ Global combination limits from section 17 stay global across ALL teams for the s
 ### Handoff requirement
 
 Include these roles, routes, assignments and access tests in the completed demo. Seed two separate Team Leaders with at least two Agents each and one unassigned Agent so isolation can be demonstrated. Explain that agent selling/collection powers, player attribution, commissions and historical reassignment policy remain unconfirmed; this does not block implementing the confirmed visibility hierarchy.
+
+## Owner amendment — 6 October 2026: Higgsfield media
+
+The owner approved using Higgsfield, overriding the "Do not use paid media generation or Higgsfield" line in §1 **for these assets only**:
+
+- one home-page hero illustration;
+- two empty-state illustrations ("no entries yet", "no results yet");
+- one silent 8-second "how it works" animation on the home page.
+
+The other rules still apply. Assets must not show money, coins, prizes, casino or slot-machine imagery, or flashy effects (§12). They must not imitate any real lottery or brand. The demo banner and all simulated-payment rules are unchanged. The video never autoplays. Assets are served locally from `public/media/`, and Higgsfield's website-publishing features are not used. Each generated asset is recorded in `ASSETS.md`.

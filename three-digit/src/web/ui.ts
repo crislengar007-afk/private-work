@@ -233,8 +233,10 @@ export function pageHeader(title: string, sub?: SafeHtml | string, actions?: Saf
   return html`<header class="page-head"><div><h1>${title}</h1>${sub ? html`<p class="page-head__sub">${sub}</p>` : ''}</div>${actions ? html`<div class="page-head__actions">${actions}</div>` : ''}</header>`;
 }
 
-export function emptyState(title: string, text: string, action?: SafeHtml): SafeHtml {
-  return html`<div class="empty">${icon('info')}<p class="empty__title">${title}</p><p>${text}</p>${action ?? ''}</div>`;
+/** Optional illustration: decorative only (empty alt); the text carries the meaning. */
+export function emptyState(title: string, text: string, action?: SafeHtml, opts: { art?: 'entries' | 'results' } = {}): SafeHtml {
+  const art = opts.art ? html`<img class="empty__art" src="/static/media/empty-${opts.art}.webp" alt="" width="160" height="160" loading="lazy">` : icon('info');
+  return html`<div class="empty">${art}<p class="empty__title">${title}</p><p>${text}</p>${action ?? ''}</div>`;
 }
 
 export function stat(label: string, value: string, note?: string): SafeHtml {

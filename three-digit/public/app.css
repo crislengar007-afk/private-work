@@ -108,6 +108,13 @@ main:focus { outline: none; }
 .hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1.5rem; align-items: center; padding: 1rem 0 .5rem; }
 .hero h1 { font-size: clamp(1.5rem, 3.4vw, 2.2rem); }
 .actions, .button-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+.hero__art { margin: 0; }
+.hero__art img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); }
+.how { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.how__video { margin: 0 0 1rem; }
+.how__video video { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); }
+.how__video figcaption { margin-top: .4rem; }
+.empty__art { display: block; width: 160px; height: 160px; margin: 0 auto .25rem; border-radius: 12px; }
 .steps { padding-left: 1.25rem; display: grid; gap: .6rem; }
 .steps li strong { display: block; }
 .steps li span { color: var(--muted); }
@@ -282,7 +289,7 @@ legend { padding: 0 .3rem; }
   .sidenav__details:not([open]) > :not(summary) { display: none; }
   .sidenav__details[open] { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding-bottom: .5rem; }
   .sidenav__details[open] summary { border: none; border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0; }
-  .hero, .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .hero, .grid-2, .how { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 720px) {
   body { font-size: 15.5px; }

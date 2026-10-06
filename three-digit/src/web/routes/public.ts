@@ -40,15 +40,13 @@ publicRouter.get('/', (req, res) => {
         <a class="btn btn--ghost" href="/rules">Read the rules</a>
       </div>
     </div>
-    <div class="card hero__example" aria-label="Matching example">
-      <p class="eyebrow">Example</p>
-      <p>Entry <strong>135</strong> vs sample result</p>
-      ${resultChips('123456', '135')}
-      <p class="muted small">1, 3 and 5 all appear → <strong>Won</strong>. Entry 531 is the same combination and also wins. Entry 789 → Lost.</p>
-    </div>
+    <figure class="hero__art">
+      <img src="/static/media/hero.webp" width="1168" height="880" alt="Three tiles showing the digits 0, 4 and 7" fetchpriority="high">
+    </figure>
   </section>
 
-  <section class="section">
+  <section class="section how">
+    <div>
     <h2>How it works</h2>
     <ol class="steps">
       <li><strong>Create an account</strong><span>Players have their own login. Staff accounts are created by the administrator.</span></li>
@@ -57,6 +55,23 @@ publicRouter.get('/', (req, res) => {
       <li><strong>Wait for verification</strong><span>A payment reviewer approves it before the verification cutoff. Only approved entries can win.</span></li>
       <li><strong>Result is reviewed &amp; published</strong><span>One staff member enters the sample result, a different one publishes it. Outcomes are computed automatically.</span></li>
     </ol>
+    </div>
+    <div>
+      <figure class="how__video">
+        <video controls muted playsinline preload="none" poster="/static/media/how-it-works-poster.webp" width="1112" height="834" aria-describedby="how-video-desc">
+          <source src="/static/media/how-it-works.mp4" type='video/mp4; codecs="avc1.640020"'>
+          <source src="/static/media/how-it-works.webm" type='video/webm; codecs="vp9"'>
+          <p>Your browser cannot play this video. It shows the digits 0, 4 and 7 matching the sample result 047123.</p>
+        </video>
+        <figcaption id="how-video-desc" class="small muted">8-second silent animation: you pick 0, 4 and 7; the six-digit sample result 047123 appears and the three matching digits light up. All three are present, so the entry wins.</figcaption>
+      </figure>
+      <div class="card hero__example" aria-label="Matching example">
+        <p class="eyebrow">Example</p>
+        <p>Entry <strong>135</strong> vs sample result</p>
+        ${resultChips('123456', '135')}
+        <p class="muted small">1, 3 and 5 all appear → <strong>Won</strong>. Entry 531 is the same combination and also wins. Entry 789 → Lost.</p>
+      </div>
+    </div>
   </section>
 
   <section class="section grid-2">

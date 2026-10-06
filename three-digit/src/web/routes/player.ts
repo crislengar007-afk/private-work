@@ -75,7 +75,7 @@ playerRouter.get('/app', (req, res) => {
       ? html`<article class="card"><h3>${latest.draw_label}</h3>${resultChips(latest.six_digit_result)}
         <p class="small muted">${latest.source_label}${latest.corrected ? html` · <strong>Corrected</strong>` : ''} · ${time(latest.published_at)}</p>
         <a href="/app/results/${latest.draw_id}">Check your entries for this draw ${icon('arrow')}</a></article>`
-      : emptyState('No results yet', 'Published sample results will appear here.')}
+      : emptyState('No results yet', 'Published sample results will appear here.', undefined, { art: 'results' })}
   </section>`;
   send(req, res, 'Dashboard', body);
 });
@@ -264,7 +264,7 @@ playerRouter.get('/app/entries', (req, res) => {
       caption: 'Your entries',
       empty: filtered
         ? emptyState('No matching entries', 'Try different filters.', html`<a class="btn btn--ghost" href="/app/entries">Reset filters</a>`)
-        : emptyState('No entries yet', 'Pick three different digits to create your first entry.', html`<a class="btn btn--primary" href="/app/entries/new">New entry</a>`),
+        : emptyState('No entries yet', 'Pick three different digits to create your first entry.', html`<a class="btn btn--primary" href="/app/entries/new">New entry</a>`, { art: 'entries' }),
     },
   )}`;
   send(req, res, 'My entries', body);
@@ -432,7 +432,7 @@ playerRouter.get('/app/results', (req, res) => {
       { label: 'Source', render: (r) => html`${r.source_label}${r.corrected ? html` <span class="badge badge--warn">Corrected v${r.version}</span>` : ''}` },
     ],
     rows,
-    { caption: 'Published results', empty: emptyState('No published results yet', 'Results appear here after a second staff member reviews and publishes them.') },
+    { caption: 'Published results', empty: emptyState('No published results yet', 'Results appear here after a second staff member reviews and publishes them.', undefined, { art: 'results' }) },
   )}`;
   send(req, res, 'Results', body);
 });

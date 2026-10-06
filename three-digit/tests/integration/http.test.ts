@@ -457,3 +457,33 @@ describe('error pages keep the signed-in user’s own menu', () => {
     expect(nav(r.text)).toContain('href="/login"');
   });
 });
+
+describe('owner-approved media (ASSETS.md)', () => {
+  it('home page shows the hero image and a click-to-play, silent explainer video', async () => {
+    const r = await new Client(srv.base).get('/');
+    expect(r.text).toContain('src="/static/media/hero.webp"');
+    expect(r.text).toContain('alt="Three tiles showing the digits 0, 4 and 7"');
+    expect(r.text).toMatch(/<video controls muted playsinline preload="none"/);
+    expect(r.text).not.toMatch(/<video[^>]*autoplay/);
+    expect(r.text).toContain('aria-describedby="how-video-desc"');
+    expect(r.text).toContain('DEMO — Walang totoong bayad o cash prize.');
+  });
+
+  it('serves every media file locally with the right content type', async () => {
+    const c = new Client(srv.base);
+    for (const [file, type] of [['hero.webp', 'image/webp'], ['how-it-works-poster.webp', 'image/webp'], ['empty-entries.webp', 'image/webp'], ['empty-results.webp', 'image/webp'], ['how-it-works.mp4', 'video/mp4'], ['how-it-works.webm', 'video/webm']]) {
+      const r = await c.get(`/static/media/${file}`);
+      expect(r.status, file).toBe(200);
+      expect(r.headers.get('content-type'), file).toContain(type);
+    }
+  });
+
+  it('a new player sees the decorative empty-state art', async () => {
+    const c = new Client(srv.base);
+    await c.get('/register');
+    await c.post('/register', { displayName: 'Bago Player', email: 'bago@example.test', password: 'Password1234', confirm: 'Password1234', ageAck: 'on', termsAck: 'on' });
+    const r = await c.get('/app/entries');
+    expect(r.text).toContain('src="/static/media/empty-entries.webp" alt=""');
+    expect(r.text).toContain('No entries yet');
+  });
+});

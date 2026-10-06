@@ -35,6 +35,7 @@ This file records the choices the demo made where SPEC.md v1.2 left a gap. **Con
 | Sessions | 12-hour server-side sessions on real wall-clock time, independent of the demo clock. A password change or account disable ends other sessions. |
 | Password reset | No email provider exists. Reset links go to `data/demo-outbox.txt`, and the page says no email was sent. |
 | Proofs | Synthetic, labelled SVG placeholders served through owner- or staff-only URLs. There are no real uploads. |
+| Media | Owner-approved Higgsfield assets (hero, two empty-state illustrations, silent 8-second explainer) are listed in `ASSETS.md`. They are served locally, carry no money or casino imagery, and the video never autoplays. Everything else uses CSS and inline SVG icons. |
 | Timezone | All times are stored in UTC and shown as Asia/Manila (PHT, UTC+8, no DST). |
 
 ## Open before any real-money operation

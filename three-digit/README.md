@@ -6,7 +6,7 @@ Players pick **three different digits** (0–9). An entry wins when **all three 
 
 The repository root holds an unrelated Astro site. This app lives entirely in `three-digit/` and shares nothing with it.
 
-**Step-by-step demo with desktop and 360px screenshots: [WALKTHROUGH.md](WALKTHROUGH.md).**
+**Step-by-step demo with desktop and 360px screenshots: [WALKTHROUGH.md](WALKTHROUGH.md).** Owner-approved Higgsfield media (home-page hero, empty-state art, silent explainer video) is listed in [ASSETS.md](ASSETS.md).
 
 ## Stack
 
