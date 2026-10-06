@@ -92,16 +92,23 @@ As soon as `BOOKING_API_URL` is set, live data and the real booking links take o
    (or the custom domain) so the "Check a date" widget is allowed by CORS.
 4. Redeploy the Higgsfield site (secrets take effect on the next deploy).
 
-## Verified
+## Verified (multi-page refactor, live site)
 
-- Typecheck, the template's UI contract check and a production build pass.
-- Rendered all 11 pages in a local dev server in both states: no booking API (every
-  page 200, fallback panels shown) and a mock booking API with sample data (package
-  price + à la carte value, service prices, mini-session banner, testimonials,
-  phone, JSON-LD and booking links all render from the API).
-- The deployed site itself could not be fetched from this build environment
-  (outbound access to `*.higgsfield.app` is blocked here), so give it a visual check
-  on a phone and a desktop.
+- Typecheck, the UI contract check and a production build pass.
+- Playwright against https://fmv-events.higgsfield.app (run from the Higgsfield
+  sandbox, since this environment cannot reach `*.higgsfield.app`):
+  - All 15 routes at desktop 1366, tablet 820 and mobile 390: HTTP 200, exactly one
+    H1, matching canonical, no horizontal overflow, no broken images, no console
+    errors.
+  - `/weddings`, `/photography`, `/events`, `/booths` redirect to `/services/...`.
+  - Services dropdown (hover, click, Enter, Escape), mobile drawer, back/forward,
+    packages tabs (click + arrow keys), package CTA into `/book?service=...`.
+  - Full quote funnel on desktop and mobile: validation, tier + "Help me choose",
+    estimate, consent, confirmation ("Your date is not booked yet", timeline at
+    "Quote requested", deposit instructions), owner inbox shows the request.
+  - Scroll-scrub hero regression: video loads as a blob, scrubs to ~13–14 s and
+    progress 0.93–0.97 on desktop, tablet and mobile and after client-side
+    navigation back to `/`; reduced motion shows the poster only; no errors.
 
 ## Open items
 
